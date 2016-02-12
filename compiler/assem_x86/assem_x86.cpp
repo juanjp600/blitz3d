@@ -213,7 +213,7 @@ void Assem_x86::assemDir( const string &name,const string &op ){
 		if( op[0]!='\"' ) emitImm( op,1 );
 		else{
 			if( op.size()<2 || op[op.size()-1]!='\"' ) throw Ex( "operand error" );
-			for( int k=1;k<op.size()-1;++k ) emit( op[k] );
+			for( int k=1;k<(int)op.size()-1;++k ) emit( op[k] );
 		}
 	}else if( name==".dw" ){
 		emitImm( op,2 );
@@ -276,7 +276,7 @@ void Assem_x86::assemLine( const string &line ){
 
 	//pseudo op?
 	if( name[0]=='.' ){
-		for( int k=0;k<ops.size();++k ) assemDir( name,ops[k] );
+		for( int k=0;k<(int)ops.size();++k ) assemDir( name,ops[k] );
 		return;
 	}
 

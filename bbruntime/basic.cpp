@@ -449,7 +449,7 @@ int _bbReadInt(){
 	switch( dataPtr->fieldType ){
 	case BBTYPE_END:RTEX( "Out of data" );return 0;
 	case BBTYPE_INT:return dataPtr++->field.INT;
-	case BBTYPE_FLT:return dataPtr++->field.FLT;
+	case BBTYPE_FLT:return (int)dataPtr++->field.FLT;
 	case BBTYPE_CSTR:return atoi( dataPtr++->field.CSTR );
 	default:RTEX( "Bad data type" );return 0;
 	}
@@ -458,9 +458,9 @@ int _bbReadInt(){
 float _bbReadFloat(){
 	switch( dataPtr->fieldType ){
 	case BBTYPE_END:RTEX( "Out of data" );return 0;
-	case BBTYPE_INT:return dataPtr++->field.INT;
+	case BBTYPE_INT:return (float)dataPtr++->field.INT;
 	case BBTYPE_FLT:return dataPtr++->field.FLT;
-	case BBTYPE_CSTR:return atof( dataPtr++->field.CSTR );
+	case BBTYPE_CSTR:return (float)atof( dataPtr++->field.CSTR );
 	default:RTEX( "Bad data type" );return 0;
 	}
 }
@@ -492,7 +492,7 @@ float _bbFAbs( float n ){
 }
 
 float _bbFSgn( float n ){
-	return n>0 ? 1 : (n<0 ? -1 : 0);
+	return (float)( n>0 ? 1 : (n<0 ? -1 : 0) );
 }
 
 float _bbFMod( float x,float y ){

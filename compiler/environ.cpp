@@ -20,7 +20,7 @@ Environ::~Environ(){
 	delete funcDecls;
 	delete typeDecls;
 
-	for( int k=0;k<types.size();++k ) delete types[k];
+	for( int k=0;k<(int)types.size();++k ) delete types[k];
 }
 
 Decl *Environ::findDecl( const string &s ){
@@ -52,7 +52,7 @@ Type *Environ::findType( const string &s ){
 }
 
 Label *Environ::findLabel( const string &s ){
-	for( int k=0;k<labels.size();++k ) if( labels[k]->name==s ) return labels[k];
+	for( int k=0;k<(int)labels.size();++k ) if( labels[k]->name==s ) return labels[k];
 	return 0;
 }
 

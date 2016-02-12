@@ -157,7 +157,7 @@ int MainFrame::OnCreate( LPCREATESTRUCT lpCreateStruct ){
 	//create recent file list
 	CMenu menu;
 	menu.CreatePopupMenu();
-	for( int k=0;k<prefs.recentFiles.size();++k ){
+	for( int k=0;k<(int)prefs.recentFiles.size();++k ){
 		menu.InsertMenu( k,MF_BYPOSITION|MF_ENABLED,333+k,prefs.recentFiles[k].c_str() );
 	}
 	CMenu *file=GetMenu()->GetSubMenu( 0 );
@@ -280,7 +280,7 @@ void MainFrame::cursorMoved( Editor *editor ){
 	int row,col;
 	editor->getCursor( &row,&col );
 	char mod=editor->getModified() ? '*' : ' ';
-	char str[64];sprintf( str,"Row:%i Col:%i %c",row,col,mod );
+	char str[64];sprintf_s( str,"Row:%i Col:%i %c",row,col,mod );
 	statusBar.SetPaneText( 1,str );
 }
 
@@ -330,7 +330,7 @@ void MainFrame::insertRecent( const string &file ){
 			list->InsertMenu( 0,MF_BYPOSITION|MF_ENABLED,333,file.c_str() );
 		}
 		//renumber menu items
-		for( int k=0;k<f.size();++k ){
+		for( int k=0;k<(int)f.size();++k ){
 			list->ModifyMenu( k,MF_BYPOSITION|MF_ENABLED,333+k,f[k].c_str() );
 		}
 	}
@@ -365,7 +365,7 @@ bool MainFrame::open( const string &f ){
 
 		int n=OFN_NOCHANGEDIR|OFN_FILEMUSTEXIST;
 		CFileDialog fd( true,"bb",filter.c_str(),n,bbFilter );
-		char *i_dir=strdup( file.c_str() );
+		char *i_dir=_strdup( file.c_str() );
 		fd.m_ofn.lpstrInitialDir=i_dir;
 		fd.m_ofn.lpstrTitle="Open Blitz Basic File...";
 		int nn=fd.DoModal();free( i_dir );
@@ -585,12 +585,12 @@ void MainFrame::compile( const string &cmd ){
 	CProgressCtrl *cp=(CProgressCtrl*)compiling.GetDlgItem( IDC_COMPILEPROGRESS );
 	cp->SetStep(20);
 
-	putenv( "blitzide=1" );
+	_putenv( "blitzide=1" );
 
 	HANDLE rd=startProc( cmd );
 
 	if( !rd ){
-		putenv( "blitzide" );
+		_putenv( "blitzide" );
 		compiling.DestroyWindow();
 		AfxMessageBox( "Error launching compiler",MB_ICONWARNING|MB_OK );
 		return;
@@ -650,7 +650,7 @@ void MainFrame::compile( const string &cmd ){
 	compiling.DestroyWindow();
 
 	CloseHandle( rd );
-	putenv( "blitzide" );
+	_putenv( "blitzide" );
 
 	if( !err.size() ) return;
 
@@ -829,7 +829,7 @@ void MainFrame::escape(){
 
 void MainFrame::updateCmdUIRange( CCmdUI *ui ){
 	int n=ui->m_nID-333;
-	if( n>=0 && n<prefs.recentFiles.size() ){
+	if( n>=0 && n<(int)prefs.recentFiles.size() ){
 		ui->Enable( true );
 	}else{
 		ui->Enable( false );

@@ -2,6 +2,8 @@
 #ifndef HTMLHELP_H
 #define HTMLHELP_H
 
+#undef HtmlHelp
+
 class HtmlHelp;
 
 class HelpListener{

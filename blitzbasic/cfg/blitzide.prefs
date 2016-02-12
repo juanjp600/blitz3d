@@ -1,0 +1,21 @@
+prg_debug	1
+prg_lastbuild	C:\Users\thojan\Documents\tst.bb
+win_maximized	1
+win_notoolbar	0
+win_rect	0 0 640 480
+font_editor	blitz 12
+font_tabs	verdana 8
+font_debug	verdana 8
+rgb_bkgrnd	206060
+rgb_string	ff00
+rgb_ident	ffffff
+rgb_keyword	ffe75f
+rgb_comment	ffff
+rgb_digit	c8f0ff
+rgb_default	fff0c8
+edit_tabs	4
+edit_blkcursor	0
+edit_backup	2
+img_toolbar	toolbar.bmp
+cmd_line	
+file_recent	C:\Users\thojan\Documents\tst.bb

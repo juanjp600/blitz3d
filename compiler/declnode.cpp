@@ -6,7 +6,7 @@
 // Sequence of declarations //
 //////////////////////////////
 void DeclSeqNode::proto( DeclSeq *d,Environ *e ){
-	for( int k=0;k<decls.size();++k ){
+	for( int k=0;k<(int)decls.size();++k ){
 		try{ decls[k]->proto( d,e ); }
 		catch( Ex &x ){ 
 			if( x.pos<0 ) x.pos=decls[k]->pos;
@@ -17,7 +17,7 @@ void DeclSeqNode::proto( DeclSeq *d,Environ *e ){
 }
 
 void DeclSeqNode::semant( Environ *e ){
-	for( int k=0;k<decls.size();++k ){
+	for( int k=0;k<(int)decls.size();++k ){
 		try{ decls[k]->semant( e ); }
 		catch( Ex &x ){ 
 			if( x.pos<0 ) x.pos=decls[k]->pos;
@@ -28,7 +28,7 @@ void DeclSeqNode::semant( Environ *e ){
 }
 
 void DeclSeqNode::translate( Codegen *g ){
-	for( int k=0;k<decls.size();++k ){
+	for( int k=0;k<(int)decls.size();++k ){
 		try{ decls[k]->translate( g ); }
 		catch( Ex &x ){
 			if( x.pos<0 ) x.pos=decls[k]->pos;
@@ -39,7 +39,7 @@ void DeclSeqNode::translate( Codegen *g ){
 }
 
 void DeclSeqNode::transdata( Codegen *g ){
-	for( int k=0;k<decls.size();++k ){
+	for( int k=0;k<(int)decls.size();++k ){
 		try{ decls[k]->transdata( g ); }
 		catch( Ex &x ){ 
 			if( x.pos<0 ) x.pos=decls[k]->pos;
@@ -139,7 +139,7 @@ void FuncDeclNode::translate( Codegen *g ){
 	//translate statements
 	stmts->translate( g );
 
-	for( int k=0;k<sem_env->labels.size();++k ){
+	for( int k=0;k<(int)sem_env->labels.size();++k ){
 		if( sem_env->labels[k]->def<0 )	ex( "Undefined label",sem_env->labels[k]->ref );
 	}
 
@@ -265,7 +265,7 @@ void VectorDeclNode::translate( Codegen *g ){
 	VectorType *v=sem_type->vectorType();
 	g->i_data( 6,v->label );
 	int sz=1;
-	for( int k=0;k<v->sizes.size();++k ) sz*=v->sizes[k];
+	for( int k=0;k<(int)v->sizes.size();++k ) sz*=v->sizes[k];
 	g->i_data( sz );
 	string t;
 	Type *type=v->elementType;

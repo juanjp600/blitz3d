@@ -21,7 +21,7 @@ static vector<Filter> filters;
 static int filterFile( const string &t,int flags ){
 	//check filters...
 	string l=tolower(t);
-	for( int k=0;k<filters.size();++k ){
+	for( int k=0;k<(int)filters.size();++k ){
 		if( l.find( filters[k].t )!=string::npos ){
 			flags|=filters[k].flags;
 		}
@@ -147,7 +147,7 @@ bool Texture::isTransparent()const{
 }
 
 gxCanvas *Texture::getCanvas( int n )const{
-	return rep && n>=0 && n<rep->tex_frames.size() ? rep->tex_frames[n] : 0;
+	return rep && n>=0 && n<(int)rep->tex_frames.size() ? rep->tex_frames[n] : 0;
 }
 
 int Texture::getCanvasFlags()const{

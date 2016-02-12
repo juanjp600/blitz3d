@@ -103,12 +103,12 @@ static void dumpKeys( bool lang,bool mod,bool help ){
 
 	if( !mod ) return;
 
-	for( int k=0;k<keyWords.size();++k ){
+	for( int k=0;k<(int)keyWords.size();++k ){
 		string t=keyWords[k];
 
 		if( t[0]=='_' )	continue;
 		if( !isalpha( t[0] ) ) t=t.substr( 1 );
-		for( int n=0;n<t.size();++n ){
+		for( int n=0;n<(int)t.size();++n ){
 			if( !isalnum(t[n]) && t[n]!='_' ){
 				t=t.substr( 0,n );
 				break;
@@ -216,6 +216,8 @@ int _cdecl main( int argc,char *argv[] ){
 		if( !n || in_file[n-1]==':' ) ++n;
 		SetCurrentDirectory( in_file.substr(0,n).c_str() );
 	}
+
+#undef environ
 
 	ProgNode *prog=0;
 	Environ *environ=0;

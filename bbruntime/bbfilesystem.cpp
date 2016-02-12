@@ -14,13 +14,13 @@ struct bbFile : public bbStream{
 		delete buf;
 	}
 	int read( char *buff,int size ){
-		return buf->sgetn( (char*)buff,size );
+		return (int)buf->sgetn( (char*)buff,size );
 	}
 	int write( const char *buff,int size ){
-		return buf->sputn( (char*)buff,size );
+		return (int)buf->sputn( (char*)buff,size );
 	}
 	int avail(){
-		return buf->in_avail();
+		return (int)buf->in_avail();
 	}
 	int eof(){
 		return buf->sgetc()==EOF;
@@ -72,11 +72,11 @@ void bbCloseFile( bbFile *f ){
 }
 
 int bbFilePos( bbFile *f ){
-	return f->buf->pubseekoff( 0,ios_base::cur );
+	return (int)f->buf->pubseekoff( 0,ios_base::cur );
 }
 
 int bbSeekFile( bbFile *f,int pos ){
-	return f->buf->pubseekoff( pos,ios_base::beg );
+	return (int)f->buf->pubseekoff( pos,ios_base::beg );
 }
 
 gxDir *bbReadDir( BBStr *d ){

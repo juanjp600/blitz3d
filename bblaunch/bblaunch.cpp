@@ -57,7 +57,7 @@ int _stdcall WinMain( HINSTANCE inst,HINSTANCE prev,char *cmd,int show ){
 
 	//Ugly hack to get application dir...
 	string t=getAppDir();
-	putenv( ("blitzpath="+t).c_str() );
+	_putenv( ("blitzpath="+t).c_str() );
 	SetCurrentDirectory( t.c_str() );
 	t=t+"\\bin\\ide.exe "+cmd;
 

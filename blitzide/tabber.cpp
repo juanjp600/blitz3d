@@ -80,7 +80,7 @@ void Tabber::refresh(){
 }
 
 Tabber::Tab *Tabber::getTab( int index )const{
-	if( index<0 || index>=tabs.size() ) return 0;
+	if( index<0 || index>=(int)tabs.size() ) return 0;
 	Tabs::const_iterator it=tabs.begin();
 	while( index-- ) ++it;
 	return *it;
@@ -91,7 +91,7 @@ void Tabber::tcn_selChange( NMHDR *p,LRESULT *result ){
 }
 
 void Tabber::insert( int index,CWnd *w,const string &t ){
-	if( index<0 || index>tabs.size() ) return;
+	if( index<0 || index>(int)tabs.size() ) return;
 
 	Tabs::iterator it=tabs.begin();
 	for( int k=0;k<index;++k ) ++it;
@@ -103,7 +103,7 @@ void Tabber::insert( int index,CWnd *w,const string &t ){
 }
 
 void Tabber::remove( int index ){
-	if( index<0 || index>=tabs.size() ) return;
+	if( index<0 || index>=(int)tabs.size() ) return;
 
 	CWnd *w=getTabWnd( index );
 
@@ -112,7 +112,7 @@ void Tabber::remove( int index ){
 	delete *it;tabs.erase( it );
 	DeleteItem( index );
 
-	if( curr>=tabs.size() ) curr=tabs.size()-1;
+	if( curr>=(int)tabs.size() ) curr=tabs.size()-1;
 
 	refresh();
 	if( curr>=0 ) SetCurSel( curr );
@@ -121,7 +121,7 @@ void Tabber::remove( int index ){
 }
 
 void Tabber::setCurrent( int index ){
-	if( index<0 || index>=tabs.size() ) return;
+	if( index<0 || index>=(int)tabs.size() ) return;
 
 	if( index!=curr ){
 		CWnd *w=getTabWnd( curr );
@@ -136,7 +136,7 @@ void Tabber::setCurrent( int index ){
 }
 
 void Tabber::setTabText( int index,const string &t ){
-	if( index<0 || index>=tabs.size() ) return;
+	if( index<0 || index>=(int)tabs.size() ) return;
 
 	string s=t+'\0';
 	TCITEM tc={ TCIF_TEXT };

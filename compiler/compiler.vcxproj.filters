@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="nodes">
+      <UniqueIdentifier>{06e59e77-50cb-48f1-9f5f-bcb9fccc8483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="environ">
+      <UniqueIdentifier>{413f9582-662a-4b3a-b5d3-86fdb0bb176c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="parser">
+      <UniqueIdentifier>{49b768dd-1202-4ed3-8529-4fef511d9222}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="codegen">
+      <UniqueIdentifier>{03c23a02-1b21-4a9a-bad0-a33e20839a1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="codegen\codegen_x86">
+      <UniqueIdentifier>{3bcd2d18-2cf7-4373-8658-c57f1b599402}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assem">
+      <UniqueIdentifier>{ccc74ab4-4199-42fc-9372-5e31865b24f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assem\assem_x86">
+      <UniqueIdentifier>{57500f05-d2a0-45ff-9963-d037004aa82a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="declnode.cpp">
+      <Filter>nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="exprnode.cpp">
+      <Filter>nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="node.cpp">
+      <Filter>nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="prognode.cpp">
+      <Filter>nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="stmtnode.cpp">
+      <Filter>nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="varnode.cpp">
+      <Filter>nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="decl.cpp">
+      <Filter>environ</Filter>
+    </ClCompile>
+    <ClCompile Include="environ.cpp">
+      <Filter>environ</Filter>
+    </ClCompile>
+    <ClCompile Include="type.cpp">
+      <Filter>environ</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>parser</Filter>
+    </ClCompile>
+    <ClCompile Include="toker.cpp">
+      <Filter>parser</Filter>
+    </ClCompile>
+    <ClCompile Include="codegen_x86\codegen_x86.cpp">
+      <Filter>codegen\codegen_x86</Filter>
+    </ClCompile>
+    <ClCompile Include="codegen_x86\tile.cpp">
+      <Filter>codegen\codegen_x86</Filter>
+    </ClCompile>
+    <ClCompile Include="assem_x86\asm_insts.cpp">
+      <Filter>assem\assem_x86</Filter>
+    </ClCompile>
+    <ClCompile Include="assem_x86\assem_x86.cpp">
+      <Filter>assem\assem_x86</Filter>
+    </ClCompile>
+    <ClCompile Include="assem_x86\operand.cpp">
+      <Filter>assem\assem_x86</Filter>
+    </ClCompile>
+    <ClCompile Include="std.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="declnode.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="exprnode.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="node.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="nodes.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="prognode.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="stmtnode.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="varnode.h">
+      <Filter>nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="decl.h">
+      <Filter>environ</Filter>
+    </ClInclude>
+    <ClInclude Include="environ.h">
+      <Filter>environ</Filter>
+    </ClInclude>
+    <ClInclude Include="label.h">
+      <Filter>environ</Filter>
+    </ClInclude>
+    <ClInclude Include="type.h">
+      <Filter>environ</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>parser</Filter>
+    </ClInclude>
+    <ClInclude Include="toker.h">
+      <Filter>parser</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen_x86\codegen_x86.h">
+      <Filter>codegen\codegen_x86</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen_x86\tile.h">
+      <Filter>codegen\codegen_x86</Filter>
+    </ClInclude>
+    <ClInclude Include="codegen.h">
+      <Filter>codegen</Filter>
+    </ClInclude>
+    <ClInclude Include="assem_x86\assem_x86.h">
+      <Filter>assem\assem_x86</Filter>
+    </ClInclude>
+    <ClInclude Include="assem_x86\insts.h">
+      <Filter>assem\assem_x86</Filter>
+    </ClInclude>
+    <ClInclude Include="assem_x86\operand.h">
+      <Filter>assem\assem_x86</Filter>
+    </ClInclude>
+    <ClInclude Include="assem.h">
+      <Filter>assem</Filter>
+    </ClInclude>
+    <ClInclude Include="ex.h" />
+    <ClInclude Include="std.h" />
+  </ItemGroup>
+</Project>

@@ -33,7 +33,7 @@ static string typeTag( Type *t ){
 	if( StructType *s=t->structType() ) return "."+s->ident;
 	if( VectorType *v=t->vectorType() ){
 		string s=typeTag( v->elementType )+"[";
-		for( int k=0;k<v->sizes.size();++k ){
+		for( int k=0;k<(int)v->sizes.size();++k ){
 			if( k ) s+=",";
 			s+=itoa( v->sizes[k]-1 );
 		}
@@ -180,7 +180,7 @@ void LocalsTree::refresh(){
 	HTREEITEM item=GetChildItem( TVI_ROOT );
 
 	int n=0;
-	for( n=0;n<frames.size();++n ){
+	for( n=0;n<(int)frames.size();++n ){
 		if( !item || item!=frames[n].item ) break;
 		item=GetNextSiblingItem( item );
 	}
@@ -191,9 +191,9 @@ void LocalsTree::refresh(){
 		item=next;
 	}
 
-	for( ;n<frames.size();++n ){
+	for( ;n<(int)frames.size();++n ){
 		item=frames[n].item=InsertItem( frames[n].func,TVI_ROOT,TVI_LAST );
-		if( n<frames.size()-1 ) refreshFrame( frames[n] );
+		if( n<(int)frames.size()-1 ) refreshFrame( frames[n] );
 	}
 
 	refreshFrame( frames.back() );

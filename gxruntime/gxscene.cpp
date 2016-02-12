@@ -232,17 +232,17 @@ void gxScene::setZMode(){
 void gxScene::setLights(){
 	if( fx & FX_FULLBRIGHT ){
 		//no lights on
-		for( int n=0;n<_curLights.size();++n ) dir3dDev->LightEnable( n,false );
+		for( int n=0;n<(int)_curLights.size();++n ) dir3dDev->LightEnable( n,false );
 	}else if( fx & FX_CONDLIGHT ){
 		//some lights on
-		for( int n=0;n<_curLights.size();++n ){
+		for( int n=0;n<(int)_curLights.size();++n ){
 			gxLight *light=_curLights[n];
 			bool enable=light->d3d_light.dltType!=D3DLIGHT_DIRECTIONAL;
 			dir3dDev->LightEnable( n,enable );
 		}
 	}else{
 		//all lights on
-		for( int n=0;n<_curLights.size();++n ) dir3dDev->LightEnable( n,true );
+		for( int n=0;n<(int)_curLights.size();++n ) dir3dDev->LightEnable( n,true );
 	}
 }
 
@@ -410,7 +410,7 @@ void gxScene::setRenderState( const RenderState &rs ){
 	if( rs.alpha!=material.diffuse.a ){
 		material.diffuse.a=rs.alpha;
 		if( rs.fx&FX_ALPHATEST ){
-			int alpharef=(rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha;
+			int alpharef=(int)((rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha);
 			setRS( D3DRENDERSTATE_ALPHAREF,alpharef );
 		}
 		setmat=true;
@@ -474,7 +474,7 @@ void gxScene::setRenderState( const RenderState &rs ){
 		}
 		if( t&FX_ALPHATEST ){
 			if( fx&FX_ALPHATEST ){
-				int alpharef=(rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha;
+				int alpharef=(int)((rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha);
 				setRS( D3DRENDERSTATE_ALPHAREF,alpharef );
 			}
 			setRS( D3DRENDERSTATE_ALPHATESTENABLE,fx & FX_ALPHATEST ? true : false );
@@ -535,7 +535,7 @@ bool gxScene::begin( const vector<gxLight*> &lights ){
 	//set light states
 	_curLights.clear();
 	for( n=0;n<8;++n ){
-		if( n<lights.size() ){
+		if( n<(int)lights.size() ){
 			_curLights.push_back( lights[n] );
 			dir3dDev->SetLight( n,&_curLights[n]->d3d_light );
 		}else{
@@ -599,7 +599,7 @@ void gxScene::render( gxMesh *m,int first_vert,int vert_cnt,int first_tri,int tr
 
 void gxScene::end(){
 	dir3dDev->EndScene();
-	RECT r={ viewport.dwX,viewport.dwY,viewport.dwX+viewport.dwWidth,viewport.dwY+viewport.dwHeight };
+	RECT r={ (LONG)viewport.dwX,(LONG)viewport.dwY,(LONG)(viewport.dwX+viewport.dwWidth),(LONG)(viewport.dwY+viewport.dwHeight) };
 	target->damage( r );
 }
 

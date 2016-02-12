@@ -20,11 +20,11 @@ void  bbRuntimeError( BBStr *str ){
 	string t=*str;delete str;
 	if( t.size()>255 ) t[255]=0;
 	static char err[256];
-	strcpy( err,t.c_str() );
+	strcpy_s( err,t.c_str() );
 	RTEX( err );
 }
 
-int   bbExecFile( BBStr *f ){
+int bbExecFile( BBStr *f ){
 	string t=*f;delete f;
 	int n=gx_runtime->execute( t );
 	if( !gx_runtime->idle() ) RTEX( 0 );
@@ -49,15 +49,23 @@ BBStr * bbSystemProperty( BBStr *p ){
 }
 
 BBStr *  bbGetEnv( BBStr *env_var ){
+#if 0
 	char *p=getenv( env_var->c_str() );
 	BBStr *val=d_new BBStr( p ? p : "" );
+#else
+	size_t len;
+	char *p;
+	errno_t err=_dupenv_s( &p,&len,env_var->c_str() );
+	BBStr *val=d_new BBStr( err ? "" : p );
+	if( !err ) free( p );
+#endif
 	delete env_var;
 	return val;
 }
 
 void  bbSetEnv( BBStr *env_var,BBStr *val ){
 	string t=*env_var+"="+*val;
-	putenv( t.c_str() );
+	_putenv( t.c_str() );
 	delete env_var;
 	delete val;
 }

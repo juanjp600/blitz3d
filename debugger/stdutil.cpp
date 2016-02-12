@@ -10,10 +10,10 @@ double atof( const string &s ){
 }
 
 string itoa( int n ){
-	char buff[32];itoa( n,buff,10 );
+	char buff[32];_itoa_s( n,buff,10 );
 	return string( buff );
 }
-
+#if 0
 static int _finite( double n ){		// definition: exponent anything but 2047.
 
 	int e;					// 11 bit exponent
@@ -46,7 +46,7 @@ static int _isnan( double n ){		// definition: exponent 2047, nonzero fraction.
 
 	return  ( fHi | fLo ) != 0;	// returns 0,1 not just 0,nonzero
 }
-
+#endif
 /////////////
 //By FLOYD!//
 /////////////
@@ -65,11 +65,14 @@ string ftoa( float n ){
 //		if ( digits < 1 ) digits = 1;	// less than one digit is nonsense
 //		if ( digits > 8 ) digits = 8;	// practical maximum for float
 		
-		t = _ecvt( n, digits, &dec, &sign );
+		_ecvt_s( buffer,n,digits,&dec,&sign );
+		t=buffer;
+		//t = _ecvt( n, digits, &dec, &sign );
 
 		if ( dec <= eNeg + 1 || dec > ePos ){
 
-			_gcvt( n, digits, buffer );
+			//_gcvt( n, digits, buffer );
+			_gcvt_s( buffer,n,digits );
 			t = buffer;
 			return t;
 		}
@@ -151,13 +154,13 @@ string ftoa( float n ){
 
 string tolower( const string &s ){
 	string t=s;
-	for( int k=0;k<t.size();++k ) t[k]=tolower(t[k]);
+	for( int k=0;k<(int)t.size();++k ) t[k]=tolower(t[k]);
 	return t;
 }
 
 string toupper( const string &s ){
 	string t=s;
-	for( int k=0;k<t.size();++k ) t[k]=toupper(t[k]);
+	for( int k=0;k<(int)t.size();++k ) t[k]=toupper(t[k]);
 	return t;
 }
 

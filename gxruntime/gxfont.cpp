@@ -36,7 +36,7 @@ void gxFont::render( gxCanvas *dest,unsigned color_argb,int x,int y,const string
 	t_canvas->rect( 0,0,width,height,true );
 
 	int t_x=0;
-	for( int k=0;k<t.size();++k ){
+	for( int k=0;k<(int)t.size();++k ){
 		int c=t[k]&0xff;
 		if( c<begin_char || c>=end_char ) c=def_char;
 		c-=begin_char;
@@ -58,7 +58,7 @@ int gxFont::getHeight()const{
 
 int gxFont::getWidth( const string &t )const{
 	int w=0;
-	for( int k=0;k<t.size();++k ){
+	for( int k=0;k<(int)t.size();++k ){
 		int c=t[k]&0xff;
 		if( c<begin_char || c>=end_char ) c=def_char;
 		w+=widths[c-begin_char];

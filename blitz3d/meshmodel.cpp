@@ -22,7 +22,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 
 	~Rep(){
 		delete collider;
-		for( int k=0;k<surfaces.size();++k ) delete surfaces[k];
+		for( int k=0;k<(int)surfaces.size();++k ) delete surfaces[k];
 	}
 
 	Surface *createSurface( const Brush &b ){
@@ -33,7 +33,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 	}
 
 	Surface *findSurface( const Brush &b ){
-		for( int k=0;k<surfaces.size();++k ){
+		for( int k=0;k<(int)surfaces.size();++k ){
 			Surface *s=surfaces[k];
 			if( s->getBrush()<b || b<s->getBrush() ) continue;
 			return s;
@@ -42,7 +42,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 	}
 
 	void paint( const Brush &b ){
-		for( int k=0;k<surfaces.size();++k ){
+		for( int k=0;k<(int)surfaces.size();++k ){
 			Surface *s=surfaces[k];
 			s->setBrush( b );
 		}
@@ -52,7 +52,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 		if( cullBox.empty() && !t->cullBox.empty() ){
 			setCullBox( t->cullBox );
 		}
-		for( int k=0;k<t->surfaces.size();++k ){
+		for( int k=0;k<(int)t->surfaces.size();++k ){
 			Surface *src=t->surfaces[k];
 			Surface *dest=findSurface( src->getBrush() );
 			if( !dest ) dest=createSurface( src->getBrush() );
@@ -72,7 +72,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 
 	void transform( const Transform &t ){
 		Matrix co=t.m.cofactor();
-		for( int k=0;k<surfaces.size();++k ){
+		for( int k=0;k<(int)surfaces.size();++k ){
 			Surface *s=surfaces[k];
 			for( int j=0;j<s->numVertices();++j ){
 				const Vector &v=s->getVertex(j).coords;
@@ -84,7 +84,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 	}
 
 	void flip(){
-		for( int k=0;k<surfaces.size();++k ){
+		for( int k=0;k<(int)surfaces.size();++k ){
 			Surface *s=surfaces[k];
 			int j;
 			for( j=0;j<s->numVertices();++j ){
@@ -104,7 +104,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 
 	void updateNormals(){
 		if( norms_valid!=geom_changes ){
-			for( int k=0;k<surfaces.size();++k ){
+			for( int k=0;k<(int)surfaces.size();++k ){
 				Surface *s=surfaces[k];
 				s->updateNormals();
 			}
@@ -115,7 +115,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 	const Box &getBox()const{
 		if( box_valid!=geom_changes ){
 			box.clear();
-			for( int k=0;k<surfaces.size();++k ){
+			for( int k=0;k<(int)surfaces.size();++k ){
 				Surface *s=surfaces[k];
 				for( int j=0;j<s->numVertices();++j ){
 					box.update( s->getVertex(j).coords );
@@ -135,7 +135,7 @@ struct MeshModel::Rep : public Surface::Monitor{
 			delete collider;
 			vector<MeshCollider::Vertex> verts;
 			vector<MeshCollider::Triangle> tris;
-			for( int k=0;k<surfaces.size();++k ){
+			for( int k=0;k<(int)surfaces.size();++k ){
 				Surface *s=surfaces[k];
 				int j;
 				for( j=0;j<s->numTriangles();++j ){
@@ -203,7 +203,7 @@ void MeshModel::createBones(){
 
 	rep->bone_tforms.resize( bones.size() );
 
-	for( int k=0;k<bones.size();++k ){
+	for( int k=0;k<(int)bones.size();++k ){
 		rep->bone_tforms[k]=-bones[k]->getWorldTform();
 	}
 }
@@ -219,7 +219,7 @@ bool MeshModel::render( const RenderContext &rc ){
 
 	if( brush_changes!=rep->brush_changes ){
 		brushes.clear();
-		for( int k=0;k<rep->surfaces.size();++k ){
+		for( int k=0;k<(int)rep->surfaces.size();++k ){
 			Surface *s=rep->surfaces[k];
 			brushes.push_back( Brush( s->getBrush(),render_brush ) );
 		}
@@ -227,7 +227,7 @@ bool MeshModel::render( const RenderContext &rc ){
 	}
 
 	if( !surf_bones.size() ){
-		for( int k=0;k<rep->surfaces.size();++k ){
+		for( int k=0;k<(int)rep->surfaces.size();++k ){
 			Surface *s=rep->surfaces[k];
 			if( gxMesh *mesh=s->getMesh() ){
 				enqueue( mesh,0,s->numVertices(),0,s->numTriangles(),brushes[k] );
@@ -240,7 +240,7 @@ bool MeshModel::render( const RenderContext &rc ){
 	const vector<Object*> &bones=getAnimator()->getObjects();
 
 	int k;
-	for( k=0;k<bones.size();++k ){
+	for( k=0;k<(int)bones.size();++k ){
 		Transform t=
 		bones[k]->getRenderTform() * rep->bone_tforms[k];
 		surf_bones[k].coord_tform=t;
@@ -248,7 +248,7 @@ bool MeshModel::render( const RenderContext &rc ){
 	}
 
 	bool trans=false;
-	for( k=0;k<rep->surfaces.size();++k ){
+	for( k=0;k<(int)rep->surfaces.size();++k ){
 		Surface *s=rep->surfaces[k];
 		if( brushes[k].getBlend()==gxScene::BLEND_REPLACE ){
 			if( gxMesh *mesh=s->getMesh( surf_bones ) ){
@@ -263,7 +263,7 @@ bool MeshModel::render( const RenderContext &rc ){
 
 void MeshModel::renderQueue( int type ){
 	if( type==QUEUE_TRANSPARENT && surf_bones.size() ){
-		for( int k=0;k<rep->surfaces.size();++k ){
+		for( int k=0;k<(int)rep->surfaces.size();++k ){
 			Surface *s=rep->surfaces[k];
 			if( brushes[k].getBlend()!=gxScene::BLEND_REPLACE ){
 				if( gxMesh *mesh=s->getMesh( surf_bones ) ){

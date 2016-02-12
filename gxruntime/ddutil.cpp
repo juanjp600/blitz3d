@@ -116,9 +116,9 @@ static void buildMask( ddSurf *surf ){
 	unsigned char *surf_p=(unsigned char*)desc.lpSurface;
 	PixelFormat fmt( desc.ddpfPixelFormat );
 
-	for( int y=0;y<desc.dwHeight;++y ){
+	for( int y=0;y<(int)desc.dwHeight;++y ){
 		unsigned char *p=surf_p;
-		for( int x=0;x<desc.dwWidth;++x ){
+		for( int x=0;x<(int)desc.dwWidth;++x ){
 			unsigned argb=fmt.getPixel( p );
 			unsigned rgb=argb&0xffffff;
 			unsigned a=rgb ? 0xff000000 : 0;
@@ -137,9 +137,9 @@ static void buildAlpha( ddSurf *surf,bool whiten ){
 	unsigned char *surf_p=(unsigned char*)desc.lpSurface;
 	PixelFormat fmt( desc.ddpfPixelFormat );
 
-	for( int y=0;y<desc.dwHeight;++y ){
+	for( int y=0;y<(int)desc.dwHeight;++y ){
 		unsigned char *p=surf_p;
-		for( int x=0;x<desc.dwWidth;++x ){
+		for( int x=0;x<(int)desc.dwWidth;++x ){
 			unsigned argb=fmt.getPixel( p );
 			unsigned alpha=(((argb>>16)&0xff)+((argb>>8)&0xff)+(argb&0xff))/3;
 			argb=(alpha<<24) | (argb & 0xffffff);
@@ -178,7 +178,7 @@ void ddUtil::buildMipMaps( ddSurf *surf ){
 		PixelFormat dest_fmt( dest_desc.ddpfPixelFormat );
 
 		if( src_desc.dwWidth==1 ){
-			for( int y=0;y<dest_desc.dwHeight;++y ){
+			for( int y=0;y<(int)dest_desc.dwHeight;++y ){
 				unsigned p1=src_fmt.getPixel( src_p );
 				unsigned p2=src_fmt.getPixel( src_p+src_desc.lPitch );
 				unsigned argb=
@@ -190,7 +190,7 @@ void ddUtil::buildMipMaps( ddSurf *surf ){
 				dest_p+=dest_desc.lPitch;
 			}
 		}else if( src_desc.dwHeight==1 ){
-			for( int x=0;x<dest_desc.dwWidth;++x ){
+			for( int x=0;x<(int)dest_desc.dwWidth;++x ){
 				unsigned p1=src_fmt.getPixel( src_p );
 				unsigned p2=src_fmt.getPixel( src_p+src_fmt.getPitch() );
 				unsigned argb=
@@ -202,10 +202,10 @@ void ddUtil::buildMipMaps( ddSurf *surf ){
 				dest_p+=dest_fmt.getPitch();
 			}
 		}else{
-			for( int y=0;y<dest_desc.dwHeight;++y ){
+			for( int y=0;y<(int)dest_desc.dwHeight;++y ){
 				unsigned char *src_t=src_p;
 				unsigned char *dest_t=dest_p;
-				for( int x=0;x<dest_desc.dwWidth;++x ){
+				for( int x=0;x<(int)dest_desc.dwWidth;++x ){
 
 					unsigned p1=src_fmt.getPixel( src_t );
 					unsigned p2=src_fmt.getPixel( src_t+src_fmt.getPitch() );
@@ -338,8 +338,9 @@ IDirectDrawSurface7 *loadDXTC(const char* filename,gxGraphics *gfx)
 	FILE *fp;
 
 	/* try to open the file */
-	fp = fopen(filename, "rb");
-	if(!fp) return NULL;
+	//fp = fopen(filename, "rb");
+	errno_t err=fopen_s( &fp,filename,"rb" );
+	if(err) return NULL;
 
 	/* valid DDS? */
 	fread(magicID, 1, 4, fp);

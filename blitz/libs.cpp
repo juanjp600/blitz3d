@@ -82,16 +82,16 @@ static const char *linkRuntime(){
 		keyWords.push_back( s );
 
 		//global!
-		int start=0,end;
+		int start=0,end,k;
 		Type *t=Type::void_type;
 		if( !isalpha( s[0] ) ){ start=1;t=typeof( s[0] ); }
-		for( int k=1;k<s.size();++k ){
+		for( k=1;k<(int)s.size();++k ){
 			if( !isalnum( s[k] ) && s[k]!='_' ) break;
 		}
 		end=k;
 		DeclSeq *params=d_new DeclSeq();
 		string n=s.substr( start,end-start );
-		while( k<s.size() ){
+		while( k<(int)s.size() ){
 			Type *t=typeof(s[k++]);
 			int from=k;
 			for( ;isalnum(s[k])||s[k]=='_';++k ){}
@@ -110,7 +110,7 @@ static const char *linkRuntime(){
 						int n=atoi( s.substr( from,k-from ) );
 						defType=d_new ConstType( n );
 					}else{
-						float n=atof( s.substr( from,k-from ) );
+						float n=(float)atof( s.substr( from,k-from ) );
 						defType=d_new ConstType( n );
 					}
 				}
@@ -233,7 +233,7 @@ static const char *linkUserLibs(){
 	do{
 		if( err=loadUserLib( fd.cFileName ) ){
 			static char buf[64];
-			sprintf( buf,"Error in userlib '%s' - %s",fd.cFileName,err );
+			sprintf_s( buf,"Error in userlib '%s' - %s",fd.cFileName,err );
 			err=buf;break;
 		}
 
@@ -248,9 +248,14 @@ static const char *linkUserLibs(){
 
 const char *openLibs(){
 	
-	char *p=getenv( "blitzpath" );
-	if( !p ) return "Can't find blitzpath environment variable";
+	//char *p=getenv( "blitzpath" );
+	char *p;
+	size_t len;
+	
+	errno_t err=_dupenv_s( &p,&len,"blitzpath" );
+	if( err ) return "Can't find blitzpath environment variable";
 	home=string(p);
+	free(p);
 
 	linkerHMOD=LoadLibrary( (home+"/bin/linker.dll").c_str() );
 	if( !linkerHMOD ) return "Unable to open linker.dll";
