@@ -2,6 +2,9 @@
 #include "std.h"
 #include "bbsys.h"
 
+//dummy for error tolerance (worst hack ever)
+static int dummyPtr;
+
 //how many strings allocated
 static int stringCnt;
 
@@ -318,11 +321,45 @@ void _bbObjStore( BBObj **var,BBObj *obj ){
 	*var=obj;
 }
 
+BBObj *_bbObjLoad(void *var){
+	BBObj** var1 = (BBObj**)var;
+	if (var1 && *var1) {
+		return *var1;
+	}
+	return 0;
+}
+
+void *_bbFieldPtrAdd(void *var,int shft){
+	//WHAT IS THIS POINTER ARITHMETIC
+	if ((BBObj*)var) {
+		char *retVal = (char*)(var);
+		for (int i=0;i<shft;i++){
+			retVal++;
+		}
+		return retVal;
+	}
+	if (debug) {
+		RTEX("Object does not exist");
+	} else {
+		errorLog.push_back("Field reference: Object does not exist");
+	}
+	dummyPtr = 0;
+	return &dummyPtr;
+}
+
 int _bbObjCompare( BBObj *o1,BBObj *o2 ){
 	return (o1 ? o1->fields : 0)!=(o2 ? o2->fields : 0);
 }
 
 BBObj *_bbObjNext( BBObj *obj ){
+	if (!obj) {
+		if (debug) {
+			RTEX("Object does not exist");
+		} else {
+			errorLog.push_back("ObjNext: Object does not exist");
+		}
+		return 0;
+	}
 	do{
 		obj=obj->next;
 		if( !obj->type ) return 0;
@@ -331,6 +368,14 @@ BBObj *_bbObjNext( BBObj *obj ){
 }
 
 BBObj *_bbObjPrev( BBObj *obj ){
+	if (!obj) {
+		if (debug) {
+			RTEX("Object does not exist");
+		} else {
+			errorLog.push_back("ObjPrev: Object does not exist");
+		}
+		return 0;
+	}
 	do{
 		obj=obj->prev;
 		if( !obj->type ) return 0;
@@ -347,12 +392,44 @@ BBObj *_bbObjLast( BBObjType *type ){
 }
 
 void _bbObjInsBefore( BBObj *o1,BBObj *o2 ){
+	if (!o1) {
+		if (debug) {
+			RTEX("Object does not exist (o1)");
+		} else {
+			errorLog.push_back("ObjInsBefore (o1): Object does not exist");
+		}
+		return;
+	}
+	if (!o2) {
+		if (debug) {
+			RTEX("Object does not exist (o2)");
+		} else {
+			errorLog.push_back("ObjInsBefore (o2): Object does not exist");
+		}
+		return;
+	}
 	if( o1==o2 ) return;
 	unlinkObj( o1 );
 	insertObj( o1,o2 );
 }
 
 void _bbObjInsAfter( BBObj *o1,BBObj *o2 ){
+	if (!o1) {
+		if (debug) {
+			RTEX("Object does not exist (o1)");
+		} else {
+			errorLog.push_back("ObjInsAfter (o1): Object does not exist");
+		}
+		return;
+	}
+	if (!o2) {
+		if (debug) {
+			RTEX("Object does not exist (o2)");
+		} else {
+			errorLog.push_back("ObjInsAfter (o2): Object does not exist");
+		}
+		return;
+	}
 	if( o1==o2 ) return;
 	unlinkObj( o1 );
 	insertObj( o1,o2->next );
@@ -421,7 +498,7 @@ BBStr *_bbObjToStr( BBObj *obj ){
 }
 
 int _bbObjToHandle( BBObj *obj ){
-	if( !obj || !obj->fields ) return 0;
+	if( !obj || !obj->fields ) { return 0; }
 	map<BBObj*,int>::const_iterator it=object_map.find( obj );
 	if( it!=object_map.end() ) return it->second;
 	++next_handle;
@@ -537,7 +614,6 @@ bool basic_destroy(){
 }
 
 void basic_link( void (*rtSym)( const char *sym,void *pc ) ){
-
 	rtSym( "_bbIntType",&_bbIntType );
 	rtSym( "_bbFltType",&_bbFltType );
 	rtSym( "_bbStrType",&_bbStrType );
@@ -564,6 +640,8 @@ void basic_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "_bbObjDeleteEach",_bbObjDeleteEach );
 	rtSym( "_bbObjRelease",_bbObjRelease );
 	rtSym( "_bbObjStore",_bbObjStore );
+	rtSym( "_bbObjLoad",_bbObjLoad );
+	rtSym( "_bbFieldPtrAdd",_bbFieldPtrAdd );
 	rtSym( "_bbObjCompare",_bbObjCompare );
 	rtSym( "_bbObjNext",_bbObjNext );
 	rtSym( "_bbObjPrev",_bbObjPrev );

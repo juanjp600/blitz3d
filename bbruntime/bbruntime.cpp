@@ -159,6 +159,7 @@ void bbruntime_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%WaitTimer%timer",bbWaitTimer );
 	rtSym( "FreeTimer%timer",bbFreeTimer );
 	rtSym( "DebugLog$text",bbDebugLog );
+	rtSym( "$ErrorLog",bbErrorLog );
 
 	rtSym( "_bbDebugStmt",_bbDebugStmt );
 	rtSym( "_bbDebugEnter",_bbDebugEnter );

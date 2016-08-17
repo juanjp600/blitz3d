@@ -29,16 +29,24 @@ struct bbFile : public bbStream{
 
 static set<bbFile*> file_set;
 
-static inline void debugFile( bbFile *f ){
+static inline bool debugFile( bbFile *f,const char* a ){
+	if( file_set.count( f ) ) return true;
 	if( debug ){
-		if( !file_set.count( f ) ) RTEX( "File does not exist" );
+		RTEX( "File does not exist" );
+	} else {
+		errorLog.push_back(std::string(a)+std::string(": File does not exist"));
 	}
+	return false;
 }
 
-static inline void debugDir( gxDir *d ){
+static inline bool debugDir( gxDir *d,const char* a ){
+	if( gx_filesys->verifyDir( d ) ) return true;
 	if( debug ){
-		if( !gx_filesys->verifyDir( d ) ) RTEX( "Directory does not exist" );
+		RTEX( "Directory does not exist" );
+	} else {
+		errorLog.push_back(std::string(a)+std::string(": Directory does not exist"));
 	}
+	return false;
 }
 
 static bbFile *open( BBStr *f,int n ){
@@ -66,7 +74,7 @@ bbFile *bbOpenFile( BBStr *f ){
 }
 
 void bbCloseFile( bbFile *f ){
-	debugFile( f );
+	if (!debugFile( f,"CloseFile" )) return;
 	file_set.erase( f );
 	delete f;
 }
@@ -89,7 +97,7 @@ void bbCloseDir( gxDir *d ){
 }
 
 BBStr *bbNextFile( gxDir *d ){
-	debugDir( d );
+	if (!debugDir( d,"NextFile" )) return d_new BBStr("");
 	return d_new BBStr( d->getNextFile() );
 }
 

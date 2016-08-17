@@ -7,6 +7,7 @@
 //////////////////////////////////
 TNode *VarNode::load( Codegen *g ){
 	TNode *t=translate( g );
+	//if( sem_type->structType() ) return call( "__bbObjLoad",t );
 	if( sem_type==Type::string_type ) return call( "__bbStrLoad",t );
 	return mem( t );
 }
@@ -111,9 +112,9 @@ void FieldVarNode::semant( Environ *e ){
 
 TNode *FieldVarNode::translate( Codegen *g ){
 	TNode *t=expr->translate( g );
-	if( g->debug ) t=jumpf( t,"__bbNullObjEx" );
-	t=mem( t );if( g->debug ) t=jumpf( t,"__bbNullObjEx" );
-	return add( t,iconst( sem_field->offset ) );
+	t=call("__bbObjLoad",t);
+	t=call( "__bbFieldPtrAdd",t,iconst( sem_field->offset ) );
+	return t;
 }
 
 ////////////////

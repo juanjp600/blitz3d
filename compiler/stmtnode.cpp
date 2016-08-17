@@ -479,9 +479,9 @@ void InsertNode::semant( Environ *e ){
 
 void InsertNode::translate( Codegen *g ){
 	TNode *t1=expr1->translate( g );
-	if( g->debug ) t1=jumpf( t1,"__bbNullObjEx" );
+	//if( g->debug || true ) t1=jumpf( t1,"__bbNullObjEx" );
 	TNode *t2=expr2->translate( g );
-	if( g->debug ) t2=jumpf( t2,"__bbNullObjEx" );
+	//if( g->debug || true ) t2=jumpf( t2,"__bbNullObjEx" );
 	string s=before ? "__bbObjInsBefore" : "__bbObjInsAfter";
 	g->code( call( s,t1,t2 ) );
 }

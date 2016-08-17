@@ -33,17 +33,40 @@ struct bbBank{
 
 static set<bbBank*> bank_set;
 
-static inline void debugBank( bbBank *b ){
+static inline bool debugBank( bbBank *b,const char* a ){
 	if( debug ){
-		if( !bank_set.count( b ) ) RTEX( "bbBank does not exist" );
+		if( !bank_set.count( b ) ) {
+			RTEX( "bbBank does not exist" );
+			return false;
+		}
+	} else {
+		if( !bank_set.count( b ) ) {
+			errorLog.push_back( std::string(a)+std::string(": bbBank does not exist"));
+			return false;
+		}
 	}
+	return true;
 }
 
-static inline void debugBank( bbBank *b,int offset ){
+static inline bool debugBank( bbBank *b,int offset,const char* a ){
 	if( debug ){
-		debugBank( b );
-		if( offset>=b->size ) RTEX( "Offset out of range" );
+		if (!debugBank( b,"" )) {
+			return false;
+		}
+		if( offset>=b->size ) {
+			RTEX( "Offset out of range" );
+			return false;
+		}
+	} else {
+		if (!debugBank( b,a )) {
+			return false;
+		}
+		if( offset>=b->size ) {
+			errorLog.push_back( std::string(a)+std::string(": Offset out of range"));
+			return false;
+		}
 	}
+	return true;
 }
 
 bbBank *bbCreateBank( int size ){
@@ -57,81 +80,84 @@ void bbFreeBank( bbBank *b ){
 }
 
 int bbBankSize( bbBank *b ){
-	debugBank( b );
+	if (!debugBank( b,"BankSize" )) return 0;
 	return b->size;
 }
 
 void  bbResizeBank( bbBank *b,int size ){
-	debugBank( b );
+	if (!debugBank( b,"ResizeBank" )) return;
 	b->resize( size );
 }
 
 void  bbCopyBank( bbBank *src,int src_p,bbBank *dest,int dest_p,int count ){
-	if( debug ){ debugBank( src,src_p+count-1 );debugBank( dest,dest_p+count-1 ); }
+	//if( debug ){
+	if (!debugBank( src,src_p+count-1,"CopyBank (src)" )) return;
+	if (!debugBank( dest,dest_p+count-1,"CopyBank (dest)")) return;
+	//}
 	memmove( dest->data+dest_p,src->data+src_p,count );
 }
 
 int  bbPeekByte( bbBank *b,int offset ){
-	debugBank( b,offset );
+	if (!debugBank( b,offset,"PeekByte")) return 0;
 	return *(unsigned char*)(b->data+offset);
 }
 
 int  bbPeekShort( bbBank *b,int offset ){
-	debugBank( b,offset+1 );
+	if (!debugBank( b,offset+1,"PeekShort")) return 0;
 	return *(unsigned short*)(b->data+offset);
 }
 
 int  bbPeekInt( bbBank *b,int offset ){
-	debugBank( b,offset+3 );
+	if (!debugBank( b,offset+3,"PeekInt")) return 0;
 	return *(int*)(b->data+offset);
 }
 
 float  bbPeekFloat( bbBank *b,int offset ){
-	debugBank( b,offset+3 );
+	if (!debugBank( b,offset+3,"PeekFloat")) return 0;
 	return *(float*)(b->data+offset);
 }
 
 void  bbPokeByte( bbBank *b,int offset,int value ){
-	debugBank( b,offset );
+	if (!debugBank( b,offset,"PokeByte")) return;
 	*(char*)(b->data+offset)=value;
 }
 
 void  bbPokeShort( bbBank *b,int offset,int value ){
-	debugBank( b,offset );
+	if (!debugBank( b,offset,"PokeShort")) return;
 	*(unsigned short*)(b->data+offset)=value;
 }
 
 void  bbPokeInt( bbBank *b,int offset,int value ){
-	debugBank( b,offset );
+	if (!debugBank( b,offset,"PokeInt")) return;
 	*(int*)(b->data+offset)=value;
 }
 
 void  bbPokeFloat( bbBank *b,int offset,float value ){
-	debugBank( b,offset );
+	if (!debugBank( b,offset,"PokeFloat")) return;
 	*(float*)(b->data+offset)=value;
 }
 
 int   bbReadBytes( bbBank *b,bbStream *s,int offset,int count ){
-	if( debug ){
-		debugBank( b,offset+count-1 );
-		debugStream( s );
-	}
+	//if( debug ){
+	if (!debugBank( b,offset+count-1,"ReadBytes" )) return 0;
+	if (!debugStream( s,"ReadBytes" )) return 0;
+	//}
 	return s->read( b->data+offset,count );
 }
 
 int   bbWriteBytes( bbBank *b,bbStream *s,int offset,int count ){
-	if( debug ){
-		debugBank( b,offset+count-1 );
-		debugStream( s );
-	}
+	//if( debug ){
+	if (!debugBank( b,offset+count-1,"WriteBytes" )) return 0;
+	if (!debugStream( s,"WriteBytes" )) return 0;
+	//}
 	return s->write( b->data+offset,count );
 }
 
 int  bbCallDLL( BBStr *dll,BBStr *fun,bbBank *in,bbBank *out ){
-	if( debug ){
-		if( in ) debugBank( in );
-		if( out ) debugBank( out );
-	}
+	//if( debug ){
+	if( in ) { if(!debugBank( in,"CallDLL (in)" )) return 0; }
+	if( out ) { if(!debugBank( out,"CallDLL (out)" )) return 0; }
+	//}
 	int t=gx_runtime->callDll( *dll,*fun,
 		in ? in->data : 0,in ? in->size : 0,
 		out ? out->data : 0,out ? out->size : 0 );

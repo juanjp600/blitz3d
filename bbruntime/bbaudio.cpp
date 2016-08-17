@@ -4,10 +4,19 @@
 
 gxAudio *gx_audio;
 
-static inline void debugSound( gxSound *s ){
+static inline bool debugSound( gxSound *s,const char* a ){
 	if( debug ){
-		if( !gx_audio->verifySound( s ) ) RTEX( "Sound does not exist" );
+		if( !gx_audio->verifySound( s ) ) {
+			RTEX( "Sound does not exist" );
+			return false;
+		}
+	} else {
+		if ( !gx_audio->verifySound( s ) ) {
+			errorLog.push_back(std::string(a)+std::string(": Sound does not exist"));
+			return false;
+		}
 	}
+	return true;
 }
 
 static gxSound *loadSound( BBStr *f,bool use_3d ){
@@ -26,38 +35,44 @@ gxSound *bbLoadSound( BBStr *f ){
 
 void bbFreeSound( gxSound *sound ){
 	if( !sound ) return;
-	debugSound( sound );
-	gx_audio->freeSound( sound );
+	if (debugSound( sound, "FreeSound" )) {
+		gx_audio->freeSound( sound );
+	}
 }
 
 void bbLoopSound( gxSound *sound ){
 	if( !sound ) return;
-	debugSound( sound );
-	sound->setLoop( true );
+	if (debugSound( sound, "LoopSound" )) {
+		sound->setLoop( true );
+	}
 }
 
 void bbSoundPitch( gxSound *sound,int pitch ){
 	if( !sound ) return;
-	debugSound( sound );
-	sound->setPitch( pitch );
+	if (debugSound( sound, "SoundPitch" )) {
+		sound->setPitch( pitch );
+	}
 }
 
 void bbSoundVolume( gxSound *sound,float volume ){
 	if( !sound ) return;
-	debugSound( sound );
-	sound->setVolume( volume );
+	if (debugSound( sound, "SoundVolume" )) {
+		sound->setVolume( volume );
+	}
 }
 
 void bbSoundPan( gxSound *sound,float pan ){
 	if( !sound ) return;
-	debugSound( sound );
-	sound->setPan( pan );
+	if (debugSound( sound, "SoundPan" )) {
+		sound->setPan( pan );
+	}
 }
 
 gxChannel *bbPlaySound( gxSound *sound ){
 	if( !sound ) return 0;
-	debugSound( sound );
-	return sound->play();
+	if (debugSound( sound, "PlaySound" )) {
+		return sound->play();
+	}
 }
 
 gxChannel *bbPlayMusic( BBStr *f ){

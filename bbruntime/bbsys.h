@@ -8,6 +8,9 @@
 extern bool debug;
 extern gxRuntime *gx_runtime;
 
+extern std::vector<std::string> errorLog;
+BBStr * bbErrorLog( );
+
 struct bbEx{
 	const char *err;
 	bbEx( const char *e ):err(e){
