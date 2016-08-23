@@ -35,44 +35,38 @@ gxSound *bbLoadSound( BBStr *f ){
 
 void bbFreeSound( gxSound *sound ){
 	if( !sound ) return;
-	if (debugSound( sound, "FreeSound" )) {
-		gx_audio->freeSound( sound );
-	}
+	if (!debugSound( sound, "FreeSound" )) return;
+	gx_audio->freeSound( sound );
 }
 
 void bbLoopSound( gxSound *sound ){
 	if( !sound ) return;
-	if (debugSound( sound, "LoopSound" )) {
-		sound->setLoop( true );
-	}
+	if (!debugSound( sound, "LoopSound" )) return;
+	sound->setLoop( true );
 }
 
 void bbSoundPitch( gxSound *sound,int pitch ){
 	if( !sound ) return;
-	if (debugSound( sound, "SoundPitch" )) {
-		sound->setPitch( pitch );
-	}
+	if (!debugSound( sound, "SoundPitch" )) return;
+	sound->setPitch( pitch );
 }
 
 void bbSoundVolume( gxSound *sound,float volume ){
 	if( !sound ) return;
-	if (debugSound( sound, "SoundVolume" )) {
-		sound->setVolume( volume );
-	}
+	if (!debugSound( sound, "SoundVolume" )) return;
+	sound->setVolume( volume );
 }
 
 void bbSoundPan( gxSound *sound,float pan ){
 	if( !sound ) return;
-	if (debugSound( sound, "SoundPan" )) {
-		sound->setPan( pan );
-	}
+	if (!debugSound( sound, "SoundPan" )) return;
+	sound->setPan( pan );
 }
 
 gxChannel *bbPlaySound( gxSound *sound ){
 	if( !sound ) return 0;
-	if (debugSound( sound, "PlaySound" )) {
-		return sound->play();
-	}
+	if (!debugSound( sound, "PlaySound" )) return 0;
+	return sound->play();
 }
 
 gxChannel *bbPlayMusic( BBStr *f ){

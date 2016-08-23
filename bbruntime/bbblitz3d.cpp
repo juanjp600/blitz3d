@@ -630,10 +630,18 @@ Texture *  bbLoadAnimTexture( BBStr *file,int flags,int w,int h,int first,int cn
 }
 
 Texture *  bbCreateTexture( int w,int h,int flags,int frames ){
-	if( debug ){
+	/*if( debug ){
 		if (!debug3d("CreateTexture")) RTEX("3D Graphics Mode not set");
 		if( frames<=0 ){
 			RTEX( "Illegal number of texture frames" );
+		}
+	}*/
+	if (!debug3d("CreateTexture")) return 0;
+	if ( frames<=0 ){
+		if (debug) {
+			RTEX( "Illegal number of texture frames" );
+		} else {
+			errorLog.push_back(std::string("CreateTexture: Illegal number of texture frames"));
 		}
 	}
 	Texture *t=d_new Texture( w,h,flags,frames );
@@ -1521,12 +1529,12 @@ Entity *  bbLoadBSP( BBStr *file,float gam,Entity *p ){
 }
 
 void  bbBSPAmbientLight( Q3BSPModel *t,float r,float g,float b ){
-	if (debugBSP(t,"BSPAmbientLight")) return;
+	if (!debugBSP(t,"BSPAmbientLight")) return;
 	t->setAmbient( Vector( r*ctof,g*ctof,b*ctof ) );
 }
 
 void  bbBSPLighting( Q3BSPModel *t,int lmap ){
-	if (debugBSP(t,"BSPLighting")) return;
+	if (!debugBSP(t,"BSPLighting")) return;
 	t->setLighting( !!lmap );
 }
 

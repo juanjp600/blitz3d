@@ -80,10 +80,12 @@ void bbCloseFile( bbFile *f ){
 }
 
 int bbFilePos( bbFile *f ){
+	if (!debugFile( f,"FilePos" )) return 0;
 	return f->buf->pubseekoff( 0,ios_base::cur );
 }
 
 int bbSeekFile( bbFile *f,int pos ){
+	if (!debugFile( f,"SeekFile" )) return 0;
 	return f->buf->pubseekoff( pos,ios_base::beg );
 }
 
@@ -93,6 +95,7 @@ gxDir *bbReadDir( BBStr *d ){
 }
 
 void bbCloseDir( gxDir *d ){
+	if (!debugDir( d,"CloseDir" )) return;
 	gx_filesys->closeDir( d );
 }
 
