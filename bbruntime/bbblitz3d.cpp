@@ -665,6 +665,21 @@ void  bbTextureCoords( Texture *t,int flags ){
 	t->setFlags( flags );
 }
 
+void  bbTextureBumpEnvMat( Texture* t,int x,int y,float envmat ){
+	if (!debugTexture(t,"TextureBumpEnvMat")) return;
+	t->setBumpEnvMat(x,y,envmat);
+}
+
+void  bbTextureBumpEnvScale( Texture* t,float envscale ){
+	if (!debugTexture(t,"TextureBumpEnvScale")) return;
+	t->setBumpEnvScale(envscale);
+}
+
+void  bbTextureBumpEnvOffset( Texture* t,float envoffset ){
+	if (!debugTexture(t,"TextureBumpEnvOffset")) return;
+	t->setBumpEnvOffset(envoffset);
+}
+
 void  bbScaleTexture( Texture *t,float u_scale,float v_scale ){
 	if (!debugTexture(t,"ScaleTexture")) return;
 	t->setScale( 1/u_scale,1/v_scale );
@@ -678,6 +693,10 @@ void  bbRotateTexture( Texture *t,float angle ){
 void  bbPositionTexture( Texture *t,float u_pos,float v_pos ){
 	if (!debugTexture(t,"PositionTexture")) return;
 	t->setPosition( -u_pos,-v_pos );
+}
+
+void  bbTextureLodBias( float bias ){
+	gx_scene->textureLodBias = *((DWORD*)&bias);
 }
 
 int  bbTextureWidth( Texture *t ){
@@ -2346,9 +2365,13 @@ void blitz3d_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "FreeTexture%texture",bbFreeTexture );
 	rtSym( "TextureBlend%texture%blend",bbTextureBlend );
 	rtSym( "TextureCoords%texture%coords",bbTextureCoords );
+	rtSym( "TextureBumpEnvMat%texture%x%y#envmat",bbTextureBumpEnvMat );
+	rtSym( "TextureBumpEnvScale%texture#envmat",bbTextureBumpEnvScale );
+	rtSym( "TextureBumpEnvOffset%texture#envoffset",bbTextureBumpEnvOffset );
 	rtSym( "ScaleTexture%texture#u_scale#v_scale",bbScaleTexture );
 	rtSym( "RotateTexture%texture#angle",bbRotateTexture );
 	rtSym( "PositionTexture%texture#u_offset#v_offset",bbPositionTexture );
+	rtSym( "TextureLodBias#bias",bbTextureLodBias );
 	rtSym( "%TextureWidth%texture",bbTextureWidth );
 	rtSym( "%TextureHeight%texture",bbTextureHeight );
 	rtSym( "$TextureName%texture",bbTextureName );
