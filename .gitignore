@@ -19,3 +19,4 @@ bbruntime_dll/bbruntime_dll.vcxproj.filters
 *.bb
 *.db
 *.opendb
+ipch/COMPILER-7ffd595e/COMPILER-401fa91.ipch
