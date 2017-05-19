@@ -23,7 +23,7 @@ static string getAppDir(){
 void Prefs::open(){
 	homeDir=getAppDir();
 
-	AddFontResource( (homeDir+"/cfg/blitz.fon").c_str() );
+	AddFontResource( (homeDir+"/../cfg/blitz.fon").c_str() );
 
 	setDefault();
 
@@ -123,7 +123,7 @@ void Prefs::close(){
 	}
 	out<<dec;
 
-	RemoveFontResource( (homeDir+"/cfg/blitz.fon").c_str() );
+	RemoveFontResource( (homeDir+"/../cfg/blitz.fon").c_str() );
 }
 
 void Prefs::setDefault(){
