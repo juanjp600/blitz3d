@@ -304,7 +304,7 @@ BEGIN
     CTEXT           "Copyright Blitz Research Ltd",IDC_STATIC,78,17,139,8
     CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",PBS_SMOOTH | 
                     WS_BORDER,5,150,212,14
-    CONTROL         "",IDC_CREDITS,"RICHEDIT",ES_CENTER | ES_MULTILINE | 
+    CONTROL         "",IDC_CREDITS,"RichEdit20a",ES_CENTER | ES_MULTILINE | 
                     ES_READONLY | WS_DISABLED | WS_BORDER | WS_TABSTOP,5,41,
                     212,104
 END

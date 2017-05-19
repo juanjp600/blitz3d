@@ -144,7 +144,7 @@ gxChannel *Object::emitSound( gxSound *sound ){
 	if( !sound ) return 0;
 
 	gxChannel *chan=sound->play3d( &getWorldTform().v.x,&velocity.x );
-	for( int k=0;k<channels.size();++k ){
+	for( int k=0;k<(int)channels.size();++k ){
 		if( chan==channels[k] ) return chan;
 		if( !channels[k] ) return channels[k]=chan;
 	}
@@ -153,7 +153,7 @@ gxChannel *Object::emitSound( gxSound *sound ){
 }
 
 void Object::updateSounds(){
-	for( int k=0;k<channels.size();++k ){
+	for( int k=0;k<(int)channels.size();++k ){
 		if( gxChannel *chan=channels[k] ){
 			if( chan->isPlaying() )	chan->set3d( &getWorldTform().v.x,&velocity.x );
 			else channels[k]=0;

@@ -3,7 +3,7 @@
 #define MULTIPLAY_H
 
 #include "bbsys.h"
-#include <dplay.h>
+#include <dx7/dplay.h>
 
 void multiplay_link();
 bool multiplay_create();

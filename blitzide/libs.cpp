@@ -54,19 +54,18 @@ int version( string vers,string t ){
 }
 
 void initLibs(){
-
-	string valid=execProc( prefs.homeDir+"/bin/blitzcc -q" );
+	string valid=execProc( prefs.homeDir+"\\blitzcc -q" );
 	if( valid.size() ){
 		AfxMessageBox( ("Compiler environment error: "+valid).c_str() );
 		ExitProcess(0);
 	}
 
-	string vers=tolower( execProc( prefs.homeDir+"/bin/blitzcc -v" ) );
+	string vers=tolower( execProc( prefs.homeDir+"\\blitzcc -v" ) );
 	linker_ver=version( vers,"linker" );
 	runtime_ver=version( vers,"runtime" );
 
 	//generate keywords!
-	string kws=execProc( prefs.homeDir+"/bin/blitzcc +k" );
+	string kws=execProc( prefs.homeDir+"\\blitzcc +k" );
 
 	if( !kws.size() ){
 		AfxMessageBox( "Error generating keywords" );

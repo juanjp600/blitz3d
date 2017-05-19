@@ -25,7 +25,7 @@ BBStr *bbRight( BBStr *s,int n ){
 
 BBStr *bbReplace( BBStr *s,BBStr *from,BBStr *to ){
 	int n=0,from_sz=from->size(),to_sz=to->size();
-	while( n<s->size() && (n=s->find( *from,n ))!=string::npos ){
+	while( n<(int)(s->size() && (n=s->find( *from,n ))!=string::npos) ){
 		s->replace( n,from_sz,*to );
 		n+=to_sz;
 	}
@@ -41,43 +41,43 @@ int bbInstr( BBStr *s,BBStr *t,int from ){
 
 BBStr *bbMid( BBStr *s,int o,int n ){
 	CHKOFF( o );--o;
-	if( o>s->size() ) o=s->size();
+	if( o>(int)s->size() ) o=s->size();
 	if( n>=0 ) *s=s->substr( o,n );
 	else *s=s->substr( o );
 	return s;
 }
 
 BBStr *bbUpper( BBStr *s ){
-	for( int k=0;k<s->size();++k ) (*s)[k]=toupper( (*s)[k] );
+	for( int k=0;k<(int)s->size();++k ) (*s)[k]=toupper( (*s)[k] );
 	return s;
 }
 
 BBStr *bbLower( BBStr *s ){
-	for( int k=0;k<s->size();++k ) (*s)[k]=tolower( (*s)[k] );
+	for( int k=0;k<(int)s->size();++k ) (*s)[k]=tolower( (*s)[k] );
 	return s;
 }
 
 BBStr *bbTrim( BBStr *s ){
 	int n=0,p=s->size();
-	while( n<s->size() && !isgraph( (*s)[n] ) ) ++n;
+	while( n<(int)s->size() && !isgraph( (*s)[n] ) ) ++n;
 	while( p>n && !isgraph( (*s)[p-1] ) ) --p;
 	*s=s->substr( n,p-n );return s;
 }
 
 BBStr *bbLSet( BBStr *s,int n ){
 	CHKPOS(n);
-	if( s->size()>n ) *s=s->substr( 0,n );
+	if( (int)s->size()>n ) *s=s->substr( 0,n );
 	else{
-		while( s->size()<n ) *s+=' ';
+		while( (int)s->size()<n ) *s+=' ';
 	}
 	return s;
 }
 
 BBStr *bbRSet( BBStr *s,int n ){
 	CHKPOS(n);
-	if( s->size()>n ) *s=s->substr( s->size()-n );
+	if( (int)s->size()>n ) *s=s->substr( s->size()-n );
 	else{
-		while( s->size()<n ) *s=' '+*s;
+		while( (int)s->size()<n ) *s=' '+*s;
 	}
 	return s;
 }
@@ -120,7 +120,11 @@ BBStr *bbCurrentDate(){
 	time_t t;
 	time( &t );
 	char buff[256];
-	strftime( buff,256,"%d %b %Y",localtime( &t ) );
+
+	tm time;
+	localtime_s(&time, &t);
+
+	strftime( buff,256,"%d %b %Y",&time );
 	return d_new BBStr( buff );
 }
 
@@ -128,7 +132,11 @@ BBStr *bbCurrentTime(){
 	time_t t;
 	time( &t );
 	char buff[256];
-	strftime( buff,256,"%H:%M:%S",localtime( &t ) );
+
+	tm time;
+	localtime_s(&time, &t);
+
+	strftime( buff,256,"%H:%M:%S",&time );
 	return d_new BBStr( buff );
 }
 

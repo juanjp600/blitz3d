@@ -2,7 +2,7 @@
 #ifndef DDUTIL_H
 #define DDUTIL_H
 
-#include <ddraw.h>
+#include <dx7/ddraw.h>
 
 class gxGraphics;
 typedef IDirectDrawSurface7 ddSurf;

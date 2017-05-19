@@ -22,10 +22,10 @@ struct SoundChannel : public gxChannel{
 		FSOUND_SetFrequency( channel,pitch );
 	}
 	void setVolume( float volume ){
-		FSOUND_SetVolume( channel,volume * 255.0f );
+		FSOUND_SetVolume( channel,(int)(volume * 255.0f) );
 	}
 	void setPan( float pan ){
-		FSOUND_SetPan( channel,(pan+1)*127.5f );
+		FSOUND_SetPan( channel,(int)((pan+1)*127.5f) );
 	}
 	void set3d( const float pos[3],const float vel[3] ){
 		FSOUND_3D_SetAttributes( channel,(float*)pos,(float*)vel );
@@ -55,7 +55,7 @@ struct CDChannel : public gxChannel{
 	void setPitch( int pitch ){
 	}
 	void setVolume( float volume ){
-		FSOUND_CD_SetVolume( 0,volume*255.0f );
+		FSOUND_CD_SetVolume( 0,(int)(volume*255.0f) );
 	}
 	void setPan( float pan ){
 	}
@@ -88,10 +88,10 @@ struct StreamChannel : public StaticChannel{
 		FSOUND_SetFrequency( channel,pitch );
 	}
 	void setVolume( float volume ){
-		FSOUND_SetVolume( channel,volume * 255.0f );
+		FSOUND_SetVolume( channel,(int)(volume * 255.0f) );
 	}
 	void setPan( float pan ){
-		FSOUND_SetPan( channel,(pan+1)*127.5f );
+		FSOUND_SetPan( channel,(int)((pan+1)*127.5f) );
 	}
 	void set3d( const float pos[3],const float vel[3] ){
 	}
@@ -122,7 +122,7 @@ struct MusicChannel : public StaticChannel{
 	void setPitch( int pitch ){
 	}
 	void setVolume( float volume ){
-		FMUSIC_SetMasterVolume( module,volume*255.0f );
+		FMUSIC_SetMasterVolume( module,(int)(volume*255.0f) );
 	}
 	void setPan( float pan ){
 	}
@@ -146,7 +146,7 @@ static vector<SoundChannel*> soundChannels;
 static gxChannel *allocSoundChannel( int n ){
 
 	SoundChannel *chan=0;
-	for( int k=0;k<soundChannels.size();++k ){
+	for( int k=0;k<(int)soundChannels.size();++k ){
 		chan=soundChannels[next_chan];
 		if( !chan ){
 			chan=soundChannels[next_chan]=d_new SoundChannel();
@@ -161,7 +161,7 @@ static gxChannel *allocSoundChannel( int n ){
 	if( !chan ){
 		next_chan=soundChannels.size();
 		soundChannels.resize(soundChannels.size()*2);
-		for( int k=next_chan;k<soundChannels.size();++k ) soundChannels[k]=0;
+		for( int k=next_chan;k<(int)soundChannels.size();++k ) soundChannels[k]=0;
 		chan=soundChannels[next_chan++]=d_new SoundChannel();
 		channels.push_back( chan );
 	}

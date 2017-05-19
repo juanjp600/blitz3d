@@ -1,6 +1,8 @@
 Global info1$="Grass Demo, by Adam Gore"
 
-Include "../start.bb"
+;Include "../start.bb"
+
+Graphics3D 800,600,32,2
 
 ;Field of grass + kludged lens flare
 

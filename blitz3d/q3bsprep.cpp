@@ -170,7 +170,7 @@ static log( const string &t ){
 	gx_runtime->debugLog( t.c_str() );
 }
 #else
-static log( const string &t ){}
+static int log(const string &t){ return 0; }
 #endif
 
 static Surf *findSurf( q3_face *f ){
@@ -190,8 +190,8 @@ void Q3BSPRep::createTextures(){
 	for( int k=0;k<n_texs;++k ){
 		string t=string(q3tex->name);
 		char fl[32],co[32];
-		itoa( q3tex->flags,fl,16 );
-		itoa( q3tex->contents,co,16 );
+		_itoa_s( q3tex->flags,fl,16 );
+		_itoa_s( q3tex->contents,co,16 );
 		log( t+", flags=0x"+fl+", contents=0x"+co );
 		Texture tex( t+".tga",1 );
 		if( !tex.getCanvas(0) ){
@@ -215,7 +215,7 @@ void Q3BSPRep::createLightMaps(){
 	unsigned char *rgb=(unsigned char*)header.dir[14].lump;
 	unsigned char adj[256];
 	int k;
-	for( k=0;k<256;++k ) adj[k]=pow( k/255.0f,gamma_adj )*255.0f;
+	for( k=0;k<256;++k ) adj[k]=(unsigned char)(pow( k/255.0f,gamma_adj )*255.0f);
 
 	for( k=0;k<n_lmaps;++k ){
 		Texture tex( 128,128,1+8+16+32,1 );
@@ -254,7 +254,7 @@ void Q3BSPRep::createCollider(){
 		coll_verts.push_back( cv );
 		++t;
 	}
-	for( k=0;k<p_coll_verts.size();++k ){
+	for( k=0;k<(int)p_coll_verts.size();++k ){
 		cv.coords=p_coll_verts[k];
 		coll_verts.push_back( cv );
 	}
@@ -271,13 +271,13 @@ void Q3BSPRep::createCollider(){
 
 void Q3BSPRep::createSurfs(){
 	int k;
-	for( k=0;k<t_surfs.size();++k ){
+	for( k=0;k<(int)t_surfs.size();++k ){
 		Surf *s=t_surfs[k];
 		gxMesh *mesh=gx_graphics->createMesh( s->verts.size(),s->tris.size()/3,0 );
 
 		mesh->lock( true );
 		int j;
-		for( j=0;j<s->verts.size();++j ){
+		for( j=0;j<(int)s->verts.size();++j ){
 			q3_vertex *t;
 			int n=s->verts[j];
 			if( n>=0 ){
@@ -289,7 +289,7 @@ void Q3BSPRep::createSurfs(){
 			unsigned argb=0xff000000|(t->color[0]<<16)|(t->color[1]<<8)|t->color[2];
 			mesh->setVertex( j,tf(t->coords),tf(t->normal),argb,tex_coords );
 		}
-		for( j=0;j<s->tris.size();j+=3 ){
+		for( j=0;j<(int)s->tris.size();j+=3 ){
 #ifdef SWAPTRIS
 			mesh->setTriangle( j/3,s->tris[j],s->tris[j+2],s->tris[j+1] );
 #else
@@ -305,12 +305,12 @@ void Q3BSPRep::createSurfs(){
 		surfs.push_back( surf );
 		s->surf=surf;
 	}
-	for( k=0;k<faces.size();++k ){
+	for( k=0;k<(int)faces.size();++k ){
 		Q3BSPFace *f=faces[k];
 		f->surf=f->t_surf->surf;
 		f->tri/=3;f->n_tris/=3;
 	}
-	for( k=0;k<t_surfs.size();++k ){
+	for( k=0;k<(int)t_surfs.size();++k ){
 		delete t_surfs[k];
 	}
 	face_map.clear();
@@ -378,7 +378,7 @@ static void patchFace( Q3BSPFace *face,q3_face *q3face,bool draw,bool solid,int 
 		//generate patch verts
 		for( k=0;k<size_x*size_y;++k ){
 			p_verts.push_back( verts[k] );
-			surf->verts.push_back( -p_verts.size() );
+			surf->verts.push_back( -(int)p_verts.size() );
 		}
 		face->n_verts+=size_x*size_y;
 
@@ -488,8 +488,8 @@ Q3BSPLeaf *Q3BSPRep::createLeaf( int n ){
 
 	leaf->cluster=q3leaf->cluster;
 
-	Vector mins( q3leaf->mins[0],q3leaf->mins[1],q3leaf->mins[2] );
-	Vector maxs( q3leaf->maxs[0],q3leaf->maxs[1],q3leaf->maxs[2] );
+	Vector mins((float)q3leaf->mins[0], (float)q3leaf->mins[1], (float)q3leaf->mins[2]);
+	Vector maxs((float)q3leaf->maxs[0], (float)q3leaf->maxs[1], (float)q3leaf->maxs[2]);
 	leaf->box=Box( tf(mins) );
 	leaf->box.update( tf(maxs) );
 	int *leaffaces=(int*)header.dir[5].lump+q3leaf->leafface;
@@ -549,8 +549,8 @@ Q3BSPNode *Q3BSPRep::createNode( int n ){
 
 	Q3BSPNode *node=new Q3BSPNode;
 
-	Vector mins( q3node->mins[0],q3node->mins[1],q3node->mins[2] );
-	Vector maxs( q3node->maxs[0],q3node->maxs[1],q3node->maxs[2] );
+	Vector mins((float)q3node->mins[0], (float)q3node->mins[1], (float)q3node->mins[2]);
+	Vector maxs((float)q3node->maxs[0], (float)q3node->maxs[1], (float)q3node->maxs[2]);
 
 	node->box=Box( tf(mins) );
 	node->box.update( tf(maxs) );
@@ -574,7 +574,13 @@ Q3BSPRep::Q3BSPRep( const string &f,float gam ):root_node(0),vis_sz(0),vis_data(
 
 	gamma_adj=1-gam;
 
-	FILE *buf=fopen( f.c_str(),"rb" );if( !buf ) return;
+	//FILE *buf = fopen(f.c_str(), "rb")
+
+	FILE *buf;
+	errno_t err=fopen_s(&buf, f.c_str(), "rb");
+		
+	if (err != 0) return;
+	//if( !buf ) return;
 
 	fread( &header,sizeof(header),1,buf );
 	if( header.magic!='PSBI' || header.version!=0x2e ){
@@ -625,11 +631,11 @@ Q3BSPRep::~Q3BSPRep(){
 	delete root_node;
 	delete[] vis_data;
 	int k;
-	for( k=0;k<surfs.size();++k ){
+	for( k=0;k<(int)surfs.size();++k ){
 		gx_graphics->freeMesh( surfs[k]->mesh );
 		delete surfs[k];
 	}
-	for( k=0;k<faces.size();++k ){
+	for( k=0;k<(int)faces.size();++k ){
 		delete faces[k];
 	}
 }
@@ -666,7 +672,7 @@ void Q3BSPRep::render( Q3BSPLeaf *l,int clip ){
 
 	if( clip && !cull( l->box,&clip ) ) return;
 
-	for( int k=0;k<l->faces.size();++k ){
+	for( int k=0;k<(int)l->faces.size();++k ){
 		Q3BSPFace *f=l->faces[k];
 		if( Q3BSPSurf *s=f->surf ){
 			if( !s->r_faces.size() ) r_surfs.push_back( s );
@@ -702,11 +708,11 @@ void Q3BSPRep::render( Model *model,const RenderContext &rc ){
 	gx_scene->setWorldMatrix( (gxScene::Matrix*)&model->getRenderTform() );
 
 	int k;
-	for( k=0;k<r_surfs.size();++k ){
+	for( k=0;k<(int)r_surfs.size();++k ){
 		Q3BSPSurf *s=r_surfs[k];
 		gx_scene->setRenderState( s->brush.getRenderState() );
 		int j;
-		for( j=0;j<s->r_faces.size();++j ){
+		for( j=0;j<(int)s->r_faces.size();++j ){
 			Q3BSPFace *f=s->r_faces[j];
 			gx_scene->render( s->mesh,f->vert,f->n_verts,f->tri,f->n_tris );
 			f->surf=s;
@@ -729,7 +735,7 @@ void Q3BSPRep::setLighting( bool lmap ){
 	int fx=gxScene::FX_CONDLIGHT;
 	if( use_lmap=lmap ){
 		int k;
-		for( k=0;k<surfs.size();++k ){
+		for( k=0;k<(int)surfs.size();++k ){
 			Q3BSPSurf *s=surfs[k];
 			if( s->lm_index>=0 ){
 				//has a lightmap...
@@ -748,7 +754,7 @@ void Q3BSPRep::setLighting( bool lmap ){
 	}else{
 		int k;
 		Texture tex;
-		for( k=0;k<surfs.size();++k ){
+		for( k=0;k<(int)surfs.size();++k ){
 			Q3BSPSurf *s=surfs[k];
 			s->brush.setFX( fx|gxScene::FX_EMISSIVE );
 			if( s->texture>=0 ){

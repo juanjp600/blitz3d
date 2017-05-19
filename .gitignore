@@ -8,3 +8,14 @@ Release
 _release
 *__Win32_*
 /innosetup/installs
+asm_makeinsts/asm_makeinsts.vcxproj.user
+bbruntime/bbruntime.vcxproj.filters
+bbruntime/bbruntime.vcxproj.user
+bbruntime_dll/bbruntime_dll.vcxproj.filters
+*.user
+*.sdf
+*.filters
+*.pro
+*.bb
+*.db
+*.opendb

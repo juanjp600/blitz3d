@@ -60,9 +60,9 @@ gxGraphics::~gxGraphics(){
 }
 
 void gxGraphics::setGamma( int r,int g,int b,float dr,float dg,float db ){
-	_gammaRamp.red[r&255]=dr*257.0f;
-	_gammaRamp.green[g&255]=dg*257.0f;
-	_gammaRamp.blue[b&255]=db*257.0f;
+	_gammaRamp.red[r&255]=(WORD)(dr*257.0f);
+	_gammaRamp.green[g & 255] = (WORD)(dg*257.0f);
+	_gammaRamp.blue[b & 255] = (WORD)(db*257.0f);
 }
 
 void gxGraphics::updateGamma( bool calibrate ){
@@ -298,10 +298,10 @@ gxFont *gxGraphics::loadFont( const string &f,int height,int flags ){
 		ABC abc;
 		if( GetCharABCWidths( hdc,t,t,&abc ) ){
 			if( abc.abcA<0 ){
-				as[k]=ceil(-abc.abcA);
+				as[k]=(int)ceil((float)-abc.abcA);
 				w+=as[k];
 			}
-			if( abc.abcC<0 ) w+=ceil(-abc.abcC);
+			if (abc.abcC<0) w +=(int) ceil((float)-abc.abcC);
 		}
 
 		if( x && x+w>getWidth() ){ x=0;y+=height; }
@@ -456,7 +456,7 @@ static void pickTexFmts( gxGraphics *g,int hi ){
 	{
 		int pick=-1,max=0,bits;
 		for( int d=g->primFmt.dwRGBBitCount;d<=32;d+=8 ){
-			for( int k=0;k<tex_fmts.size();++k ){
+			for( int k=0;k<(int)tex_fmts.size();++k ){
 				const TexFmt &t=tex_fmts[k];
 				if( t.bits>d || !t.rgb_bits || t.rgb_bits<max ) continue;
 				if( t.rgb_bits==max && t.bits>=bits ) continue;
@@ -471,7 +471,7 @@ static void pickTexFmts( gxGraphics *g,int hi ){
 	{
 		int pick=-1,max=0,bits;
 		for( int d=g->primFmt.dwRGBBitCount;d<=32;d+=8 ){
-			for( int k=0;k<tex_fmts.size();++k ){
+			for( int k=0;k<(int)tex_fmts.size();++k ){
 				const TexFmt &t=tex_fmts[k];
 				if( t.bits>d || !t.a_bits || t.a_bits<max ) continue;
 				if( t.a_bits==max && t.bits>=bits ) continue;
@@ -486,7 +486,7 @@ static void pickTexFmts( gxGraphics *g,int hi ){
 	{
 		int pick=-1,a8rgb8=-1,max=0,bits;
 		for( int d=g->primFmt.dwRGBBitCount;d<=32;d+=8 ){
-			for( int k=0;k<tex_fmts.size();++k ){
+			for( int k=0;k<(int)tex_fmts.size();++k ){
 				const TexFmt &t=tex_fmts[k];
 				if( t.a_bits==8 && t.bits==16 ){ a8rgb8=k;continue; }
 				if( t.bits>d || !t.a_bits || !t.rgb_bits || t.a_bits<max ) continue;
@@ -503,7 +503,7 @@ static void pickTexFmts( gxGraphics *g,int hi ){
 	{
 		int pick=-1,max=0,bits;
 		for( int d=g->primFmt.dwRGBBitCount;d<=32;d+=8 ){
-			for( int k=0;k<tex_fmts.size();++k ){
+			for( int k=0;k<(int)tex_fmts.size();++k ){
 				const TexFmt &t=tex_fmts[k];
 				if( !t.a_bits || !t.rgb_bits || t.rgb_bits<max ) continue;
 				if( t.rgb_bits==max && t.bits>=bits ) continue;

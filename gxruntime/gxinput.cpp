@@ -3,7 +3,7 @@
 #include "gxinput.h"
 #include "gxruntime.h"
 
-#include <dinput.h>
+#include <dx7/dinput.h>
 
 static const int QUE_SIZE=32;
 
@@ -60,15 +60,15 @@ public:
 		DIMOUSESTATE state;
 		if( device->GetDeviceState(sizeof(state),&state)<0 ) return;
 		if( gxGraphics *g=input->runtime->graphics ){
-			int mx=axis_states[0]+state.lX;
-			int my=axis_states[1]+state.lY;
+			int mx=(int)(axis_states[0]+state.lX);
+			int my=(int)(axis_states[1]+state.lY);
 			if( mx<0 ) mx=0;
 			else if( mx>=g->getWidth() ) mx=g->getWidth()-1;
 			if( my<0 ) my=0;
 			else if( my>=g->getHeight() ) my=g->getHeight()-1;
-			axis_states[0]=mx;
-			axis_states[1]=my;
-			axis_states[2]+=state.lZ;
+			axis_states[0]=(float)mx;
+			axis_states[1] = (float)my;
+			axis_states[2] += (float)state.lZ;
 		}
 		for( int k=0;k<3;++k ){
 			setDownState( k+1,state.rgbButtons[k]&0x80 ? true : false );
@@ -217,7 +217,7 @@ runtime(rt),dirInput(di){
 }
 
 gxInput::~gxInput(){
-	for( int k=0;k<joysticks.size();++k ) delete joysticks[k];
+	for( int k=0;k<(int)joysticks.size();++k ) delete joysticks[k];
 	joysticks.clear();
 	delete mouse;
 	delete keyboard;
@@ -243,8 +243,8 @@ void gxInput::wm_mouseup( int key ){
 
 void gxInput::wm_mousemove( int x,int y ){
 	if( mouse ){
-		mouse->axis_states[0]=x;
-		mouse->axis_states[1]=y;
+		mouse->axis_states[0]=(float)x;
+		mouse->axis_states[1]=(float)y;
 	}
 }
 
@@ -255,7 +255,7 @@ void gxInput::wm_mousewheel( int dz ){
 void gxInput::reset(){
 	if( mouse ) mouse->reset();
 	if( keyboard ) keyboard->reset();
-	for( int k=0;k<joysticks.size();++k ) joysticks[k]->reset();
+	for( int k=0;k<(int)joysticks.size();++k ) joysticks[k]->reset();
 }
 
 bool gxInput::acquire(){
@@ -275,8 +275,8 @@ void gxInput::unacquire(){
 
 void gxInput::moveMouse( int x,int y ){
 	if( !mouse ) return;
-	mouse->axis_states[0]=x;
-	mouse->axis_states[1]=y;
+	mouse->axis_states[0]=(float)x;
+	mouse->axis_states[1]=(float)y;
 	runtime->moveMouse( x,y );
 }
 
@@ -289,11 +289,11 @@ gxDevice *gxInput::getKeyboard()const{
 }
 
 gxDevice *gxInput::getJoystick( int n )const{
-	return n>=0 && n<joysticks.size() ? joysticks[n] : 0;
+	return n>=0 && n<(int)joysticks.size() ? joysticks[n] : 0;
 }
 
 int gxInput::getJoystickType( int n )const{
-	return n>=0 && n<joysticks.size() ? joysticks[n]->type : 0;
+	return n>=0 && n<(int)joysticks.size() ? joysticks[n]->type : 0;
 }
 
 int gxInput::numJoysticks()const{

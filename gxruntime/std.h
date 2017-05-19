@@ -22,9 +22,9 @@
 
 #include <math.h>
 #include <windows.h>
-#include <ddraw.h>
-#include <dinput.h>
-#include <d3d.h>
+#include <dx7/ddraw.h>
+#include <dx7/dinput.h>
+#include <dx7/d3d.h>
 
 using namespace std;
 

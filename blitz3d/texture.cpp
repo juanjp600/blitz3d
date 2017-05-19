@@ -21,7 +21,7 @@ static vector<Filter> filters;
 static int filterFile( const string &t,int flags ){
 	//check filters...
 	string l=tolower(t);
-	for( int k=0;k<filters.size();++k ){
+	for( int k=0;k<(int)filters.size();++k ){
 		if( l.find( filters[k].t )!=string::npos ){
 			flags|=filters[k].flags;
 		}
@@ -37,9 +37,6 @@ struct Texture::Rep{
 
 	int tex_blend,tex_flags;
 	bool transparent;
-	DWORD bumpEnvMat[2][2];
-	DWORD bumpEnvScale;
-	DWORD bumpEnvOffset;
 
 	float sx,sy,tx,ty,rot;
 	bool mat_used,mat_valid;
@@ -145,27 +142,12 @@ void Texture::setFlags( int flags ){
 	rep->tex_flags=flags;
 }
 
-void Texture::setBumpEnvMat( int x,int y,float envmat ){
-	if( !rep ) return;
-	rep->bumpEnvMat[x][y] = *((DWORD*)&envmat);
-}
-
-void Texture::setBumpEnvScale( float envscale ){
-	if( !rep ) return;
-	rep->bumpEnvScale = *((DWORD*)&envscale);
-}
-
-void Texture::setBumpEnvOffset( float envoffset ){
-	if( !rep ) return;
-	rep->bumpEnvOffset = *((DWORD*)&envoffset);
-}
-
 bool Texture::isTransparent()const{
 	return rep ? rep->transparent : false;
 }
 
 gxCanvas *Texture::getCanvas( int n )const{
-	return rep && n>=0 && n<rep->tex_frames.size() ? rep->tex_frames[n] : 0;
+	return rep && n>=0 && n<(int)(rep->tex_frames.size()) ? rep->tex_frames[n] : 0;
 }
 
 int Texture::getCanvasFlags()const{
@@ -182,18 +164,6 @@ int Texture::getBlend()const{
 
 int Texture::getFlags()const{
 	return rep ? rep->tex_flags : 0;
-}
-
-DWORD Texture::getBumpEnvMat( int x,int y )const{
-	return rep ? rep->bumpEnvMat[x][y] : 0;
-}
-
-DWORD Texture::getBumpEnvScale()const{
-	return rep ? rep->bumpEnvScale : 0;
-}
-
-DWORD Texture::getBumpEnvOffset()const{
-	return rep ? rep->bumpEnvOffset : 0;
 }
 
 const gxScene::Matrix *Texture::getMatrix()const{

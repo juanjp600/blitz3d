@@ -4,7 +4,7 @@
 
 #include <set>
 #include <string>
-#include <d3d.h>
+#include <dx7/d3d.h>
 
 #include "ddutil.h"
 

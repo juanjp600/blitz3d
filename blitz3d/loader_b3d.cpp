@@ -320,7 +320,11 @@ MeshModel *Loader_B3D::load( const string &f,const Transform &conv,int hint ){
 	collapse=!!(hint&MeshLoader::HINT_COLLAPSE);
 	animonly=!!(hint&MeshLoader::HINT_ANIMONLY);
 
-	in=fopen( f.c_str(),"rb" );
+	//in=fopen( f.c_str(),"rb" );
+
+
+	fopen_s(&in, f.c_str(), "rb");
+
 	if( !in ) return 0;
 
 	::clear();

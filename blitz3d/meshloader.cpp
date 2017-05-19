@@ -84,7 +84,7 @@ void MeshLoader::endMesh( MeshModel *mesh ){
 	if( mesh ){
 		//fix bone weights
 		int k,max_bones=0;
-		for( k=0;k<ml_mesh->verts.size();++k ){
+		for( k=0;k<(int)ml_mesh->verts.size();++k ){
 			Surface::Vertex &v=ml_mesh->verts[k];
 			if( v.bone_bones[0]==255 ) continue;
 			int j;
@@ -107,7 +107,7 @@ void MeshLoader::endMesh( MeshModel *mesh ){
 			Surf *t=it->second;
 			Surface *surf=mesh->findSurface( b );
 			if( !surf ) surf=mesh->createSurface( b );
-			for( int k=0;k<t->tris.size();++k ){
+			for( int k=0;k<(int)t->tris.size();++k ){
 				Surface::Triangle tri;
 				for( int j=0;j<3;++j ){
 					int n=t->tris[k].verts[j],id;

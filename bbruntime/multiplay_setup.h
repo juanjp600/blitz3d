@@ -2,8 +2,8 @@
 #ifndef MULTIPLAY_SETUP_H
 #define MULTIPLAY_SETUP_H
 
-#include <dplay.h>
-#include <dplobby.h>
+#include <dx7/dplay.h>
+#include <dx7/dplobby.h>
 
 extern IDirectPlay4 *dirPlay;
 

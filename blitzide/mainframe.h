@@ -75,13 +75,13 @@ private:
 	CStatusBar statusBar;
 
 	map<CWnd*,Editor*> editors;
-	map<CWnd*,HtmlHelp*> helps;
+	map<CWnd*,BHtmlHelp*> helps;
 
 	string last_quick_help;
 
-	HtmlHelp *getHelp();
-	HtmlHelp *getHelp( int index );
-	HtmlHelp *findHelp();
+	BHtmlHelp *getHelp();
+	BHtmlHelp *getHelp( int index );
+	BHtmlHelp *findHelp();
 
 	Editor *getEditor( int index );
 
@@ -103,8 +103,8 @@ private:
 	void currentSet( Tabber *tabber,int index );
 
 	//htmlhelplistener
-	void helpOpen( HtmlHelp *help,const string &file );
-	void helpTitleChange( HtmlHelp *help,const string &title );
+	void helpOpen( BHtmlHelp *help,const string &file );
+	void helpTitleChange( BHtmlHelp *help,const string &title );
 };
 
 #endif

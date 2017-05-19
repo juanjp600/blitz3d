@@ -1,26 +1,35 @@
-Blitz3D open source release!
-
-Workspace and project files are in MSVC 6.0 format.
-
-Ide and Debugger require MFC which is included with MSVC 6.0, but not with later free/express versions of MSVC.
+Blitz3D open source release! (VS2010/2013 version)
 
 You can grab the prebuilt free version of blitz3d from www.blitzbasic.com.
 
 Steps to build:
+1) Install directx7 sdk into same dir as blitz3d:, the foldername should be DX7_Sdk 
 
-1) Install freeimage241 into same dir as blitz3d: http://monkeycoder.co.nz/downloads/freeimage241.zip
+2) Install freeimage241 into same dir as blitz3d: http://monkeycoder.co.nz/downloads/freeimage241.zip
 
-2) Install fmodapi375win into same dir as blitz3d: http://www.fmod.org/files/public/fmodapi375win.zip
+PLEASE NOTE - IMPORTANT
+=======================
+You will need to edit the freeimage.h file and modify the following line (normally should be line #206)
 
-3) Open blitz3d workspace in MSVC 6.0.
+typedef FIBITMAP *(DLL_CALLCONV * FI_AllocateProc)(int width, int height, int bpp, unsigned red_mask FI_DEFAULT(0), unsigned green_mask FI_DEFAULT(0), unsigned blue_mask FI_DEFAULT(0));
 
-4) Build project 'bblaunch' using config 'Win32 Blitz3D Release'.
+to this...
 
-5) Output files should end up in _release subdir.
+typedef FIBITMAP *(DLL_CALLCONV * FI_AllocateProc)(int width, int height, int bpp, unsigned red_mask , unsigned green_mask , unsigned blue_mask);
 
-6) Also copy fmodapi375win/api/fmod.dll to _release/bin.
+You have to modify this line because the original line of code is not compatible with versions of visual studio that are newer than vs6.  Changing this line will remove any compile error concerning this bug
 
-7) Done?
+3) Install fmodapi375win into same dir as blitz3d: http://www.fmod.org/files/public/fmodapi375win.zip
+
+4) Open blitz3d workspace in MSVC 6.0.
+
+5) Build project 'bblaunch' using config 'Win32 Blitz3D Release'.
+
+6) Output files should end up in _release subdir.
+
+7) Also copy fmodapi375win/api/fmod.dll to _release/bin.
+
+8) Done?
 
 Blitz3d is released under the zlib/libpng license.
 

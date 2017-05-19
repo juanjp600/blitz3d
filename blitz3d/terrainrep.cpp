@@ -40,10 +40,10 @@ struct TerrainRep::Vert{
 
 	Vert(){
 	}
-	Vert( int x,int z ):x(x),z(z),v( x,curr->getHeight(x,z),z){
+	Vert(int x, int z) :x(x), z(z), v((float)x, (float)curr->getHeight(x, z), (float)z){
 		src_y=v.y;
 	}
-	Vert( int x,int z,float sy ):x(x),z(z),v( x,curr->getHeight(x,z),z ),src_y(sy){
+	Vert(int x, int z, float sy) :x(x), z(z), v((float)x, (float)curr->getHeight(x, z), (float)z), src_y(sy){
 	}
 };
 
@@ -178,7 +178,7 @@ void TerrainRep::setShading( bool t ){
 }
 
 void TerrainRep::setHeight( int x,int z,float h,bool realtime ){
-	cells[((z&cell_mask)<<cell_shift)|(x&cell_mask)].height=h*255.0f;
+	cells[((z&cell_mask)<<cell_shift)|(x&cell_mask)].height=(unsigned char)(h*255.0f);
 	if( !errs_valid ) return;
 	if( realtime ){
 		Vert v0(0,0),v1(cell_size,0),v2(cell_size,cell_size),v3(0,cell_size);
@@ -191,11 +191,11 @@ void TerrainRep::setHeight( int x,int z,float h,bool realtime ){
 
 Vector TerrainRep::getNormal( int x,int z )const{
 	Vector 
-		vt( x,getHeight(x,z),z ),
-		v0( x,getHeight(x,z-1),z-1 ),
-		v1( x+1,getHeight(x+1,z),z ),
-		v2( x,getHeight(x,z+1),z+1 ),
-		v3( x-1,getHeight(x-1,z),z );
+		vt((float)x, (float)getHeight(x, z), (float)z),
+		v0((float)x, (float)getHeight(x, z - 1), (float)(z - 1)),
+		v1((float)(x + 1), (float)getHeight(x + 1, z), (float)z),
+		v2((float)x, (float)getHeight(x, z + 1), (float)(z + 1)),
+		v3((float)(x - 1), (float)getHeight(x - 1, z), (float)z);
 	return (
 		Plane( vt,v1,v0 ).n+
 		Plane( vt,v2,v1 ).n+
@@ -338,13 +338,13 @@ TerrainRep::Error TerrainRep::calcErr( int id,const Vert &v0,const Vert &v1,cons
 	if( v2.v.y>y ) y=v2.v.y;
 
 	et.error = 0;
-	et.bound = y>=1 ? 255 : ceil(y*255.0f);
+	et.bound = (unsigned char)( y>=1 ? 255 : ceil(y*255.0f));
 
 	if( id>=end_tri_id ) return et;
 
 	Vert tv( (v1.x+v2.x)/2,(v1.z+v2.z)/2 );
 	float e=fabs(tv.v.y-(v1.v.y+v2.v.y)/2);
-	et.error= e>=1 ? 255 : ceil( (e-EPSILON)*255.0f );
+	et.error = (unsigned char)(e >= 1 ? 255 : ceil((e - EPSILON)*255.0f));
 
 	Error el=calcErr( id*2,tv,v2,v0 );
 	Error er=calcErr( id*2+1,tv,v0,v1 );
@@ -367,7 +367,7 @@ TerrainRep::Error TerrainRep::calcErr( int id,int x,int z,const Vert &v0,const V
 	if( v2.v.y>y ) y=v2.v.y;
 
 	et.error = 0;
-	et.bound = y>=1 ? 255 : ceil(y*255.0f);
+	et.bound = (unsigned char)(y >= 1 ? 255 : ceil(y*255.0f));
 
 	if( id>=end_tri_id ) return et;
 
@@ -382,7 +382,7 @@ TerrainRep::Error TerrainRep::calcErr( int id,int x,int z,const Vert &v0,const V
 
 	Vert tv( (v1.x+v2.x)/2,(v1.z+v2.z)/2 );
 	float e=fabs(tv.v.y-(v1.v.y+v2.v.y)/2);
-	et.error= e>=1 ? 255 : ceil( (e-EPSILON)*255.0f );
+	et.error = (unsigned char)(e >= 1 ? 255 : ceil((e - EPSILON)*255.0f));
 
 	Error el=calcErr( id*2,x,z,tv,v2,v0 );
 	Error er=calcErr( id*2+1,x,z,tv,v0,v1 );
@@ -444,13 +444,13 @@ void TerrainRep::render( Model *model,const RenderContext &rc ){
 	if( !mesh ) out_cnt=0;
 
 	if( !out_cnt ){
-		for( k=0;k<tris.size();++k ) delete tris[k];
-		for( k=0;k<q_tris.size();++k ) delete q_tris[k];
+		for( k=0;k<(int)tris.size();++k ) delete tris[k];
+		for( k=0;k<(int)q_tris.size();++k ) delete q_tris[k];
 		return;
 	}
 
 	int err_cnt=0;
-	for( k=0;k<q_tris.size();++k ){
+	for( k=0;k<(int)q_tris.size();++k ){
 		Tri *t=q_tris[k];
 		if( t->id ){ tris.push_back( t );++err_cnt; }
 		else delete t;
@@ -490,7 +490,7 @@ void TerrainRep::render( Model *model,const RenderContext &rc ){
 			const Vert &t=verts[k];
 			const Vector &v=t.v;
 			float tex_coords[2][2]={ {v.x,cell_size-v.z},{v.x,cell_size-v.z} };
-			Vector normal=getNormal( v.x,v.z );
+			Vector normal=getNormal( (int)v.x,(int)v.z );
 			mesh->setVertex( vc++,&v.x,&normal.x,tex_coords );
 		}
 	}
@@ -504,8 +504,8 @@ void TerrainRep::render( Model *model,const RenderContext &rc ){
 	static int mvc,mtc;
 	if( vc>mvc ) mvc=vc;
 	if( tc>mtc ) mtc=tc;
-	stats3d[1]=mvc;
-	stats3d[2]=mtc;
+	stats3d[1]=(float)mvc;
+	stats3d[2]=(float)mtc;
 
 	model->enqueue( mesh,0,vc,0,tc );
 }

@@ -3,7 +3,7 @@
 #include "gxruntime.h"
 #include "zmouse.h"
 
-#define SPI_SETMOUSESPEED	113
+//#define SPI_SETMOUSESPEED	113
 
 struct gxRuntime::GfxMode{
 	DDSURFACEDESC2 desc;
@@ -1046,9 +1046,9 @@ void gxRuntime::enumGfx(){
 }
 
 void gxRuntime::denumGfx(){
-	for( int k=0;k<drivers.size();++k ){
+	for( int k=0;k<(int)drivers.size();++k ){
 		gxRuntime::GfxDriver *d=drivers[k];
-		for( int j=0;j<d->modes.size();++j ) delete d->modes[j];
+		for( int j=0;j<(int)d->modes.size();++j ) delete d->modes[j];
 		delete d->guid;
 		delete d;
 	}

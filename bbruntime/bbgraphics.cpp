@@ -15,7 +15,7 @@ public:
 	bbImage( const vector<gxCanvas*> &f ):frames(f){
 	}
 	~bbImage(){
-		for( int k=0;k<frames.size();++k ){
+		for( int k=0;k<(int)frames.size();++k ){
 			gx_graphics->freeCanvas( frames[k] );
 		}
 	}
@@ -144,7 +144,7 @@ static int getPixel( gxCanvas *c,float x,float y ){
 
 	x-=.5f;y-=.5f;
 	float fx=floor(x),fy=floor(y);
-	int ix=fx,iy=fy;fx=x-fx;fy=y-fy;
+	int ix=(int)fx,iy=(int)fy;fx=x-fx;fy=y-fy;
 
 	int tl=c->getPixel( ix,iy );
 	int tr=c->getPixel( ix+1,iy );
@@ -183,7 +183,7 @@ static gxCanvas *tformCanvas( gxCanvas *c,float m[2][2],int x_handle,int y_handl
 	i[0][0]=dt*m[1][1];i[1][0]=-dt*m[1][0];
 	i[0][1]=-dt*m[0][1];i[1][1]=dt*m[0][0];
 
-	float ox=x_handle,oy=y_handle;
+	float ox=(float)x_handle,oy=(float)y_handle;
 	v0.x=-ox;v0.y=-oy;	//tl
 	v1.x=c->getWidth()-ox;v1.y=-oy;	//tr
 	v2.x=c->getWidth()-ox;v2.y=c->getHeight()-oy;	//br
@@ -193,10 +193,10 @@ static gxCanvas *tformCanvas( gxCanvas *c,float m[2][2],int x_handle,int y_handl
 	float miny=floor( vmin( v0.y,v1.y,v2.y,v3.y ) );
 	float maxx=ceil( vmax( v0.x,v1.x,v2.x,v3.x ) );
 	float maxy=ceil( vmax( v0.y,v1.y,v2.y,v3.y ) );
-	int iw=maxx-minx,ih=maxy-miny;
+	int iw=(int)(maxx-minx),ih=(int)(maxy-miny);
 
 	gxCanvas *t=gx_graphics->createCanvas( iw,ih,0 );
-	t->setHandle( -minx,-miny );
+	t->setHandle( (int)-minx,(int)-miny );
 	t->setMask( c->getMask() );
 
 	c->lock();
@@ -207,7 +207,7 @@ static gxCanvas *tformCanvas( gxCanvas *c,float m[2][2],int x_handle,int y_handl
 		v.x=minx+.5f;
 		for( int x=0;x<iw;++v.x,++x ){
 			vec2 q=vrot(i,v);
-			unsigned rgb=filter ? getPixel( c,q.x+ox,q.y+oy ) : c->getPixel( floor(q.x+ox),floor(q.y+oy) );
+			unsigned rgb=filter ? getPixel( c,q.x+ox,q.y+oy ) : c->getPixel((int) floor(q.x+ox),(int)floor(q.y+oy) );
 			t->setPixel( x,y,rgb );
 		}
 	}
@@ -766,7 +766,7 @@ bbImage *bbCopyImage( bbImage *i ){
 	if (!debugImage( i,0,"CopyImage" )) return 0;
 	vector<gxCanvas*> frames;
 	const vector<gxCanvas*> &f=i->getFrames();
-	for( int k=0;k<f.size();++k ){
+	for( int k=0;k<(int)f.size();++k ){
 		gxCanvas *t=f[k];
 		gxCanvas *c=gx_graphics->createCanvas( t->getWidth(),t->getHeight(),0 );
 		if( !c ){
@@ -808,7 +808,7 @@ bbImage *bbCreateImage( int w,int h,int n ){
 void bbFreeImage( bbImage *i ){
 	if( !image_set.erase(i) ) return;
 	const vector<gxCanvas*> &f=i->getFrames();
-	for( int k=0;k<f.size();++k ){
+	for( int k=0;k<(int)f.size();++k ){
 		if( f[k]==gx_canvas ){
 			bbSetBuffer( gx_graphics->getFrontCanvas() );
 			break;
@@ -903,19 +903,19 @@ void bbMaskImage( bbImage *i,int r,int g,int b ){
 	if (!debugImage( i,0,"MaskImage" )) return;
 	unsigned argb=(r<<16)|(g<<8)|b;
 	const vector<gxCanvas*> &f=i->getFrames();
-	for( int k=0;k<f.size();++k ) f[k]->setMask( argb );
+	for( int k=0;k<(int)f.size();++k ) f[k]->setMask( argb );
 }
 
 void bbHandleImage( bbImage *i,int x,int y ){
 	if (!debugImage( i,0,"HandleImage" )) return;
 	const vector<gxCanvas*> &f=i->getFrames();
-	for( int k=0;k<f.size();++k ) f[k]->setHandle( x,y );
+	for( int k=0;k<(int)f.size();++k ) f[k]->setHandle( x,y );
 }
 
 void bbMidHandle( bbImage *i ){
 	if (!debugImage( i,0,"MidHandle" )) return;
 	const vector<gxCanvas*> &f=i->getFrames();
-	for( int k=0;k<f.size();++k ) f[k]->setHandle( f[k]->getWidth()/2,f[k]->getHeight()/2 );
+	for( int k=0;k<(int)f.size();++k ) f[k]->setHandle( f[k]->getWidth()/2,f[k]->getHeight()/2 );
 }
 
 void bbAutoMidHandle( int enable ){
@@ -983,7 +983,7 @@ void bbTFormImage( bbImage *i,float a,float b,float c,float d ){
 	if (!debugImage( i,0,"TFormImage" )) return;
 	const vector<gxCanvas*> &f=i->getFrames();
 	int k;
-	for( k=0;k<f.size();++k ){
+	for( k=0;k<(int)f.size();++k ){
 		if( f[k]==gx_canvas ){
 			bbSetBuffer( gx_graphics->getFrontCanvas() );
 			break;
@@ -991,7 +991,7 @@ void bbTFormImage( bbImage *i,float a,float b,float c,float d ){
 	}
 	float m[2][2];
 	m[0][0]=a;m[1][0]=b;m[0][1]=c;m[1][1]=d;
-	for( k=0;k<f.size();++k ){
+	for( k=0;k<(int)f.size();++k ){
 		gxCanvas *c=f[k];
 		int hx,hy;c->getHandle( &hx,&hy );
 		gxCanvas *t=tformCanvas( c,m,hx,hy );
@@ -1108,7 +1108,7 @@ BBStr *bbInput( BBStr *prompt ){
 		//render all text
 		//calc curs x and width
 		int cx=curs_x+curr_font->getWidth( str.substr( 0,curs ) );
-		int cw=curr_font->getWidth( curs<str.size() ? str.substr( curs,1 ) : "X" );
+		int cw=curr_font->getWidth( curs<(int)str.size() ? str.substr( curs,1 ) : "X" );
 
 		//wait for a key
 		int key=0,st=gx_runtime->getMilliSecs(),tc=-1;
@@ -1165,7 +1165,7 @@ BBStr *bbInput( BBStr *prompt ){
 			curs=0;str="";
 			break;
 		case gxInput::ASC_DELETE:
-			if( curs<str.size() ) str=str.substr( 0,curs )+str.substr( curs+1 );
+			if( curs<(int)str.size() ) str=str.substr( 0,curs )+str.substr( curs+1 );
 			break;
 		case gxInput::ASC_HOME:
 			curs=0;
@@ -1177,7 +1177,7 @@ BBStr *bbInput( BBStr *prompt ){
 			if( curs ) --curs;
 			break;
 		case gxInput::ASC_RIGHT:
-			if( curs<str.size() ) ++curs;
+			if( curs<(int)str.size() ) ++curs;
 			break;
 		case '\r':
 			go=false;

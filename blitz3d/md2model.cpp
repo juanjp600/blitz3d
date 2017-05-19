@@ -42,7 +42,7 @@ void MD2Model::startMD2Anim( int first,int last,int mode,float speed,float trans
 	if( trans>0 ){
 		if( !trans_verts ) trans_verts=d_new MD2Rep::Vert[rep->numVertices()];
 
-		if( anim_mode & 0x8000 ) rep->render( trans_verts,anim_time,trans_time );
+		if( anim_mode & 0x8000 ) rep->render( trans_verts,(int)anim_time,trans_time );
 		else rep->render( trans_verts,render_a,render_b,render_t );
 		trans_speed=1.0f/trans;
 		trans_time=0;
@@ -53,11 +53,11 @@ void MD2Model::startMD2Anim( int first,int last,int mode,float speed,float trans
 	anim_last=last;
 	anim_len=last-first;
 	anim_speed=speed;
-	anim_time=((mode&0x7fff)==Animator::ANIM_MODE_LOOP || anim_speed>=0) ? anim_first : anim_last;
+	anim_time=(float)(((mode&0x7fff)==Animator::ANIM_MODE_LOOP || anim_speed>=0) ? anim_first : anim_last);
 	anim_mode=mode;
 
 	if( !anim_speed || !anim_len ){
-		render_a=render_b=anim_time;
+		render_a=render_b=(int)anim_time;
 		render_t=0;
 		anim_mode&=0x8000;
 	}
@@ -83,7 +83,7 @@ void MD2Model::animate( float e ){
 			anim_speed=-anim_speed;
 			break;
 		default:
-			anim_time=anim_first;
+			anim_time=(float)anim_first;
 			anim_mode=0;
 			break;
 		}
@@ -97,12 +97,12 @@ void MD2Model::animate( float e ){
 			anim_speed=-anim_speed;
 			break;
 		default:
-			anim_time=anim_last;
+			anim_time=(float)anim_last;
 			anim_mode=0;
 			break;
 		}
 	}
-	render_a=floor(anim_time);render_b=render_a+1;
+	render_a=(int)floor(anim_time);render_b=render_a+1;
 	if( anim_mode==Animator::ANIM_MODE_LOOP && render_b==anim_last ) render_b=anim_first;
 	render_t=anim_time-render_a;
 }
@@ -113,7 +113,7 @@ bool MD2Model::render( const RenderContext &rc ){
 	if( !f.cull( rep->getBox() ) ) return false;
 
 	if( anim_mode & 0x8000 ){
-		rep->render( this,trans_verts,anim_time,trans_time );
+		rep->render( this,trans_verts,(int)anim_time,trans_time );
 	}else{
 		rep->render( this,render_a,render_b,render_t );
 	}

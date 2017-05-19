@@ -47,7 +47,7 @@ bool Operand::parseChar( char c ){
 
 bool Operand::parseReg( int *reg ){
 	int i;
-	for( i=0;i<s.size() && isalpha( s[i] );++i ){}
+	for( i=0;i<(int)s.size() && isalpha( s[i] );++i ){}
 	if( !i ) return false;
 	string t=s.substr(0,i);
 	for( int j=0;j<24;++j ){
@@ -68,13 +68,13 @@ bool Operand::parseFPReg( int *reg ){
 bool Operand::parseLabel( string *label ){
 	if( !s.size() || (!isalpha( s[0] ) && s[0]!='_') ) return false;
 	int i;
-	for( i=1;i<s.size() && (isalnum( s[i] ) || s[i]=='_');++i ){}
+	for( i=1;i<(int)s.size() && (isalnum( s[i] ) || s[i]=='_');++i ){}
 	*label=s.substr(0,i);s=s.substr( i );return true;
 }
 
 bool Operand::parseConst( int *iconst ){
 	int i,sgn=s.size() && (s[0]=='-'||s[0]=='+');
-	for( i=sgn;i<s.size() && isdigit( s[i] );++i ){}
+	for( i=sgn;i<(int)s.size() && isdigit( s[i] );++i ){}
 	if( i==sgn ) return false;
 	int n=atoi( s.c_str() );
 	*iconst=n;s=s.substr( i );return true;

@@ -39,9 +39,9 @@ void Surface::addVertices( const vector<Vertex> &verts ){
 }
 
 void Surface::setColor( int n,const Vector &v ){
-	int r=floor(v.x*255);if(r<0)r=0;else if(r>255)r=255;
-	int g=floor(v.y*255);if(g<0)g=0;else if(g>255)g=255;
-	int b=floor(v.z*255);if(b<0)b=0;else if(b>255)b=255;
+	int r=  (int)floor(v.x*255);if(r<0)r=0;else if(r>255)r=255;
+	int g = (int)floor(v.y * 255); if (g<0)g = 0; else if (g>255)g = 255;
+	int b = (int)floor(v.z * 255); if (b<0)b = 0; else if (b>255)b = 255;
 
 	unsigned argb=0xff000000|(r<<16)|(g<<8)|b;
 
@@ -50,9 +50,9 @@ void Surface::setColor( int n,const Vector &v ){
 }
 
 Vector Surface::getColor( int n )const{
-	float r=(vertices[n].color&0x00ff0000)>>16;
-	float g=(vertices[n].color&0x0000ff00)>>8;
-	float b= vertices[n].color&0x000000ff;
+	float r=(float)((vertices[n].color&0x00ff0000)>>16);
+	float g=(float)((vertices[n].color&0x0000ff00)>>8);
+	float b=(float)(vertices[n].color&0x000000ff);
 	return Vector( r/255.0f,g/255.0f,b/255.0f );
 }
 
@@ -63,7 +63,7 @@ void Surface::addTriangles( const vector<Triangle> &tris ){
 void Surface::updateNormals(){
 	int k;
 	map<Vector,Vector> norm_map;
-	for( k=0;k<triangles.size();++k ){
+	for( k=0;k<(int)triangles.size();++k ){
 		const Triangle &t=triangles[k];
 		const Vector &v0=vertices[t.verts[0]].coords;
 		const Vector &v1=vertices[t.verts[1]].coords;
@@ -75,7 +75,7 @@ void Surface::updateNormals(){
 		norm_map[v1]+=n;
 		norm_map[v2]+=n;
 	}
-	for( k=0;k<vertices.size();++k ){
+	for( k=0;k<(int)vertices.size();++k ){
 		Vertex *v=&vertices[k];
 		v->normal=norm_map[v->coords].normalized();
 	}
@@ -88,7 +88,7 @@ gxMesh *Surface::getMesh(){
 
 	valid_vs=valid_ts=0;
 
-	if( mesh_vs<vertices.size() || mesh_ts<triangles.size() ){
+	if( mesh_vs<(int)vertices.size() || mesh_ts<(int)triangles.size() ){
 		if( mesh ){
 			gx_graphics->freeMesh( mesh );
 			mesh_vs=vertices.size()+mesh_vs/2;
@@ -101,10 +101,10 @@ gxMesh *Surface::getMesh(){
 	}
 
 	mesh->lock( true );
-	for( ;valid_vs<vertices.size();++valid_vs ){
+	for( ;valid_vs<(int)vertices.size();++valid_vs ){
 		mesh->setVertex( valid_vs,&vertices[valid_vs] );
 	}
-	for( ;valid_ts<triangles.size();++valid_ts ){
+	for( ;valid_ts<(int)triangles.size();++valid_ts ){
 		const Triangle &t=triangles[valid_ts];
 		mesh->setTriangle( valid_ts,t.verts[0],t.verts[1],t.verts[2] );
 	}
@@ -116,7 +116,7 @@ gxMesh *Surface::getMesh( const vector<Bone> &bones ){
 
 	valid_vs=valid_ts=0;
 
-	if( mesh_vs<vertices.size() || mesh_ts<triangles.size() ){
+	if( mesh_vs<(int)vertices.size() || mesh_ts<(int)triangles.size() ){
 		if( mesh ) gx_graphics->freeMesh( mesh );
 		mesh_vs=vertices.size();
 		mesh_ts=triangles.size();
@@ -124,7 +124,7 @@ gxMesh *Surface::getMesh( const vector<Bone> &bones ){
 	}
 
 	mesh->lock( true );
-	for( ;valid_vs<vertices.size();++valid_vs ){
+	for( ;valid_vs<(int)vertices.size();++valid_vs ){
 		const Vertex &v=vertices[valid_vs];
 		if( v.bone_bones[0]==255 ){
 			//no bone!
@@ -147,7 +147,7 @@ gxMesh *Surface::getMesh( const vector<Bone> &bones ){
 			mesh->setVertex( valid_vs,tv,tn.normalized(),v.color,v.tex_coords );
 		}
 	}
-	for( ;valid_ts<triangles.size();++valid_ts ){
+	for( ;valid_ts<(int)triangles.size();++valid_ts ){
 		const Triangle &t=triangles[valid_ts];
 		mesh->setTriangle( valid_ts,t.verts[0],t.verts[1],t.verts[2] );
 	}

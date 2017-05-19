@@ -23,7 +23,7 @@ void StmtSeqNode::reset( const string &file,const string &lab ){
 // Statement Sequence //
 ////////////////////////
 void StmtSeqNode::semant( Environ *e ){
-	for( int k=0;k<stmts.size();++k ){
+	for( int k=0;k<(int)stmts.size();++k ){
 		try{ stmts[k]->semant( e ); }
 		catch( Ex &x ){ 
 			if( x.pos<0 ) x.pos=stmts[k]->pos;
@@ -37,7 +37,7 @@ void StmtSeqNode::translate( Codegen *g ){
 
 	string t=fileLabel;
 	fileLabel=file.size() ? fileMap[file] : "";
-	for( int k=0;k<stmts.size();++k ){
+	for( int k=0;k<(int)stmts.size();++k ){
 		StmtNode *stmt=stmts[k];
 		stmt->debug( stmts[k]->pos,g );
 		try{
@@ -127,7 +127,7 @@ void DimNode::translate( Codegen *g ){
 	g->i_data( 0,"_a"+ident );
 	g->i_data( et );
 	g->i_data( exprs->size() );
-	for( k=0;k<exprs->size();++k ) g->i_data( 0 );
+	for(int k=0;k<exprs->size();++k ) g->i_data( 0 );
 }
 
 ////////////////
@@ -479,9 +479,9 @@ void InsertNode::semant( Environ *e ){
 
 void InsertNode::translate( Codegen *g ){
 	TNode *t1=expr1->translate( g );
-	//if( g->debug || true ) t1=jumpf( t1,"__bbNullObjEx" );
+	if( g->debug ) t1=jumpf( t1,"__bbNullObjEx" );
 	TNode *t2=expr2->translate( g );
-	//if( g->debug || true ) t2=jumpf( t2,"__bbNullObjEx" );
+	if( g->debug ) t2=jumpf( t2,"__bbNullObjEx" );
 	string s=before ? "__bbObjInsBefore" : "__bbObjInsAfter";
 	g->code( call( s,t1,t2 ) );
 }
@@ -498,7 +498,7 @@ void SelectNode::semant( Environ *e ){
 	Decl *d=e->decls->insertDecl( genLabel(),expr->sem_type,DECL_LOCAL );
 	sem_temp=d_new DeclVarNode( d );
 
-	for( int k=0;k<cases.size();++k ){
+	for( int k=0;k<(int)cases.size();++k ){
 		CaseNode *c=cases[k];
 		c->exprs->semant( e );
 		c->exprs->castTo( ty,e );
@@ -516,7 +516,7 @@ void SelectNode::translate( Codegen *g ){
 	vector<string> labs;
 	string brk=genLabel();
 
-	for( int k=0;k<cases.size();++k ){
+	for( int k=0;k<(int)cases.size();++k ){
 		CaseNode *c=cases[k];
 		labs.push_back( genLabel() );
 		for( int j=0;j<c->exprs->size();++j ){
@@ -527,7 +527,7 @@ void SelectNode::translate( Codegen *g ){
 	}
 	if( defStmts ) defStmts->translate( g );
 	g->code( jump( brk ) );
-	for( k=0;k<cases.size();++k ){
+	for( int k=0;k<(int)cases.size();++k ){
 		CaseNode *c=cases[k];
 		g->label( labs[k] );
 		c->stmts->translate( g );

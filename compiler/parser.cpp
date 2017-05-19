@@ -705,7 +705,7 @@ ExprNode *Parser::parsePrimary( bool opt ){
 		toker->next();
 		break;
 	case FLOATCONST:
-		result=d_new FloatConstNode( atof( toker->text() ) );
+		result=d_new FloatConstNode( (float)atof( toker->text() ) );
 		toker->next();
 		break;
 	case STRINGCONST:
@@ -715,13 +715,13 @@ ExprNode *Parser::parsePrimary( bool opt ){
 		break;
 	case BINCONST:
 		n=0;t=toker->text();
-		for( k=1;k<t.size();++k ) n=(n<<1)|(t[k]=='1');
+		for( k=1;k<(int)t.size();++k ) n=(n<<1)|(t[k]=='1');
 		result=d_new IntConstNode( n );
 		toker->next();
 		break;
 	case HEXCONST:
 		n=0;t=toker->text();
-		for( k=1;k<t.size();++k ) n=(n<<4)|( isdigit(t[k]) ? t[k]&0xf : (t[k]&7)+9 );
+		for( k=1;k<(int)t.size();++k ) n=(n<<4)|( isdigit(t[k]) ? t[k]&0xf : (t[k]&7)+9 );
 		result=d_new IntConstNode( n );
 		toker->next();
 		break;

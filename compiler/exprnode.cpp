@@ -75,14 +75,14 @@ TNode *CastNode::translate( Codegen *g ){
 // Sequence of Expressions //
 /////////////////////////////
 void ExprSeqNode::semant( Environ *e ){
-	for( int k=0;k<exprs.size();++k ){
+	for( int k=0;k<(int)exprs.size();++k ){
 		if( exprs[k] ) exprs[k]=exprs[k]->semant( e );
 	}
 }
 
 TNode *ExprSeqNode::translate( Codegen *g,bool cfunc ){
 	TNode *t=0,*l=0;
-	for( int k=0;k<exprs.size();++k ){
+	for( int k=0;k<(int)exprs.size();++k ){
 
 		TNode *q=exprs[k]->translate(g);
 
@@ -110,10 +110,10 @@ TNode *ExprSeqNode::translate( Codegen *g,bool cfunc ){
 }
 
 void ExprSeqNode::castTo( DeclSeq *decls,Environ *e,bool cfunc ){
-	if( exprs.size()>decls->size() ) ex( "Too many parameters" );
+	if( (int)exprs.size()>decls->size() ) ex( "Too many parameters" );
 	for( int k=0;k<decls->size();++k ){
 		Decl *d=decls->decls[k];
-		if( k<exprs.size() && exprs[k] ){
+		if( k<(int)exprs.size() && exprs[k] ){
 
 			if( cfunc && d->type->structType() ){
 				if( exprs[k]->sem_type->structType() ){
@@ -130,14 +130,14 @@ void ExprSeqNode::castTo( DeclSeq *decls,Environ *e,bool cfunc ){
 		}else{
 			if( !d->defType ) ex( "Not enough parameters" );
 			ExprNode *expr=constValue( d->defType );
-			if( k<exprs.size() ) exprs[k]=expr;
+			if( k<(int)exprs.size() ) exprs[k]=expr;
 			else exprs.push_back( expr );
 		}
 	}
 }
 
 void ExprSeqNode::castTo( Type *t,Environ *e ){
-	for( int k=0;k<exprs.size();++k ){
+	for( int k=0;k<(int)exprs.size();++k ){
 		exprs[k]=exprs[k]->castTo( t,e );
 	}
 }
@@ -216,7 +216,7 @@ int IntConstNode::intValue(){
 }
 
 float IntConstNode::floatValue(){
-	return value;
+	return (float)value;
 }
 
 string IntConstNode::stringValue(){
@@ -300,7 +300,7 @@ ExprNode *UniExprNode::semant( Environ *e ){
 			case '+':e=d_new FloatConstNode( +c->floatValue() );break;
 			case '-':e=d_new FloatConstNode( -c->floatValue() );break;
 			case ABS:e=d_new FloatConstNode( c->floatValue()>=0 ? c->floatValue() : -c->floatValue() );break;
-			case SGN:e=d_new FloatConstNode( c->floatValue()>0 ? 1 : (c->floatValue()<0 ? -1 : 0) );break;
+			case SGN:e=d_new FloatConstNode( (float)(c->floatValue()>0 ? 1 : (c->floatValue()<0 ? -1 : 0)) );break;
 			}
 		}
 		delete this;
@@ -560,7 +560,7 @@ ExprNode *AfterNode::semant( Environ *e ){
 
 TNode *AfterNode::translate( Codegen *g ){
 	TNode *t=expr->translate( g );
-	//if( g->debug || true ) t=jumpf( t,"__bbNullObjEx" );
+	if( g->debug ) t=jumpf( t,"__bbNullObjEx" );
 	return call( "__bbObjNext",t );
 }
 
@@ -577,7 +577,7 @@ ExprNode *BeforeNode::semant( Environ *e ){
 
 TNode *BeforeNode::translate( Codegen *g ){
 	TNode *t=expr->translate( g );
-	//if( g->debug || true ) t=jumpf( t,"__bbNullObjEx" );
+	if( g->debug ) t=jumpf( t,"__bbNullObjEx" );
 	return call( "__bbObjPrev",t );
 }
 

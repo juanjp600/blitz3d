@@ -39,12 +39,12 @@ void gxSound::setPitch( int hertz ){
 }
 
 void gxSound::setVolume( float volume ){
-	def_vol=volume*255.0f;
+	def_vol=(int)(volume*255.0f);
 	defs_valid=false;
 }
 
 void gxSound::setPan( float pan ){
-	def_pan=(pan+1.0f)*127.5f;
+	def_pan=(int)((pan+1.0f)*127.5f);
 	defs_valid=false;
 }
 

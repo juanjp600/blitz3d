@@ -44,7 +44,7 @@ bool VectorType::canCastTo( Type *t ){
 	if( VectorType *v=t->vectorType() ){
 		if( elementType!=v->elementType ) return false;
 		if( sizes.size()!=v->sizes.size() ) return false;
-		for( int k=0;k<sizes.size();++k ){
+		for( int k=0;k<(int)sizes.size();++k ){
 			if( sizes[k]!=v->sizes[k] ) return false;
 		}
 		return true;

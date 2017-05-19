@@ -118,7 +118,7 @@ void main(){
 		if( fail ) continue;
 
 		if( flags.find( "0|" )==0 ) flags=flags.substr( 2 );
-		for( int k=0;k<name.size();++k ) name[k]=tolower( name[k] );
+		for( int k=0;k<(int)name.size();++k ) name[k]=tolower( name[k] );
 
 		if( name==last ) name="0";
 		else{
@@ -126,7 +126,7 @@ void main(){
 			name='\"'+name+'\"';
 		}
 
-		char bf[4];itoa( bytes.size()/3,bf,16 );
+		char bf[4];_itoa_s( bytes.size()/3,bf,4,16 );
 		bytes="\\x"+string( bf )+bytes;
 
 		out<<name<<','<<lop<<','<<rop<<','<<flags<<",\""<<bytes<<"\",\n";
@@ -135,5 +135,7 @@ void main(){
 	out.flush();
 	out.close();
 	cout<<"All done!\n";
-	getch();
+	//getch();
+	_getch();
+
 }

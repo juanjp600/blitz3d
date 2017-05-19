@@ -2,7 +2,7 @@
 #ifndef GXINPUT_H
 #define GXINPUT_H
 
-#include <dinput.h>
+#include <dx7/dinput.h>
 
 #include "gxdevice.h"
 

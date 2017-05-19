@@ -14,13 +14,13 @@ struct bbFile : public bbStream{
 		delete buf;
 	}
 	int read( char *buff,int size ){
-		return buf->sgetn( (char*)buff,size );
+		return (int)buf->sgetn( (char*)buff,size );
 	}
 	int write( const char *buff,int size ){
-		return buf->sputn( (char*)buff,size );
+		return (int)buf->sputn( (char*)buff,size );
 	}
 	int avail(){
-		return buf->in_avail();
+		return (int)buf->in_avail();
 	}
 	int eof(){
 		return buf->sgetc()==EOF;

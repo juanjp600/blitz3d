@@ -131,7 +131,7 @@ static void openRsrcTree( Section *s ){
 static int rsrcSize( Rsrc *r ){
 	if( r->data ) return (sizeof(Rdat)+r->data_sz+7)&~7;
 	int sz=sizeof( Rdir );
-	for( int k=0;k<r->kids.size();++k ){
+	for( int k=0;k<(int)r->kids.size();++k ){
 		sz+=sizeof( Rent )+rsrcSize( r->kids[k] );
 	}
 	return sz;
@@ -154,7 +154,7 @@ static void closeRsrcDir( Section *s,int off,Rsrc *p ){
 	t=off;
 
 	//write entries
-	for( k=0;k<p->kids.size();++ent,++k ){
+	for( k=0;k<(int)p->kids.size();++ent,++k ){
 		Rsrc *r=p->kids[k];
 		ent->id=r->id;
 		ent->data=t;
@@ -165,7 +165,7 @@ static void closeRsrcDir( Section *s,int off,Rsrc *p ){
 	t=off;
 
 	//write kids...
-	for( k=0;k<p->kids.size();++k ){
+	for( k=0;k<(int)p->kids.size();++k ){
 		Rsrc *r=p->kids[k];
 		if( !r->data ){
 			closeRsrcDir( s,t,r );
@@ -197,7 +197,7 @@ static void closeRsrcTree( Section *s ){
 	int data_delta=fileAlign(virt_sz)-fileAlign(s->sect.virt_size);
 
 
-	for( int k=0;k<sections.size();++k ){
+	for( int k=0;k<(int)sections.size();++k ){
 		Section *t=sections[k];
 		if( t->sect.virt_addr>s->sect.virt_addr ){
 			t->sect.virt_addr+=virt_delta;
@@ -225,7 +225,7 @@ static void closeRsrcTree( Section *s ){
 }
 
 static Rsrc *findRsrc( int id,Rsrc *p ){
-	for( int k=0;k<p->kids.size();++k ){
+	for( int k=0;k<(int)p->kids.size();++k ){
 		if( p->kids[k]->id==id ) return p->kids[k];
 	}
 	return 0;
@@ -328,7 +328,7 @@ bool makeExe( int entry ){
 bool replaceRsrc( int type,int id,int lang,void *data,int data_sz ){
 	if( !img_file ) return false;
 
-	for( int k=0;k<sections.size();++k ){
+	for( int k=0;k<(int)sections.size();++k ){
 		Section *s=sections[k];
 		if( strcmp( s->sect.name,".rsrc" ) ) continue;
 

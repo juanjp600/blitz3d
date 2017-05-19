@@ -23,16 +23,25 @@ static void procNotFound(){
 	RTEX( "User lib function not found" );
 }
 
+static string getAppDir(){
+	char buff[MAX_PATH];
+	if( GetModuleFileName( 0,buff,MAX_PATH ) ){
+		string t=buff;
+		int n=t.find_last_of( '\\' );
+		if( n!=string::npos ) t=t.substr( 0,n );
+		return t;
+	}
+	return "";
+}
+
 void _bbLoadLibs( char *p ){
 
-	string home;
-
-	if( const char *t=getenv( "blitzpath" ) ) home=t;
+	string home = getAppDir();
 
 	while( *p ){
 		HMODULE mod=LoadLibrary( p );
 		if( !mod && home.size() ){
-			mod=LoadLibrary( (home+"/userlibs/"+p).c_str() );
+			mod=LoadLibrary( (home+"/../userlibs/"+p).c_str() );
 		}
 		p+=strlen(p)+1;
 		if( mod ){

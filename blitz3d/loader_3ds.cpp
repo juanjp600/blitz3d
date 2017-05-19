@@ -221,7 +221,7 @@ static void parseTriMesh( MeshModel *mesh ){
 		v.coords=inv_tform * v.coords;
 	}
 
-	for( k=0;k<faces.size();++k ){
+	for( k=0;k<(int)faces.size();++k ){
 		const Face3DS &f=faces[k];
 		MeshLoader::addTriangle( f.verts,f.brush );
 	}
@@ -369,7 +369,7 @@ static void parseMeshInfo( MeshModel *root,float curr_time ){
 	Vector pivot;
 	Animation anim;
 	unsigned short id=65535,parent=65535,flags1,flags2;
-	Box box( Vector(),Vector() );
+	Box box( Vector(0,0,0),Vector(0,0,0) );
 	Vector box_centre;
 	while( int chunk_id=nextChunk() ){
 		switch( chunk_id ){

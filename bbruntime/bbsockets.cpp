@@ -102,7 +102,8 @@ int UDPStream::recv(){
 		if( ioctlsocket( sock,FIONREAD,&sz ) ){ e=-1;return 0; }
 		in_buf.resize( sz );in_get=0;
 		int len=sizeof(in_addr);
-		n=::recvfrom( sock,in_buf.begin(),sz,0,(sockaddr*)&in_addr,&len );
+		char *data = in_buf.size() ? &in_buf[0] : NULL;
+		n=::recvfrom( sock,data,sz,0,(sockaddr*)&in_addr,&len );
 		if( n==SOCKET_ERROR ) continue;	//{ e=-1;return 0; }
 		in_buf.resize( n );
 		return getMsgIP();
@@ -116,7 +117,8 @@ int UDPStream::send( int ip,int port ){
 	int sz=out_buf.size();
 	out_addr.sin_addr.S_un.S_addr=htonl( ip );
 	out_addr.sin_port=htons( port ? port : addr.sin_port );
-	int n=::sendto( sock,out_buf.begin(),sz,0,(sockaddr*)&out_addr,sizeof(out_addr) );
+	const char *data = out_buf.size() ? &out_buf[0] : NULL;
+	int n=::sendto( sock,data,sz,0,(sockaddr*)&out_addr,sizeof(out_addr) );
 	if( n!=sz ) return e=-1;
 	out_buf.clear();
 	return sz;
@@ -314,7 +316,7 @@ int bbCountHostIPs( BBStr *host ){
 
 int bbHostIP( int index ){
 	if( debug ){
-		if( index<1 || index>host_ips.size() ){
+		if (index<1 || index>(int)host_ips.size()){
 			RTEX( "Host index out of range" );
 		}
 	}

@@ -87,15 +87,15 @@ int bbMouseWait(){
 }
 
 int bbMouseX(){
-	return gx_mouse->getAxisState( 0 );
+	return (int)gx_mouse->getAxisState( 0 );
 }
 
 int bbMouseY(){
-	return gx_mouse->getAxisState( 1 );
+	return (int)gx_mouse->getAxisState( 1 );
 }
 
 int bbMouseZ(){
-	return gx_mouse->getAxisState( 2 )/120;
+	return (int)gx_mouse->getAxisState( 2 )/120;
 }
 
 int bbMouseXSpeed(){
@@ -129,22 +129,22 @@ int bbJoyType( int port ){
 }
 
 int bbJoyDown( int n,int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if( port<0 || port>=(int)gx_joysticks.size() ) return 0;
 	return gx_joysticks[port]->keyDown( n );
 }
 
 int bbJoyHit( int n,int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->keyHit( n );
 }
 
 int bbGetJoy( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getKey();
 }
 
 int bbWaitJoy( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	for(;;){
 		if( !gx_runtime->idle() ) RTEX( 0 );
 		if( int key=gx_joysticks[port]->getKey() ) return key;
@@ -153,82 +153,82 @@ int bbWaitJoy( int port ){
 }
 
 float bbJoyX( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(0);
 }
 
 float bbJoyY( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(1);
 }
 
 float bbJoyZ( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(2);
 }
 
 float bbJoyU( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(3);
 }
 
 float bbJoyV( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(4);
 }
 
 float bbJoyPitch( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(5)*180;
 }
 
 float bbJoyYaw( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(6)*180;
 }
 
 float bbJoyRoll( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	return gx_joysticks[port]->getAxisState(7)*180;
 }
 
 int  bbJoyHat( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
-	return gx_joysticks[port]->getAxisState(8);
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return (int)gx_joysticks[port]->getAxisState(8);
 }
 
 int	bbJoyXDir( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	float t=gx_joysticks[port]->getAxisState(0);
 	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int bbJoyYDir( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	float t=gx_joysticks[port]->getAxisState(1);
 	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int	bbJoyZDir( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	float t=gx_joysticks[port]->getAxisState(2);
 	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int	bbJoyUDir( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	float t=gx_joysticks[port]->getAxisState(3);
 	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int	bbJoyVDir( int port ){
-	if( port<0 || port>=gx_joysticks.size() ) return 0;
+	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	float t=gx_joysticks[port]->getAxisState(4);
 	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 void bbFlushJoy(){
-	for( int k=0;k<gx_joysticks.size();++k ) gx_joysticks[k]->flush();
+	for (int k = 0; k<(int)gx_joysticks.size(); ++k) gx_joysticks[k]->flush();
 }
 
 void  bbEnableDirectInput( int enable ){

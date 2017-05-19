@@ -200,17 +200,7 @@ void gxScene::setTexState( int n,const TexState &state,bool tex_blend ){
 	case BLEND_MULTIPLY2:
 		setTSS( n,D3DTSS_COLOROP,D3DTOP_MODULATE2X );
 		break;
-	case BLEND_BUMPENVMAP:
-		setTSS( n,D3DTSS_COLOROP,D3DTOP_BUMPENVMAP );
-		break;
 	}
-	
-	setTSS( n,D3DTSS_BUMPENVMAT00,state.bumpEnvMat[0][0] );
-	setTSS( n,D3DTSS_BUMPENVMAT01,state.bumpEnvMat[0][1] );
-	setTSS( n,D3DTSS_BUMPENVMAT10,state.bumpEnvMat[1][0] );
-	setTSS( n,D3DTSS_BUMPENVMAT11,state.bumpEnvMat[1][1] );
-	setTSS( n,D3DTSS_BUMPENVLSCALE,state.bumpEnvScale );
-	setTSS( n,D3DTSS_BUMPENVLOFFSET,state.bumpEnvOffset );
 	setTSS( n,D3DTSS_ALPHAOP,(flags & gxCanvas::CANVAS_TEX_ALPHA) ? D3DTOP_MODULATE : D3DTOP_SELECTARG2 );
 }
 
@@ -242,17 +232,17 @@ void gxScene::setZMode(){
 void gxScene::setLights(){
 	if( fx & FX_FULLBRIGHT ){
 		//no lights on
-		for( int n=0;n<_curLights.size();++n ) dir3dDev->LightEnable( n,false );
+		for( int n=0;n<(int)_curLights.size();++n ) dir3dDev->LightEnable( n,false );
 	}else if( fx & FX_CONDLIGHT ){
 		//some lights on
-		for( int n=0;n<_curLights.size();++n ){
+		for( int n=0;n<(int)_curLights.size();++n ){
 			gxLight *light=_curLights[n];
 			bool enable=light->d3d_light.dltType!=D3DLIGHT_DIRECTIONAL;
 			dir3dDev->LightEnable( n,enable );
 		}
 	}else{
 		//all lights on
-		for( int n=0;n<_curLights.size();++n ) dir3dDev->LightEnable( n,true );
+		for( int n=0;n<(int)_curLights.size();++n ) dir3dDev->LightEnable( n,true );
 	}
 }
 
@@ -420,7 +410,7 @@ void gxScene::setRenderState( const RenderState &rs ){
 	if( rs.alpha!=material.diffuse.a ){
 		material.diffuse.a=rs.alpha;
 		if( rs.fx&FX_ALPHATEST ){
-			int alpharef=(rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha;
+			int alpharef=(int)((rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha);
 			setRS( D3DRENDERSTATE_ALPHAREF,alpharef );
 		}
 		setmat=true;
@@ -484,7 +474,7 @@ void gxScene::setRenderState( const RenderState &rs ){
 		}
 		if( t&FX_ALPHATEST ){
 			if( fx&FX_ALPHATEST ){
-				int alpharef=(rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha;
+				int alpharef=(int)((rs.fx&FX_VERTEXALPHA)?0:128*rs.alpha);
 				setRS( D3DRENDERSTATE_ALPHAREF,alpharef );
 			}
 			setRS( D3DRENDERSTATE_ALPHATESTENABLE,fx & FX_ALPHATEST ? true : false );
@@ -504,12 +494,6 @@ void gxScene::setRenderState( const RenderState &rs ){
 		if( ts.canvas!=hw->canvas ){ hw->canvas=ts.canvas;settex=true; }
 		if( ts.blend!=hw->blend ){ hw->blend=ts.blend;settex=true; }
 		if( ts.flags!=hw->flags ){ hw->flags=ts.flags;settex=true; }
-		if( ts.bumpEnvMat[0][0]!=hw->bumpEnvMat[0][0] ) { hw->bumpEnvMat[0][0]=ts.bumpEnvMat[0][0];settex=true; }
-		if( ts.bumpEnvMat[1][0]!=hw->bumpEnvMat[1][0] ) { hw->bumpEnvMat[1][0]=ts.bumpEnvMat[1][0];settex=true; }
-		if( ts.bumpEnvMat[0][1]!=hw->bumpEnvMat[0][1] ) { hw->bumpEnvMat[0][1]=ts.bumpEnvMat[0][1];settex=true; }
-		if( ts.bumpEnvMat[1][1]!=hw->bumpEnvMat[1][1] ) { hw->bumpEnvMat[1][1]=ts.bumpEnvMat[1][1];settex=true; }
-		if( ts.bumpEnvScale!=hw->bumpEnvScale ) { hw->bumpEnvScale=ts.bumpEnvScale;settex=true; }
-		if( ts.bumpEnvOffset!=hw->bumpEnvOffset ) { hw->bumpEnvOffset=ts.bumpEnvOffset;settex=true; }
 		if( ts.matrix || hw->mat_valid ){
 			if( ts.matrix ){
 				memcpy( &hw->matrix._11,ts.matrix->elements[0],12 );
@@ -546,13 +530,12 @@ bool gxScene::begin( const vector<gxLight*> &lights ){
 		setTSS( n,D3DTSS_COLOROP,D3DTOP_DISABLE );
 		setTSS( n,D3DTSS_ALPHAOP,D3DTOP_DISABLE );
 		dir3dDev->SetTexture( n,0 );
-		setTSS( n,D3DTSS_MIPMAPLODBIAS,textureLodBias );
 	}
 
 	//set light states
 	_curLights.clear();
 	for( n=0;n<8;++n ){
-		if( n<lights.size() ){
+		if( n<(int)lights.size() ){
 			_curLights.push_back( lights[n] );
 			dir3dDev->SetLight( n,&_curLights[n]->d3d_light );
 		}else{

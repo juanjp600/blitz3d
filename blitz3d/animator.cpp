@@ -8,7 +8,7 @@ Animator::Animator( Animator *t ):_seqs( t->_seqs ){
 	_objs.resize( t->_objs.size() );
 	_anims.resize( t->_anims.size() );
 
-	for( int k=0;k<t->_objs.size();++k ){
+	for( int k=0;k<(int)t->_objs.size();++k ){
 		_objs[k]=t->_objs[k]->getLastCopy();
 		_anims[k].keys=t->_anims[k].keys;
 	}
@@ -30,7 +30,8 @@ Animator::Animator( const vector<Object*> &objs,int frames ):_objs(objs){
 }
 
 void Animator::reset(){
-	_seq=_mode=_seq_len=_time=_speed=_trans_time=_trans_speed=0;
+	_seq = _mode = _seq_len = 0;
+	_time =	_speed = _trans_time = _trans_speed = 0;
 }
 
 void Animator::addObjs( Object *obj ){
@@ -44,7 +45,7 @@ void Animator::addSeq( int frames ){
 	Seq seq;
 	seq.frames=frames;
 	_seqs.push_back( seq );
-	for( int k=0;k<_objs.size();++k ){
+	for( int k=0;k<(int)_objs.size();++k ){
 		Object *obj=_objs[k];
 		_anims[k].keys.push_back( obj->getAnimation() );
 		obj->setAnimation( Animation() );
@@ -52,11 +53,11 @@ void Animator::addSeq( int frames ){
 }
 
 void Animator::addSeqs( Animator *t ){
-	for( int n=0;n<t->_seqs.size();++n ){
+	for( int n=0;n<(int)t->_seqs.size();++n ){
 		_seqs.push_back( t->_seqs[n] );
-		for( int k=0;k<_objs.size();++k ){
+		for( int k=0;k<(int)_objs.size();++k ){
 			int j;
-			for( j=0;j<t->_objs.size();++j ){
+			for( j=0;j<(int)t->_objs.size();++j ){
 				if( _objs[k]->getName()==t->_objs[j]->getName() ) break;
 			}
 			if( j==t->_objs.size() ){
@@ -73,7 +74,7 @@ void Animator::extractSeq( int first,int last,int seq ){
 	sq.frames=last-first;
 	_seqs.push_back( sq );
 
-	for( int k=0;k<_objs.size();++k ){
+	for( int k=0;k<(int)_objs.size();++k ){
 		Animation &keys=_anims[k].keys[seq];
 		_anims[k].keys.push_back( Animation( keys,first,last ) );
 	}
@@ -81,7 +82,7 @@ void Animator::extractSeq( int first,int last,int seq ){
 
 void Animator::updateAnim(){
 
-	for( int k=0;k<_objs.size();++k ){
+	for( int k=0;k<(int)_objs.size();++k ){
 
 		Object *obj=_objs[k];
 		const Animation &keys=_anims[k].keys[_seq];
@@ -100,7 +101,7 @@ void Animator::updateAnim(){
 
 void Animator::updateTrans(){
 
-	for( int k=0;k<_objs.size();++k ){
+	for( int k=0;k<(int)_objs.size();++k ){
 
 		Object *obj=_objs[k];
 		const Anim &anim=_anims[k];
@@ -113,7 +114,7 @@ void Animator::updateTrans(){
 
 void Animator::beginTrans(){
 
-	for( int k=0;k<_objs.size();++k ){
+	for( int k=0;k<(int)_objs.size();++k ){
 
 		Object *obj=_objs[k];
 		Anim &anim=_anims[k];
@@ -135,7 +136,7 @@ void Animator::beginTrans(){
 }
 
 void Animator::setAnimTime( float time,int seq ){
-	if( seq<0 || seq>_seqs.size() ) return;
+	if( seq<0 || seq>(int)_seqs.size() ) return;
 
 	_mode=0;
 	_speed=0;
@@ -143,7 +144,7 @@ void Animator::setAnimTime( float time,int seq ){
 	_seq_len=_seqs[_seq].frames;
 
 	//Ok, mod the anim time!
-	_time=fmod( time,_seq_len );
+	_time=fmod( time,(float)_seq_len );
 
 	//if( time<0 || time>_seq_len ) time=fmod( time,_seq_len );
 	//_time=time;
@@ -156,13 +157,13 @@ void Animator::setAnimTime( float time,int seq ){
 void Animator::animate( int mode,float speed,int seq,float trans ){
 	if( !mode && !speed ){ _mode=0;return; }
 
-	if( seq<0 || seq>=_seqs.size() ) return;
+	if( seq<0 || seq>=(int)_seqs.size() ) return;
 
 	_seq=seq;
 	_mode=mode;
 	_seq_len=_seqs[_seq].frames;
 	_speed=speed;
-	_time=_speed>=0 ? 0 : _seq_len;
+	_time=(float)(_speed>=0 ? 0 : _seq_len);
 
 	if( trans<=0 ){
 		updateAnim();
@@ -199,17 +200,17 @@ void Animator::update( float elapsed ){
 
 	switch( _mode ){
 	case ANIM_MODE_LOOP:
-		_time=fmod( _time,_seq_len );
+		_time=fmod( _time,(float)_seq_len );
 		if( _time<0 ) _time+=_seq_len;
 		break;
 	case ANIM_MODE_PINGPONG:
-		_time=fmod( _time,_seq_len*2 );
+		_time=fmod((float) _time,(float)(_seq_len*2) );
 		if( _time<0 ) _time+=_seq_len*2;
 		if( _time>=_seq_len ){ _time=_seq_len-(_time-_seq_len);_speed=-_speed; }
 		break;
 	case ANIM_MODE_ONESHOT:
 		if( _time<0 ){ _time=0;_mode=0; }
-		else if( _time>=_seq_len ){ _time=_seq_len;_mode=0; }
+		else if( _time>=_seq_len ){ _time=(float)_seq_len;_mode=0; }
 		break;
 	}
 

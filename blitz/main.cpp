@@ -103,12 +103,12 @@ static void dumpKeys( bool lang,bool mod,bool help ){
 
 	if( !mod ) return;
 
-	for( int k=0;k<keyWords.size();++k ){
+	for( int k=0;k<(int)keyWords.size();++k ){
 		string t=keyWords[k];
 
 		if( t[0]=='_' )	continue;
 		if( !isalpha( t[0] ) ) t=t.substr( 1 );
-		for( int n=0;n<t.size();++n ){
+		for( int n=0;n<(int)t.size();++n ){
 			if( !isalnum(t[n]) && t[n]!='_' ){
 				t=t.substr( 0,n );
 				break;
@@ -136,15 +136,15 @@ static void demoError(){
 }
 
 int _cdecl main( int argc,char *argv[] ){
-
+	
 	string in_file,out_file,args;
-
+	
 	bool debug=false,quiet=false,veryquiet=false,compileonly=false;
 	bool dumpkeys=false,dumphelp=false,showhelp=false,dumpasm=false;
 	bool versinfo=false;
 
 	for( int k=1;k<argc;++k ){
-
+		
 		string t=argv[k];
 
 		t=tolower(t);
@@ -181,17 +181,17 @@ int _cdecl main( int argc,char *argv[] ){
 			}
 		}
 	}
-
+	
 	if( out_file.size() && !in_file.size() ) usageErr();
-
-	if( const char *er=openLibs() ) err( er );
-
+	
+	if( const char *er=openLibs() ) { err( er ); }
+	
 	if( const char *er=linkLibs() ) err( er );
-
+	
 	if( showhelp ) showHelp();
 	if( dumpkeys ) dumpKeys( true,true,dumphelp );
 	if( versinfo ) versInfo();
-
+	
 	if( !in_file.size() ) return 0;
 
 #ifdef DEMO
@@ -199,16 +199,19 @@ int _cdecl main( int argc,char *argv[] ){
 #endif
 
 	if( in_file[0]=='\"' ){
+		
 		if( in_file.size()<3 || in_file[in_file.size()-1]!='\"' ) usageErr();
 		in_file=in_file.substr( 1,in_file.size()-2 );
 	}
 
+	
 	ifstream in( in_file.c_str() );
 	if( !in ) err( "Unable to open input file" );
 	if( !quiet ){
 		showInfo();
 		cout<<"Compiling \""<<in_file<<"\""<<endl;
 	}
+	
 
 	int n=in_file.rfind( '/' );
 	if( n==string::npos ) n=in_file.rfind( '\\' );
@@ -216,9 +219,10 @@ int _cdecl main( int argc,char *argv[] ){
 		if( !n || in_file[n-1]==':' ) ++n;
 		SetCurrentDirectory( in_file.substr(0,n).c_str() );
 	}
+	
 
 	ProgNode *prog=0;
-	Environ *environ=0;
+	Environ *qenviron=0;
 	Module *module=0;
 
 	try{
@@ -227,31 +231,31 @@ int _cdecl main( int argc,char *argv[] ){
 		Toker toker( in );
 		Parser parser( toker );
 		prog=parser.parse( in_file );
-
+		
 		//semant
 		if( !veryquiet ) cout<<"Generating..."<<endl;
-		environ=prog->semant( runtimeEnviron );
-
+		qenviron=prog->semant( runtimeEnviron );
+		
 		//translate
 		if( !veryquiet ) cout<<"Translating..."<<endl;
 		qstreambuf qbuf;
 		iostream asmcode( &qbuf );
 		Codegen_x86 codegen( asmcode,debug );
-
+		
 		prog->translate( &codegen,userFuncs );
-
+		
 		if( dumpasm ){
 			cout<<endl<<string( qbuf.data(),qbuf.size() )<<endl;
 		}
-
+		
 		//assemble
 		if( !veryquiet ) cout<<"Assembling..."<<endl;
 		module=linkerLib->createModule();
 		Assem_x86 assem( asmcode,module );
 		assem.assemble();
-
+		
 	}catch( Ex &x ){
-
+		
 		string file='\"'+x.file+'\"';
 		int row=((x.pos>>16)&65535)+1,col=(x.pos&65535)+1;
 		cout<<file<<":"<<row<<":"<<col<<":"<<row<<":"<<col<<":"<<x.ex<<endl;
@@ -262,37 +266,37 @@ int _cdecl main( int argc,char *argv[] ){
 
 	if( out_file.size() ){
 		if( !veryquiet ) cout<<"Creating executable \""<<out_file<<"\"..."<<endl;
-		if( !module->createExe( out_file.c_str(),(home+"/bin/runtime.dll").c_str() ) ){
+		if( !module->createExe( out_file.c_str(),(home+"\\runtime.dll").c_str() ) ){
 			err( "Error creating executable" );
 		}
 	}else if( !compileonly ){
 		void *entry=module->link( runtimeModule );
 		if( !entry ) return 0;
-
+		
 		HMODULE dbgHandle=0;
 		Debugger *debugger=0;
-
+		
 		if( debug ){
-			dbgHandle=LoadLibrary( (home+"/bin/debugger.dll").c_str() );
+			dbgHandle=LoadLibrary( (home+"\\debugger.dll").c_str() );
 			if( dbgHandle ){
 				typedef Debugger *(_cdecl*GetDebugger)( Module*,Environ* );
 				GetDebugger gd=(GetDebugger)GetProcAddress( dbgHandle,"debuggerGetDebugger" );
-				if( gd ) debugger=gd( module,environ );
+				if( gd ) debugger=gd( module,qenviron );
 			}
 			if( !debugger ) err( "Error launching debugger" );
 		}
-
+		
 		if( !veryquiet ) cout<<"Executing..."<<endl;
-
+		
 		runtimeLib->execute( (void(*)())entry,args.c_str(),debugger );
-
+		
 		if( dbgHandle ) FreeLibrary( dbgHandle );
 	}
-
+	
 	delete module;
-	delete environ;
-
+	delete qenviron;
+	
 	closeLibs();
-
+	
 	return 0;
 }
