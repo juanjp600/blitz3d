@@ -779,12 +779,12 @@ void MainFrame::helpHome(){
 	BHtmlHelp *h=findHelp();
 	string t;
 	t="index.html";
-	h->Navigate( (prefs.homeDir+"/help/"+t).c_str() );
+	h->Navigate( (prefs.homeDir+"/../help/"+t).c_str() );
 }
 
 void MainFrame::helpAutodoc(){
 	BHtmlHelp *h=findHelp();
-	h->Navigate( (prefs.homeDir+"/help/autodoc.html").c_str() );
+	h->Navigate( (prefs.homeDir+"/../help/autodoc.html").c_str() );
 }
 
 void MainFrame::helpBack(){

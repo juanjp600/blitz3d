@@ -245,8 +245,6 @@
     <ClCompile Include="bbstream.cpp" />
     <ClCompile Include="bbstring.cpp" />
     <ClCompile Include="bbsys.cpp" />
-    <ClCompile Include="multiplay.cpp" />
-    <ClCompile Include="multiplay_setup.cpp" />
     <ClCompile Include="std.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">std.h</PrecompiledHeaderFile>
@@ -258,9 +256,6 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">std.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="userlibs.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="multiplay_setup.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basic.h" />
@@ -276,8 +271,6 @@
     <ClInclude Include="bbstream.h" />
     <ClInclude Include="bbstring.h" />
     <ClInclude Include="bbsys.h" />
-    <ClInclude Include="multiplay.h" />
-    <ClInclude Include="multiplay_setup.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="std.h" />
     <ClInclude Include="userlibs.h" />

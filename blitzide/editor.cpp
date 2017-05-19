@@ -59,7 +59,8 @@ DWORD Editor::streamIn( LPBYTE buff,LONG cnt,LONG *done ){
 				if( c=='\\' || c=='{' || c=='}' ) is_line+='\\';
 				is_line+=(char)c;
 			}
-			formatStreamLine();++is_linenum;
+			formatStreamLine();
+			++is_linenum;
 			if( c=='\r' && is_stream->peek()=='\n' ) is_stream->get();
 			if( is_stream->peek()==EOF ) is_line+='}';
 		}
@@ -669,11 +670,11 @@ void Editor::en_msgfilter( NMHDR *nmhdr,LRESULT *result ){
 		}else if( msg->wParam==13 ){
 			if( selStart!=selEnd ) return;
 			int k;
-			int ln=editCtrl.LineFromChar( selStart );
+			int ln=editCtrl.LineFromChar( selStart-1 );
 			int pos=selStart-editCtrl.LineIndex( ln );
 			string line=getLine( ln );if( pos>(int)line.size() ) return;
 			for( k=0;k<pos && line[k]=='\t';++k ){}
-			line="\r\n"+line.substr( 0,k )+'\0';
+			line=line.substr( 0,k )+'\0';
 			editCtrl.ReplaceSel( line.data(),true );
 			*result=1;
 		}
@@ -839,6 +840,8 @@ void Editor::fixFmt( bool fmt ){
 void Editor::formatLine( int ln ){
 	if( ln<0 || ln>=editCtrl.GetLineCount() ) return;
 
+	int scrollPos = editCtrl.GetScrollPos(SB_VERT);
+
 	lineToFmt=-1;
 	int pos=editCtrl.LineIndex( ln );
 	string tline=getLine( ln );
@@ -908,4 +911,5 @@ void Editor::formatLine( int ln ){
 			}
 		}
 	}
+	editCtrl.SetScrollPos(SB_VERT,scrollPos);
 }

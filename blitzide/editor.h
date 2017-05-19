@@ -83,6 +83,7 @@ private:
 	string is_line;
 	istream *is_stream;
 	int is_curs,is_linenum;
+	int is_lastFormatted = 0;
 
 	//sizing
 	bool sizing;
