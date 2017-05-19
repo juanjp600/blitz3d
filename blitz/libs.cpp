@@ -131,7 +131,7 @@ static set<string> _ulibkws;
 
 static const char *loadUserLib( const string &userlib ){
 
-	string t=home+"/userlibs/"+userlib;
+	string t=home+"/../userlibs/"+userlib;
 
 	string lib="";
 	ifstream in(t.c_str());
@@ -225,7 +225,7 @@ static const char *linkUserLibs(){
 
 	WIN32_FIND_DATA fd;
 
-	HANDLE h=FindFirstFile( (home+"/userlibs/*.decls").c_str(),&fd );
+	HANDLE h=FindFirstFile( (home+"/../userlibs/*.decls").c_str(),&fd );
 
 	if( h==INVALID_HANDLE_VALUE ) return 0;
 
