@@ -176,7 +176,7 @@
       <ObjectFileName>.\blitz3d___Win32_Blitz3DRelease\</ObjectFileName>
       <ProgramDataBaseFileName>.\blitz3d___Win32_Blitz3DRelease\</ProgramDataBaseFileName>
       <CallingConvention>StdCall</CallingConvention>
-      <AdditionalIncludeDirectories>../../dxsdk/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;../../dxsdk/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>

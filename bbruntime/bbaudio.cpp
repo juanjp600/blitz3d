@@ -24,13 +24,8 @@ static gxSound *loadSound( BBStr *f,bool use_3d ){
 	return gx_audio ? gx_audio->loadSound( t,use_3d ) : 0;
 }
 
-static gxChannel *playMusic( BBStr *f,bool use_3d ){
-	string t=*f;delete f;
-	return gx_audio ? gx_audio->playFile( t,use_3d ) : 0;
-}
-
-gxSound *bbLoadSound( BBStr *f ){
-	return loadSound( f,false );
+gxSound *bbLoadSound( BBStr *f,int use_3d ){
+	return loadSound( f,!!use_3d );
 }
 
 void bbFreeSound( gxSound *sound ){
@@ -45,7 +40,7 @@ void bbLoopSound( gxSound *sound ){
 	sound->setLoop( true );
 }
 
-void bbSoundPitch( gxSound *sound,int pitch ){
+void bbSoundPitch( gxSound *sound,float pitch ){
 	if( !sound ) return;
 	if (!debugSound( sound, "SoundPitch" )) return;
 	sound->setPitch( pitch );
@@ -57,24 +52,17 @@ void bbSoundVolume( gxSound *sound,float volume ){
 	sound->setVolume( volume );
 }
 
-void bbSoundPan( gxSound *sound,float pan ){
+/*void bbSoundPan( gxSound *sound,float pan ){
 	if( !sound ) return;
 	if (!debugSound( sound, "SoundPan" )) return;
 	sound->setPan( pan );
-}
+}*/
 
-gxChannel *bbPlaySound( gxSound *sound ){
+gxChannel *bbPlaySound( gxSound *sound,float x,float y,float z,float vx,float vy,float vz ){
 	if( !sound ) return 0;
 	if (!debugSound( sound, "PlaySound" )) return 0;
-	return sound->play();
-}
-
-gxChannel *bbPlayMusic( BBStr *f ){
-	return playMusic( f,false );
-}
-
-gxChannel *bbPlayCDTrack( int track,int mode ){
-	return gx_audio ? gx_audio->playCDTrack( track,mode ) : 0;
+    float pos[3]={x,y,z}; float vel[3]={vx,vy,vz};
+	return sound->play3d(pos,vel);
 }
 
 void bbStopChannel( gxChannel *channel ){
@@ -92,7 +80,7 @@ void bbResumeChannel( gxChannel *channel ){
 	channel->setPaused( false );
 }
 
-void bbChannelPitch( gxChannel *channel,int pitch ){
+void bbChannelPitch( gxChannel *channel,float pitch ){
 	if( !channel ) return;
 	channel->setPitch( pitch );
 }
@@ -102,20 +90,14 @@ void bbChannelVolume( gxChannel *channel,float volume ){
 	channel->setVolume( volume );
 }
 
-void bbChannelPan( gxChannel *channel,float pan ){
+/*void bbChannelPan( gxChannel *channel,float pan ){
 	if( !channel ) return;
 	channel->setPan( pan );
-}
+}*/
 
 int bbChannelPlaying( gxChannel *channel ){
 	return channel ? channel->isPlaying() : 0;
 }
-
-#ifdef PRO
-gxSound *bbLoad3DSound( BBStr *f ){
-	return loadSound( f,true );
-}
-#endif
 
 bool audio_create(){
 	gx_audio=gx_runtime->openAudio( 0 );
@@ -129,23 +111,18 @@ bool audio_destroy(){
 }
 
 void audio_link( void(*rtSym)(const char*,void*) ){
-	rtSym( "%LoadSound$filename",bbLoadSound );
+	rtSym( "%LoadSound$filename%is3d=1",bbLoadSound );
 	rtSym( "FreeSound%sound",bbFreeSound );
 	rtSym( "LoopSound%sound",bbLoopSound );
-	rtSym( "SoundPitch%sound%pitch",bbSoundPitch );
+	rtSym( "SoundPitch%sound#pitch",bbSoundPitch );
 	rtSym( "SoundVolume%sound#volume",bbSoundVolume );
-	rtSym( "SoundPan%sound#pan",bbSoundPan );
-	rtSym( "%PlaySound%sound",bbPlaySound );
-	rtSym( "%PlayMusic$midifile",bbPlayMusic );
-	rtSym( "%PlayCDTrack%track%mode=1",bbPlayCDTrack );
+	//rtSym( "SoundPan%sound#pan",bbSoundPan );
+	rtSym( "%PlaySound%sound#x=0#y=0#z=0#vx=0#vy=0#vz=0",bbPlaySound );
 	rtSym( "StopChannel%channel",bbStopChannel );
 	rtSym( "PauseChannel%channel",bbPauseChannel );
 	rtSym( "ResumeChannel%channel",bbResumeChannel );
-	rtSym( "ChannelPitch%channel%pitch",bbChannelPitch );
+	rtSym( "ChannelPitch%channel#pitch",bbChannelPitch );
 	rtSym( "ChannelVolume%channel#volume",bbChannelVolume );
-	rtSym( "ChannelPan%channel#pan",bbChannelPan );
+	//rtSym( "ChannelPan%channel#pan",bbChannelPan );
 	rtSym( "%ChannelPlaying%channel",bbChannelPlaying );
-#ifdef PRO
-	rtSym( "%Load3DSound$filename",bbLoad3DSound );
-#endif
 }

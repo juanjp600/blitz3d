@@ -241,7 +241,7 @@
       <ProgramDataBaseFileName>.\bbruntime_dll___Win32_Blitz3DRelease\</ProgramDataBaseFileName>
       <CallingConvention>StdCall</CallingConvention>
       <ExceptionHandling>Async</ExceptionHandling>
-      <AdditionalIncludeDirectories>../../dxsdk/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;../../dxsdk/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -266,6 +266,8 @@
       <ImportLibrary>.\bbruntime_dll___Win32_Blitz3DRelease\runtime.lib</ImportLibrary>
       <AdditionalDependencies>wsock32.lib;amstrmid.lib;winmm.lib;../../dxsdk/lib/d3dim.lib;../../dxsdk/lib/d3drm.lib;../../dxsdk/lib/d3dx.lib;../../dxsdk/lib/d3dxd.lib;../../dxsdk/lib/d3dxof.lib;../../dxsdk/lib/ddraw.lib;../../dxsdk/lib/dinput.lib;../../dxsdk/lib/dsetup.lib;../../dxsdk/lib/dsound.lib;../../dxsdk/lib/dxguid.lib;odbc32.lib;odbccp32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -282,8 +284,11 @@
     <Image Include="bbexe.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\fmodapi375win\api\lib\fmodvc.lib" />
+    <Library Include="..\..\..\..\..\..\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib" />
     <Library Include="..\..\FreeImage241\Source\FreeImageLib\Release\FreeImage.lib" />
+    <Library Include="..\..\libogg\win32\VS2010\Win32\Release\libogg_static.lib" />
+    <Library Include="..\..\libvorbis\win32\VS2010\Win32\Release\libvorbisfile_static.lib" />
+    <Library Include="..\..\libvorbis\win32\VS2010\Win32\Release\libvorbis_static.lib" />
     <Library Include="..\bbruntime\bbruntime___Win32_Blitz3DRelease\bbruntime.lib" />
     <Library Include="..\blitz3d\blitz3d___Win32_Blitz3DRelease\blitz3d.lib" />
     <Library Include="..\gxruntime\gxruntime___Win32_Blitz3DRelease\gxruntime.lib" />

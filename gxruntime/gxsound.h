@@ -5,22 +5,19 @@
 #include "gxchannel.h"
 
 class gxAudio;
-struct FSOUND_SAMPLE;
 
 class gxSound{
 public:
 	gxAudio *audio;
 
-	gxSound( gxAudio *audio,FSOUND_SAMPLE *sample );
+	gxSound( gxAudio *audio,ALuint sample );
 	~gxSound();
 
 private:
-	bool defs_valid;
-	int def_freq,def_vol,def_pan,def_pri;
-	FSOUND_SAMPLE *sample;
+	float def_gain,def_pitch;
+    bool def_loop;
+	ALuint sample;
 	float pos[3],vel[3];
-
-	void setDefaults();
 
 	/***** GX INTERFACE *****/
 public:
@@ -30,9 +27,8 @@ public:
 
 	//modifiers
 	void setLoop( bool loop );
-	void setPitch( int hertz );
+	void setPitch( float pitch );
 	void setVolume( float volume );
-	void setPan( float pan );
 };
 
 #endif
