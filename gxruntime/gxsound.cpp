@@ -5,6 +5,9 @@
 
 gxSound::gxSound( gxAudio *a,ALuint s ){
     audio=a; sample=s;
+    setLoop( false );
+    setVolume( 1.f );
+    setPitch( 1.f );
 }
 
 gxSound::~gxSound(){

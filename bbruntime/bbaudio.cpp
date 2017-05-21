@@ -34,10 +34,10 @@ void bbFreeSound( gxSound *sound ){
 	gx_audio->freeSound( sound );
 }
 
-void bbLoopSound( gxSound *sound ){
+void bbLoopSound( gxSound *sound,int loop ){
 	if( !sound ) return;
 	if (!debugSound( sound, "LoopSound" )) return;
-	sound->setLoop( true );
+	sound->setLoop( !!loop );
 }
 
 void bbSoundPitch( gxSound *sound,float pitch ){
@@ -113,7 +113,7 @@ bool audio_destroy(){
 void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "%LoadSound$filename%is3d=1",bbLoadSound );
 	rtSym( "FreeSound%sound",bbFreeSound );
-	rtSym( "LoopSound%sound",bbLoopSound );
+	rtSym( "LoopSound%sound%loop=1",bbLoopSound );
 	rtSym( "SoundPitch%sound#pitch",bbSoundPitch );
 	rtSym( "SoundVolume%sound#volume",bbSoundVolume );
 	//rtSym( "SoundPan%sound#pan",bbSoundPan );
