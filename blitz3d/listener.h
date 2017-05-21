@@ -6,7 +6,7 @@
 
 class Listener : public Object{
 public:
-	Listener( float roll,float dopp,float dist );
+	Listener( float roll=1.f,float dopp=1.f,float dist=1.f );
 	Listener( const Listener &t );
 	~Listener();
 
@@ -16,6 +16,7 @@ public:
 
 	//Listener interface
 	void renderListener();
+    void set(float roll=1.f,float dopp=1.f,float dist=1.f);
 
 private:
 };

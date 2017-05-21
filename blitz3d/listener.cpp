@@ -7,8 +7,12 @@ extern gxAudio *gx_audio;
 Listener::Listener( float roll,float dopp,float dist ){
 	if( !gx_audio ) return;
 
-	gx_audio->set3dOptions( roll,dopp,dist );
+    set(roll,dopp,dist);
 	renderListener();
+}
+
+void Listener::set( float roll,float dopp,float dist ){
+    gx_audio->set3dOptions( roll,dopp,dist );
 }
 
 Listener::Listener( const Listener &t ):
