@@ -24,8 +24,29 @@ static gxSound *loadSound( BBStr *f,bool use_3d ){
 	return gx_audio ? gx_audio->loadSound( t,use_3d ) : 0;
 }
 
+static gxSound *loadSoundAsync( BBStr *f,bool use_3d ){
+	string t=*f;delete f;
+	return gx_audio ? gx_audio->loadSoundAsync( t,use_3d ) : 0;
+}
+
 gxSound *bbLoadSound( BBStr *f,int use_3d ){
 	return loadSound( f,!!use_3d );
+}
+
+gxSound *bbLoadSoundAsync( BBStr *f,int use_3d ){
+	return loadSoundAsync( f,!!use_3d );
+}
+
+void bbUpdateLoadSoundAsync(gxSound* sound) {
+	if( !sound ) return;
+	if (!debugSound( sound, "UpdateLoadSoundAsync" )) return;
+	sound->prepare();
+}
+
+int bbSoundReady(gxSound* sound) {
+	if( !sound ) return 0;
+	if (!debugSound( sound, "SoundReady" )) return 0;
+	return sound->isReady() ? 1 : 0;
 }
 
 void bbFreeSound( gxSound *sound ){
@@ -112,6 +133,10 @@ bool audio_destroy(){
 
 void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "%LoadSound$filename%is3d=1",bbLoadSound );
+	rtSym( "%LoadSoundAsync$filename%is3d=1",bbLoadSoundAsync );
+	rtSym( "UpdateLoadSoundAsync%sound",bbUpdateLoadSoundAsync );
+	rtSym( "%SoundReady%sound",bbSoundReady );
+
 	rtSym( "FreeSound%sound",bbFreeSound );
 	rtSym( "LoopSound%sound%loop=1",bbLoopSound );
 	rtSym( "SoundPitch%sound#pitch",bbSoundPitch );

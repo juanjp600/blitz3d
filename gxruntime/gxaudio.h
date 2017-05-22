@@ -8,11 +8,15 @@
 
 class gxRuntime;
 
-class gxAudioAsyncLoadData {
-	ALuint sample;
-	struct OggVorbis_File* oggfile;
-	std::vector<char> buffer;
-	ALsizei freq;
+struct gxAudioAsyncLoadData {
+	public:
+		struct OggVorbis_File* oggfile = 0;
+		std::vector<char> buffer;
+		ALsizei freq;
+		ALenum format;
+		int endian;
+		int div;
+		~gxAudioAsyncLoadData();
 };
 
 class gxAudio{
@@ -49,8 +53,9 @@ public:
     bool loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned);
 	
 	//async loading
-	void loadOGG_asyncInit(const std::string &filename,bool isPanned);
-	bool loadOGG_async(gxAudioAsyncLoadData* ldc);
+	gxSound *loadSoundAsync( const std::string &filename,bool use_3d );
+	gxAudioAsyncLoadData* loadOGG_asyncInit(const std::string &filename,bool isPanned);
+	bool loadOGG_asyncUpdate(gxAudioAsyncLoadData* ald);
 
 	gxSound *verifySound( gxSound *sound );
 	void freeSound( gxSound *sound );

@@ -5,7 +5,7 @@
 #include "gxchannel.h"
 
 class gxAudio;
-class gxAudioAsyncLoadData;
+struct gxAudioAsyncLoadData;
 
 class gxSound{
 public:
@@ -22,7 +22,7 @@ private:
 	float pos[3],vel[3];
 
 	//async loading data
-	bool isReady;
+	bool ready;
 	gxAudioAsyncLoadData *asyncLoadData;
 
 	/***** GX INTERFACE *****/
@@ -30,6 +30,10 @@ public:
 	//actions
 	gxChannel *play();
 	gxChannel *play3d( const float pos[3],const float vel[3] );
+
+	//async loading
+	void prepare();
+	bool isReady();
 
 	//modifiers
 	void setLoop( bool loop );

@@ -205,7 +205,7 @@ string ftoa( float n ){
 		char * tmp=new char[64];
 		errno_t err=_ecvt_s(tmp, 64, n, digits, &dec, &sign);
 		t = tmp;
-		delete tmp;
+		delete[] tmp;
 
 		if ( dec <= eNeg + 1 || dec > ePos ){
 

@@ -223,7 +223,7 @@ struct Quat{
 	}
 	Quat normalized()const{
 		float l=length();
-		if (l<EPSILON) return;
+		if (l<EPSILON) return *this;
 		return *this/l;
 	}
 	Quat slerpTo( const Quat &q,float a )const{
