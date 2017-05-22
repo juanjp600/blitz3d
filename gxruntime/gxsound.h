@@ -5,12 +5,14 @@
 #include "gxchannel.h"
 
 class gxAudio;
+class gxAudioAsyncLoadData;
 
 class gxSound{
 public:
 	gxAudio *audio;
 
 	gxSound( gxAudio *audio,ALuint sample );
+	gxSound( gxAudio *audio,gxAudioAsyncLoadData *asyncLoadData );
 	~gxSound();
 
 private:
@@ -18,6 +20,10 @@ private:
     bool def_loop;
 	ALuint sample;
 	float pos[3],vel[3];
+
+	//async loading data
+	bool isReady;
+	gxAudioAsyncLoadData *asyncLoadData;
 
 	/***** GX INTERFACE *****/
 public:

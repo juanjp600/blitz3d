@@ -8,13 +8,24 @@ gxSound::gxSound( gxAudio *a,ALuint s ){
     setLoop( false );
     setVolume( 1.f );
     setPitch( 1.f );
+	asyncLoadData = 0;
+	isReady = true;
+}
+
+gxSound::gxSound( gxAudio *a,gxAudioAsyncLoadData *ald ){
+	audio=a;
+	asyncLoadData=ald;
+	isReady = false;
 }
 
 gxSound::~gxSound(){
-    alDeleteBuffers(1,&sample);
+	if (isReady) {
+		alDeleteBuffers(1,&sample);
+	}
 }
 
 gxChannel *gxSound::play(){
+	if (!isReady) return 0;
     gxChannel* retVal = audio->play( sample,def_loop );
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
@@ -22,6 +33,7 @@ gxChannel *gxSound::play(){
 }
 
 gxChannel *gxSound::play3d( const float pos[3],const float vel[3] ){
+	if (!isReady) return 0;
 	gxChannel* retVal = audio->play3d( sample,def_loop,pos,vel );
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
