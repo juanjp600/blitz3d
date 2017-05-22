@@ -18,7 +18,7 @@ float bbASin( float n ){ return (float)asin(n)*rtod; }
 float bbACos( float n ){ return (float)acos(n)*rtod; }
 float bbATan( float n ){ return (float)atan(n)*rtod; }
 float bbATan2( float n,float t ){ return (float)atan2(n,t)*rtod; }
-float bbSqr( float n ){ return (float)sqrt(n); }
+float bbSqr( float n ){ return (float)sqrtf(n); }
 float bbFloor( float n ){ return (float)floor(n); }
 float bbCeil( float n ){ return (float)ceil(n); }
 float bbExp( float n ){ return (float)exp(n); }
