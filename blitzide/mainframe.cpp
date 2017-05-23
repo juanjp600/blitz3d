@@ -897,9 +897,9 @@ void MainFrame::updateCmdUI( CCmdUI *ui ){
 static string commandURL( const string &t ){
 
 	static char *dirs[]={
-		"help\\commands\\2d_commands\\",
+		"..\\help\\commands\\2d_commands\\",
 #ifdef PRO
-		"help\\commands\\3d_commands\\",
+		"..\\help\\commands\\3d_commands\\",
 #endif
 		0
 	};
