@@ -73,6 +73,12 @@ void bbSoundVolume( gxSound *sound,float volume ){
 	sound->setVolume( volume );
 }
 
+void bbSoundRange(gxSound *sound, float inNear, float inFar) {
+	if( !sound ) return;
+	if (!debugSound( sound, "SoundRange" )) return;
+	sound->setRange( inNear,inFar );
+}
+
 /*void bbSoundPan( gxSound *sound,float pan ){
 	if( !sound ) return;
 	if (!debugSound( sound, "SoundPan" )) return;
@@ -88,27 +94,46 @@ gxChannel *bbPlaySound( gxSound *sound,float x,float y,float z,float vx,float vy
 
 void bbStopChannel( gxChannel *channel ){
 	if( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
 	channel->stop();
 }
 
 void bbPauseChannel( gxChannel *channel ){
 	if( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
 	channel->setPaused( true );
 }
 
 void bbResumeChannel( gxChannel *channel ){
 	if( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
 	channel->setPaused( false );
 }
 
 void bbChannelPitch( gxChannel *channel,float pitch ){
 	if( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
 	channel->setPitch( pitch );
 }
 
 void bbChannelVolume( gxChannel *channel,float volume ){
 	if( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
 	channel->setVolume( volume );
+}
+
+void bbChannelRange(gxChannel *channel, float inNear, float inFar) {
+	if ( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
+	channel->setRange( inNear,inFar );
+}
+
+void bbChannelPos(gxChannel *channel, float x, float y, float z, float vx, float vy, float vz) {
+	if ( !channel ) return;
+	if ( !gx_audio->verifyChannel(channel) ) return;
+	float pos[3] = {x,y,z};
+	float vel[3] = {vx,vy,vz};
+	channel->set3d(pos,vel);
 }
 
 /*void bbChannelPan( gxChannel *channel,float pan ){
@@ -117,6 +142,7 @@ void bbChannelVolume( gxChannel *channel,float volume ){
 }*/
 
 int bbChannelPlaying( gxChannel *channel ){
+	if ( !gx_audio->verifyChannel(channel) ) return 0;
 	return channel ? channel->isPlaying() : 0;
 }
 
@@ -141,6 +167,7 @@ void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "LoopSound%sound%loop=1",bbLoopSound );
 	rtSym( "SoundPitch%sound#pitch",bbSoundPitch );
 	rtSym( "SoundVolume%sound#volume",bbSoundVolume );
+	rtSym( "SoundRange%sound#near#far",bbSoundRange );
 	//rtSym( "SoundPan%sound#pan",bbSoundPan );
 	rtSym( "%PlaySound%sound#x=0#y=0#z=0#vx=0#vy=0#vz=0",bbPlaySound );
 	rtSym( "StopChannel%channel",bbStopChannel );
@@ -148,6 +175,8 @@ void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "ResumeChannel%channel",bbResumeChannel );
 	rtSym( "ChannelPitch%channel#pitch",bbChannelPitch );
 	rtSym( "ChannelVolume%channel#volume",bbChannelVolume );
+	rtSym( "ChannelRange%channel#near#far",bbChannelRange );
+	rtSym( "ChannelPos%channel#x#y#z#vx=0#vy=0#vz=0",bbChannelPos );
 	//rtSym( "ChannelPan%channel#pan",bbChannelPan );
 	rtSym( "%ChannelPlaying%channel",bbChannelPlaying );
 }

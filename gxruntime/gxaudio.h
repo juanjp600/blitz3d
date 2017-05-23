@@ -27,8 +27,11 @@ public:
 	~gxAudio();
 
     //sample = buffer
-	gxChannel *play( ALuint sample,bool loop );
-	gxChannel *play3d( ALuint sample,bool loop,const float pos[3],const float vel[3] );
+	gxChannel *play( gxSound* sound,bool loop );
+	gxChannel *play3d( gxSound* sound,bool loop,const float pos[3],const float vel[3] );
+
+	void clearRelatedChannels( gxSound* sound );
+	bool verifyChannel( gxChannel* chan );
 
 	/*void pause();
 	void resume();*/

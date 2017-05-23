@@ -16,6 +16,7 @@ public:
 	virtual void setPaused( bool paused )=0;
 	virtual void setPitch( float pitch )=0;
 	virtual void setVolume( float volume )=0;
+	virtual void setRange( float inNear,float inFar )=0;
 	virtual void set3d( const float pos[3],const float vel[3] )=0;
 
 	virtual bool isPlaying()=0;
