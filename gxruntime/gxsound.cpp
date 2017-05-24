@@ -3,7 +3,7 @@
 #include "gxsound.h"
 #include "gxaudio.h"
 
-gxSound::gxSound( gxAudio *a,ALuint s ){
+gxSoundSample::gxSoundSample( gxAudio *a,ALuint s ){
     audio=a; sample=s;
 	setLoop( false );
 	setVolume( 1.f );
@@ -11,44 +11,52 @@ gxSound::gxSound( gxAudio *a,ALuint s ){
 	setRange( 100.f, 200.f );
 }
 
-gxSound::~gxSound(){
+gxSoundSample::~gxSoundSample(){
 	alDeleteBuffers(1,&sample);
 	audio->clearRelatedChannels(this);
 }
 
-ALuint gxSound::getSample() { return sample; }
+gxSoundSample* gxSoundSample::load( const std::string &filename,bool use_3d ) {
 
-gxChannel *gxSound::play(){
-    gxChannel* retVal = audio->play( this,def_loop );
+}
+
+ALuint gxSoundSample::getSample() { return sample; }
+
+gxChannel *gxSoundSample::play(){
+    gxChannel* retVal = audio->reserveChannel( this,def_loop );
 	if (!retVal) return 0;
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
 	retVal->setRange(def_range_near,def_range_far);
+	alSourcei(retVal->getALSource(), AL_BUFFER, sample);
+	alSourcePlay(retVal->getALSource());
 	return retVal;
 }
 
-gxChannel *gxSound::play3d( const float pos[3],const float vel[3] ){
-	gxChannel* retVal = audio->play3d( this,def_loop,pos,vel );
+gxChannel *gxSoundSample::play3d( const float pos[3],const float vel[3] ){
+	gxChannel* retVal = audio->reserveChannel( this,def_loop,pos,vel );
 	if (!retVal) return 0;
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
 	retVal->setRange(def_range_near,def_range_far);
+	alSourcei(retVal->getALSource(), AL_BUFFER, sample);
+	alSourcePlay(retVal->getALSource());
 	return retVal;
 }
 
-void gxSound::setLoop( bool loop ){
+void gxSoundSample::setLoop( bool loop ){
 	def_loop = loop;
 }
 
-void gxSound::setPitch( float pitch ){
+void gxSoundSample::setPitch( float pitch ){
 	def_pitch = pitch;
 }
 
-void gxSound::setVolume( float volume ){
+void gxSoundSample::setVolume( float volume ){
 	def_gain=volume;
 }
 
-void gxSound::setRange(float inNear, float inFar) {
+void gxSoundSample::setRange(float inNear, float inFar) {
 	def_range_near=inNear;
 	def_range_far=inFar;
 }

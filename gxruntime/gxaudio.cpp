@@ -53,6 +53,9 @@ struct SoundChannel : public gxChannel{
 	bool isRelated(gxSound* snd) {
 		return snd==sound;
 	}
+	ALuint getALSource() {
+		return source;
+	}
 private:
 	ALuint source;
 	gxSound* sound;
@@ -133,8 +136,42 @@ gxAudio::~gxAudio(){
     alcCloseDevice(device);
 }
 
-gxChannel *gxAudio::play( gxSound* sound,bool loop ){
-	ALuint sample = sound->getSample();
+gxChannel *gxAudio::reserveChannel(gxSound* sound,bool loop, const float pos[3], const float vel[3]) {
+	SoundChannel* channel = 0;
+	int sourceInd = -1;
+	for (int i=0;i<SOURCE_COUNT;i++){
+		if (channels[i] == 0) {
+			channel = d_new SoundChannel();
+			channels[i] = channel;
+			sourceInd = i;
+		} else if (!channels[i]->isPlaying()) {
+			delete channels[i];
+			channel = d_new SoundChannel();
+			channels[i] = channel;
+			sourceInd = i;
+		}
+	}
+	if (channel == 0) return 0;
+	channel->set(sources[sourceInd],sound);
+	alSourcei(sources[sourceInd], AL_LOOPING,loop);
+	alSourcei(sources[sourceInd], AL_SOURCE_RELATIVE, AL_TRUE);
+	if (!pos) {
+		alSource3f(sources[sourceInd], AL_POSITION, listenerPos[0],listenerPos[1],listenerPos[2]);
+	} else {
+		alSource3f(sources[sourceInd], AL_POSITION, pos[0],pos[1],pos[2]);
+	}
+	if (!vel) {
+		alSource3f(sources[sourceInd], AL_VELOCITY, 0.f,0.f,0.f);
+	} else {
+		alSource3f(sources[sourceInd], AL_VELOCITY, vel[0],vel[1],vel[2]);
+	}
+	alSourceRewind(sources[sourceInd]);
+	alSourceStop(sources[sourceInd]);
+	return channel;
+}
+
+#if 0
+gxChannel *gxAudio::play( gxSound* sound,ALuint sample,bool loop ){
     gxChannel* channel = 0;
     int sourceInd = -1;
     for (int i=0;i<SOURCE_COUNT;i++){
@@ -161,8 +198,7 @@ gxChannel *gxAudio::play( gxSound* sound,bool loop ){
     return channel;
 }
 
-gxChannel *gxAudio::play3d( gxSound* sound,bool loop,const float pos[3],const float vel[3] ){
-	ALuint sample = sound->getSample();
+gxChannel *gxAudio::play3d( gxSound* sound,ALuint sample,bool loop,const float pos[3],const float vel[3] ){
 	gxChannel* channel = 0;
     int sourceInd = -1;
     for (int i=0;i<SOURCE_COUNT;i++){
@@ -188,11 +224,12 @@ gxChannel *gxAudio::play3d( gxSound* sound,bool loop,const float pos[3],const fl
     alSourcePlay(sources[sourceInd]);
     return channel;
 }
+#endif
 
 void gxAudio::clearRelatedChannels(gxSound* sound) {
 	for (int i=0; i<32; i++) {
 		if (channels[i]) {
-			if (((SoundChannel*)channels[i])->isRelated(sound)){
+			if (channels[i]->isRelated(sound)){
 				channels[i]->stop();
 				delete channels[i]; channels[i]=0;
 			}
@@ -222,7 +259,7 @@ gxSound *gxAudio::loadSound( const string &f,bool use3d ){
         alBufferData(sample,format,&bufData[0],static_cast<ALsizei>(bufData.size()),freq);
 	    if( !sample ) return 0;
 
-	    gxSound *sound=d_new gxSound( this,sample );
+	    gxSound *sound=d_new gxSoundSample( this,sample );
 	    sound_set.insert( sound );
 	    return sound;
     }

@@ -4,6 +4,7 @@
 
 #include "bbsys.h"
 #include "../gxruntime/gxaudio.h"
+#include "../gxruntime/gxsound.h"
 
 extern gxAudio *gx_audio;
 

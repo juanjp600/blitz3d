@@ -16,8 +16,9 @@ public:
 	~gxAudio();
 
     //sample = buffer
-	gxChannel *play( gxSound* sound,bool loop );
-	gxChannel *play3d( gxSound* sound,bool loop,const float pos[3],const float vel[3] );
+	gxChannel *reserveChannel(gxSound* sound,bool loop,const float pos[3]=0,const float vel[3]=0);
+	//gxChannel *play( gxSound* sound,ALuint sample,bool loop );
+	//gxChannel *play3d( gxSound* sound,ALuint sample,bool loop,const float pos[3],const float vel[3] );
 
 	void clearRelatedChannels( gxSound* sound );
 	bool verifyChannel( gxChannel* chan );
@@ -41,11 +42,11 @@ private:
     float listenerVel[3];
 	/***** GX INTERFACE *****/
 public:
-	gxSound *loadSound( const std::string &filename,bool use_3d );
+	//gxSound *loadSound( const std::string &filename,bool use_3d );
     bool loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned);
 	
 	gxSound *verifySound( gxSound *sound );
-	void freeSound( gxSound *sound );
+	//void freeSound( gxSound *sound );
 
 	/*void setPaused( bool paused );	//master pause
 	void setVolume( float volume );	//master volume*/

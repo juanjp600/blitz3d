@@ -10,16 +10,38 @@ class gxSound{
 public:
 	gxAudio *audio;
 
-	gxSound( gxAudio *audio,ALuint sample );
-	~gxSound();
-
-private:
+protected:
 	float def_gain,def_pitch;
     bool def_loop;
 	float def_range_near;
 	float def_range_far;
-	ALuint sample;
 	float pos[3],vel[3];
+
+	/***** GX INTERFACE *****/
+public:
+	//actions
+	virtual gxChannel *play() =0;
+	virtual gxChannel *play3d( const float pos[3],const float vel[3] ) =0;
+
+	//modifiers
+	virtual void setLoop( bool loop ) =0;
+	virtual void setPitch( float pitch ) =0;
+	virtual void setVolume( float volume ) =0;
+	virtual void setRange( float inNear,float inFar ) =0;
+
+	//allocation
+	virtual void free() =0;
+};
+
+class gxSoundSample : public gxSound {
+public:
+	gxAudio *audio;
+
+	gxSoundSample( gxAudio *audio,ALuint sample );
+	~gxSoundSample();
+
+private:
+	ALuint sample;
 
 	/***** GX INTERFACE *****/
 public:
@@ -34,6 +56,10 @@ public:
 	void setPitch( float pitch );
 	void setVolume( float volume );
 	void setRange( float inNear,float inFar );
+
+	//allocation
+	static gxSoundSample* load(const std::string &filename,bool use_3d);
+	void free();
 };
 
 #endif

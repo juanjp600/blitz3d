@@ -20,6 +20,9 @@ public:
 	virtual void set3d( const float pos[3],const float vel[3] )=0;
 
 	virtual bool isPlaying()=0;
+	virtual bool isRelated(class gxSound* snd)=0;
+
+	virtual ALuint getALSource()=0;
 };
 
 #endif
