@@ -82,10 +82,6 @@ static gxChannel *allocSoundChannel( int n ){
 	return chan;
 }*/
 
-gxAudioAsyncLoadData::~gxAudioAsyncLoadData(){
-	if (oggfile) { ov_clear(oggfile); delete oggfile; }
-}
-
 gxAudio::gxAudio( gxRuntime *r ):
 runtime(r){
 	//next_chan=0;
@@ -202,74 +198,6 @@ gxSound *gxAudio::loadSound( const string &f,bool use3d ){
 	    return sound;
     }
     return 0;
-}
-
-gxSound *gxAudio::loadSoundAsync( const string &f,bool use3d ){
-	gxSound *sound=d_new gxSound( this,loadOGG_asyncInit(f,use3d) );
-	sound_set.insert( sound );
-	return sound;
-}
-
-gxAudioAsyncLoadData* gxAudio::loadOGG_asyncInit(const std::string &filename,bool isPanned) {
-	gxAudioAsyncLoadData* ald = new gxAudioAsyncLoadData();
-	ald->buffer.resize(0);
-	ald->endian = 0;
-	//char* arry = new char[4096];
-	FILE *f;
-	f=fopen(filename.c_str(),"rb");
-	if (f==nullptr) {
-		return false;
-	}
-	vorbis_info *pInfo;
-	ald->oggfile = new OggVorbis_File();
-	ov_open(f,ald->oggfile,"",0);
-	pInfo = ov_info(ald->oggfile,-1);
-	if (pInfo->channels == 1) {
-		ald->format = AL_FORMAT_MONO16;
-	} else {
-		ald->format = AL_FORMAT_STEREO16;
-	}
-	ald->freq = pInfo->rate;
-	ald->div = 1;
-	if (isPanned && ald->format==AL_FORMAT_STEREO16) {
-		//OpenAL does not perform automatic panning or attenuation with stereo tracks
-		ald->format = AL_FORMAT_MONO16;
-		ald->div=2;
-	}
-
-	return ald;
-}
-
-bool gxAudio::loadOGG_asyncUpdate(gxAudioAsyncLoadData* ald) {
-	bool retVal = false;
-
-	char* arry = new char[4096];
-	char* tmparry = new char[4096];
-
-	int bitStream;
-	int div = ald->div;
-	long bytes = ov_read(ald->oggfile,tmparry,4096,ald->endian,2,1,&bitStream);
-	if (bytes>0) {
-		for (unsigned int i=0;i<bytes/(div*2);i++) {
-			arry[i*2]=tmparry[i*div*2];
-			arry[(i*2)+1]=tmparry[(i*div*2)+1];
-			if (div>1) {
-				arry[i*2]=tmparry[(i*div*2)+2];
-				arry[(i*2)+1]=tmparry[(i*div*2)+3];
-			}
-		}
-		ald->buffer.insert(ald->buffer.end(),arry,arry+(bytes/div));
-	} else {
-		ov_clear(ald->oggfile);
-		delete ald->oggfile;
-		ald->oggfile = nullptr;
-		retVal = true;
-	}
-
-	delete[] tmparry;
-	delete[] arry;
-
-	return retVal;
 }
 
 bool gxAudio::loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned) {
