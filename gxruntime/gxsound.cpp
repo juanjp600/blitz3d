@@ -11,16 +11,6 @@ gxSound::gxSound( gxAudio *a,ALuint s ){
 	setRange( 100.f, 200.f );
 }
 
-gxSound::gxSound( gxAudio *a,gxAudioAsyncLoadData *ald ){
-	audio=a;
-	asyncLoadData=ald;
-	setLoop( false );
-	setVolume( 1.f );
-	setPitch( 1.f );
-	setRange( 100.f, 200.f );
-	ready = false;
-}
-
 gxSound::~gxSound(){
 	alDeleteBuffers(1,&sample);
 	audio->clearRelatedChannels(this);
