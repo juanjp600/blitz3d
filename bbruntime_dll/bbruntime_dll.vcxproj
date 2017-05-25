@@ -261,7 +261,7 @@
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <OutputFile>../_release/bin/runtime.dll</OutputFile>
       <ImportLibrary>.\bbruntime_dll___Win32_Blitz3DRelease\runtime.lib</ImportLibrary>
       <AdditionalDependencies>wsock32.lib;amstrmid.lib;winmm.lib;../../dxsdk/lib/d3dim.lib;../../dxsdk/lib/d3drm.lib;../../dxsdk/lib/d3dx.lib;../../dxsdk/lib/d3dxd.lib;../../dxsdk/lib/d3dxof.lib;../../dxsdk/lib/ddraw.lib;../../dxsdk/lib/dinput.lib;../../dxsdk/lib/dsetup.lib;../../dxsdk/lib/dsound.lib;../../dxsdk/lib/dxguid.lib;odbc32.lib;odbccp32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>

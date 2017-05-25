@@ -3,6 +3,7 @@
 #define GXAUDIO_H
 
 #include <string>
+#include <set>
 
 #include "gxsound.h"
 
@@ -14,6 +15,8 @@ public:
 
 	gxAudio( gxRuntime *runtime );
 	~gxAudio();
+
+	std::set<gxSound*> sound_set;
 
     //sample = buffer
 	gxChannel *reserveChannel(gxSound* sound,bool loop,const float pos[3]=0,const float vel[3]=0);
@@ -43,7 +46,7 @@ private:
 	/***** GX INTERFACE *****/
 public:
 	//gxSound *loadSound( const std::string &filename,bool use_3d );
-    bool loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned);
+    //bool loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned);
 	
 	gxSound *verifySound( gxSound *sound );
 	//void freeSound( gxSound *sound );

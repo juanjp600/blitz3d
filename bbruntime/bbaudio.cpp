@@ -21,17 +21,26 @@ static inline bool debugSound( gxSound *s,const char* a ){
 
 static gxSound *loadSound( BBStr *f,bool use_3d ){
 	string t=*f;delete f;
-	return gx_audio ? gx_audio->loadSound( t,use_3d ) : 0;
+	return gx_audio ? gxSoundSample::load( gx_audio,t,use_3d ) : 0;
+}
+
+static gxSound *streamSound( BBStr *f,bool use_3d ){
+	string t=*f;delete f;
+	return gx_audio ? gxSoundStream::load( gx_audio,t,use_3d ) : 0;
 }
 
 gxSound *bbLoadSound( BBStr *f,int use_3d ){
 	return loadSound( f,!!use_3d );
 }
+gxSound *bbStreamSound( BBStr *f ){
+	return streamSound( f,false );
+}
+
 
 void bbFreeSound( gxSound *sound ){
 	if( !sound ) return;
 	if (!debugSound( sound, "FreeSound" )) return;
-	gx_audio->freeSound( sound );
+	sound->free();
 }
 
 void bbLoopSound( gxSound *sound,int loop ){
@@ -138,6 +147,7 @@ bool audio_destroy(){
 
 void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "%LoadSound$filename%is3d=1",bbLoadSound );
+	rtSym( "%StreamSound$filename%is3d=1",bbStreamSound );
 
 	rtSym( "FreeSound%sound",bbFreeSound );
 	rtSym( "LoopSound%sound%loop=1",bbLoopSound );

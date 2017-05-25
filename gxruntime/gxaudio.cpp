@@ -2,9 +2,6 @@
 #include "std.h"
 #include "gxaudio.h"
 
-#include <vorbis/vorbisfile.h>
-#include <ogg/ogg.h>
-
 struct StaticChannel : public gxChannel{
 	virtual void play()=0;
 };
@@ -60,9 +57,6 @@ private:
 	ALuint source;
 	gxSound* sound;
 };
-
-static set<gxSound*> sound_set;
-static vector<gxChannel*> channels;
 
 /*static int next_chan;
 static vector<SoundChannel*> soundChannels;
@@ -128,7 +122,7 @@ gxAudio::~gxAudio(){
     }
 	//for( ;channels.size();channels.pop_back() ) delete channels.back();
 	//free all sound_set
-	while( sound_set.size() ) freeSound( *sound_set.begin() );
+	while( sound_set.size() ) (*sound_set.begin())->free();
 	//soundChannels.clear();
     
     alcMakeContextCurrent(0);
@@ -250,22 +244,7 @@ bool gxAudio::verifyChannel(gxChannel* chan) {
 void gxAudio::resume(){
 }*/
 
-gxSound *gxAudio::loadSound( const string &f,bool use3d ){
-    std::vector<char> bufData; ALenum format; ALsizei freq;
-	if (tolower(f.substr(f.size()-4))!=".ogg") return 0;
-    if (loadOGG(f,bufData,format,freq,use3d)) {
-        ALuint sample = 0;
-        alGenBuffers(1,&sample);
-        alBufferData(sample,format,&bufData[0],static_cast<ALsizei>(bufData.size()),freq);
-	    if( !sample ) return 0;
-
-	    gxSound *sound=d_new gxSoundSample( this,sample );
-	    sound_set.insert( sound );
-	    return sound;
-    }
-    return 0;
-}
-bool gxAudio::loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned) {
+/*bool gxAudio::loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned) {
     buffer.resize(0);
     int endian = 0;
     int bitStream;
@@ -312,14 +291,10 @@ bool gxAudio::loadOGG(const std::string &filename,std::vector<char> &buffer,ALen
     ov_clear(&oggfile);
 
     return true;
-}
+}*/
 
 gxSound *gxAudio::verifySound( gxSound *s ){
 	return sound_set.count( s )  ? s : 0;
-}
-
-void gxAudio::freeSound( gxSound *s ){
-	if( sound_set.erase( s ) ) delete s;
 }
 
 /*void gxAudio::setPaused( bool paused ){

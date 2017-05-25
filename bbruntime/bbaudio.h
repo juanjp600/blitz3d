@@ -9,6 +9,7 @@
 extern gxAudio *gx_audio;
 
 gxSound *	 bbLoadSound( BBStr *file,int use_3d );
+gxSound *	 bbStreamSound( BBStr *file );
 void		 bbFreeSound( gxSound *sound );
 gxChannel *	 bbPlaySound( gxSound *sound,float x,float y,float z,float vx,float vy,float vz );
 void		 bbLoopSound( gxSound *sound,int loop );

@@ -4,6 +4,9 @@
 
 #include "gxchannel.h"
 
+#include <thread>
+#include <atomic>
+
 class gxAudio;
 
 class gxSound{
@@ -35,13 +38,13 @@ public:
 
 class gxSoundSample : public gxSound {
 public:
-	gxAudio *audio;
-
 	gxSoundSample( gxAudio *audio,ALuint sample );
 	~gxSoundSample();
 
 private:
 	ALuint sample;
+
+	static bool loadOGG(const std::string &filename,std::vector<char> &buffer,ALenum &format,ALsizei &freq,bool isPanned);
 
 	/***** GX INTERFACE *****/
 public:
@@ -58,7 +61,38 @@ public:
 	void setRange( float inNear,float inFar );
 
 	//allocation
-	static gxSoundSample* load(const std::string &filename,bool use_3d);
+	static gxSoundSample* load(gxAudio *a,const std::string &filename,bool use_3d);
+	void free();
+};
+
+class gxSoundStream : public gxSound {
+public:
+	gxSoundStream( gxAudio *audio,const std::string &filename );
+	~gxSoundStream();
+
+private:
+	//ALuint buffers[8];
+	
+	std::string filename;
+
+	std::thread* streamThread[8];
+
+	std::atomic<bool> markedForDeletion;
+	//static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool>& markForDeletion,ALuint source);
+
+public:
+	//actions
+	gxChannel *play();
+	gxChannel *play3d( const float pos[3],const float vel[3] );
+
+	//modifiers
+	void setLoop( bool loop );
+	void setPitch( float pitch );
+	void setVolume( float volume );
+	void setRange( float inNear,float inFar );
+
+	//allocation
+	static gxSoundStream* load(gxAudio *a,const std::string &filename,bool use_3d);
 	void free();
 };
 
