@@ -2,6 +2,7 @@
 #include "std.h"
 #include "gxsound.h"
 #include "gxaudio.h"
+#include "gxchannel.h"
 
 #include <vorbis/vorbisfile.h>
 #include <ogg/ogg.h>
@@ -92,8 +93,13 @@ void gxSoundSample::free() {
 ALuint gxSoundSample::getSample() { return sample; }
 
 gxChannel *gxSoundSample::play(){
-    gxChannel* retVal = audio->reserveChannel( this,def_loop );
-	if (!retVal) return 0;
+    SampleChannel* retVal = new SampleChannel(this);
+	if (!audio->reserveChannel( retVal ) ) {
+		delete retVal;
+		return 0;
+	}
+	retVal->setLoop(def_loop);
+	retVal->set3d(audio->get3dListenerPos(),audio->get3dListenerVel());
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
 	retVal->setRange(def_range_near,def_range_far);
@@ -103,8 +109,13 @@ gxChannel *gxSoundSample::play(){
 }
 
 gxChannel *gxSoundSample::play3d( const float pos[3],const float vel[3] ){
-	gxChannel* retVal = audio->reserveChannel( this,def_loop,pos,vel );
-	if (!retVal) return 0;
+	SampleChannel* retVal = new SampleChannel(this);
+	if (!audio->reserveChannel( retVal ) ) {
+		delete retVal;
+		return 0;
+	}
+	retVal->setLoop(def_loop);
+	retVal->set3d(pos,vel);
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
 	retVal->setRange(def_range_near,def_range_far);
@@ -130,186 +141,52 @@ void gxSoundSample::setRange(float inNear, float inFar) {
 	def_range_far=inFar;
 }
 
-static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool>& markForDeletion,ALuint source) {
-	printf("Working!\n");
-	ALenum format = 0; ALsizei freq = 0;
-	int endian = 0;
-	int bitStream;
-	long bytes;
-	char* arry = new char[4096];
-	FILE *f;
-	f=fopen(filename.c_str(),"rb");
-	if (f==nullptr) {
-		return;
-	}
-	vorbis_info *pInfo;
-	OggVorbis_File oggfile;
-	ov_open(f,&oggfile,"",0);
-	pInfo = ov_info(&oggfile,-1);
-	if (pInfo->channels == 1) {
-		format = AL_FORMAT_MONO16;
-	} else {
-		format = AL_FORMAT_STEREO16;
-	}
-	freq = pInfo->rate;
-	int div = 1;
-	if (isPanned && format==AL_FORMAT_STEREO16) {
-		//OpenAL does not perform automatic panning or attenuation with stereo tracks
-		format = AL_FORMAT_MONO16;
-		div=2;
-	}
-	char* tmparry = new char[4096];
-
-	std::vector<char> bufData;
-	bufData.clear();
-
-	bool finalData = false;
-	for (int i=0; i<4; i++) {
-		ALuint buffer = 0; alGenBuffers(1,&buffer);
-		bufData.clear();
-		do {
-			bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
-			for (unsigned int i=0;i<bytes/(div*2);i++) {
-				arry[i*2]=tmparry[i*div*2];
-				arry[(i*2)+1]=tmparry[(i*div*2)+1];
-				if (div>1) {
-					arry[i*2]=tmparry[(i*div*2)+2];
-					arry[(i*2)+1]=tmparry[(i*div*2)+3];
-				}
-			}
-			if (bytes<=0) {
-				finalData = true;
-			} else {
-				bufData.insert(bufData.end(),arry,arry+(bytes/div));
-			}
-		} while (bytes>0 && bufData.size()<4096*16);
-
-		alBufferData(buffer,format,&bufData[0],bufData.size(),freq);
-		alSourceQueueBuffers(source,1,&buffer);
-	}
-	alSourceRewind(source);
-	alSourcePlay(source);
-
-	finalData = false;
-
-	//printf("a\n");
-	while (!markForDeletion) {
-		//printf("b\n");
-		ALint buffersFree = 0;
-		alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
-		//printf("c ");
-		printf(to_string(buffersFree).c_str());
-		printf("\n");
-		//printf("\n");
-		while (buffersFree>0) {
-			printf("Queueing buffer.\n");
-			ALuint buffer = 0;
-			alSourceUnqueueBuffers(source,1,&buffer);
-			bufData.clear();
-			do {
-				bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
-				for (unsigned int i=0;i<bytes/(div*2);i++) {
-					arry[i*2]=tmparry[i*div*2];
-					arry[(i*2)+1]=tmparry[(i*div*2)+1];
-					if (div>1) {
-						arry[i*2]=tmparry[(i*div*2)+2];
-						arry[(i*2)+1]=tmparry[(i*div*2)+3];
-					}
-				}
-				if (bytes<=0) {
-					finalData = true;
-				} else {
-					bufData.insert(bufData.end(),arry,arry+(bytes/div));
-				}
-			} while (bytes>0 && bufData.size()<4096*16);
-
-			alBufferData(buffer,format,&bufData[0],bufData.size(),freq);
-			alSourceQueueBuffers(source,1,&buffer);
-			if (finalData) {
-				printf("Final data?\n");
-				ALint loops = 0;
-				alGetSourcei(source,AL_LOOPING,&loops);
-				ALint isPlaying = 0;
-				alGetSourcei(source,AL_PLAYING,&isPlaying);
-				if (loops && isPlaying) {
-					//source is set to loop:
-					//set oggvorbis seek pos to 0
-					//to restream the data
-					finalData = false;
-					ov_raw_seek(&oggfile,0);
-					printf("Nope.\n");
-				}
-			}
-			if (finalData) break; //we can't fill any more buffers
-			alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
-		}
-		//printf("d\n");
-		if (finalData) {
-			ALint isPlaying = 0;
-			alGetSourcei(source,AL_PLAYING,&isPlaying);
-			while (isPlaying) {
-				alGetSourcei(source,AL_PLAYING,&isPlaying);
-			}
-			break;
-		}
-		//printf("e\n");
-	}
-
-	ALint buffersFree = 0;
-	alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
-	ALuint* bufs;
-	alSourceUnqueueBuffers(source,buffersFree,bufs);
-	alDeleteBuffers(buffersFree,bufs);
-
-	delete[] tmparry;
-	delete[] arry;
-
-	ov_clear(&oggfile);
-}
-
-gxSoundStream::gxSoundStream( gxAudio *a,const std::string& name ){
-	audio=a; filename=name;
-	markedForDeletion = false;
+gxSoundStream::gxSoundStream( gxAudio *a,bool use_3d,const std::string& name ){
+	audio=a; filename=name; is_3d=use_3d;
 	setLoop( false );
 	setVolume( 1.f );
 	setPitch( 1.f );
 	setRange( 100.f, 200.f );
-	for (int i=0; i<8; i++) {
-		streamThread[i]=0;
-	}
 }
 
 gxSoundStream::~gxSoundStream(){
-	markedForDeletion = true;
-	for (int i=0; i<8; i++) {
-		if (streamThread[i]){
-			streamThread[i]->join();
-			delete streamThread[i];
-		}
-	}
 	audio->clearRelatedChannels(this);
 }
 
 gxChannel* gxSoundStream::play() {
-	gxChannel* retVal = 0;
-	for (int i=0; i<8; i++) {
-		if (!streamThread[i]) {
-			retVal = audio->reserveChannel(this,false);
-			streamThread[i] = new std::thread(streamOGG,filename,false,std::ref(markedForDeletion),retVal->getALSource());
-			break;
-			//streamThread[i]->join();
-			//streamThread[i]->detach();
-		}
+	StreamChannel* retVal = new StreamChannel(this);
+	if (!audio->reserveChannel( retVal ) ) {
+		delete retVal;
+		return 0;
 	}
+	retVal->setLoop(def_loop);
+	retVal->set3d(audio->get3dListenerPos(),audio->get3dListenerVel());
+	retVal->setPitch(def_pitch);
+	retVal->setVolume(def_gain);
+	retVal->setRange(def_range_near,def_range_far);
+	retVal->createThread(filename,is_3d);
+	
 	return retVal;
 }
 
 gxChannel* gxSoundStream::play3d(const float pos[3], const float vel[3]) {
-	return play();
+	StreamChannel* retVal = new StreamChannel(this);
+	if (!audio->reserveChannel( retVal ) ) {
+		delete retVal;
+		return 0;
+	}
+	retVal->setLoop(def_loop);
+	retVal->set3d(pos,vel);
+	retVal->setPitch(def_pitch);
+	retVal->setVolume(def_gain);
+	retVal->setRange(def_range_near,def_range_far);
+	retVal->createThread(filename,is_3d);
+
+	return retVal;
 }
 
 gxSoundStream* gxSoundStream::load(gxAudio* a, const std::string& name, bool use_3d) {
-	gxSoundStream *sound=d_new gxSoundStream( a,name );
+	gxSoundStream *sound=d_new gxSoundStream( a,use_3d,name );
 	a->sound_set.insert( sound );
 	return sound;
 }

@@ -32,8 +32,8 @@ static gxSound *streamSound( BBStr *f,bool use_3d ){
 gxSound *bbLoadSound( BBStr *f,int use_3d ){
 	return loadSound( f,!!use_3d );
 }
-gxSound *bbStreamSound( BBStr *f ){
-	return streamSound( f,false );
+gxSound *bbStreamSound( BBStr *f,int use_3d ){
+	return streamSound( f,!!use_3d );
 }
 
 

@@ -67,18 +67,12 @@ public:
 
 class gxSoundStream : public gxSound {
 public:
-	gxSoundStream( gxAudio *audio,const std::string &filename );
+	gxSoundStream( gxAudio *audio,bool use_3d,const std::string &filename );
 	~gxSoundStream();
 
 private:
-	//ALuint buffers[8];
-	
+	bool is_3d;
 	std::string filename;
-
-	std::thread* streamThread[8];
-
-	std::atomic<bool> markedForDeletion;
-	//static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool>& markForDeletion,ALuint source);
 
 public:
 	//actions

@@ -17,7 +17,6 @@
 class gxRuntime{
 	/***** INTERNAL INTERFACE *****/
 public:
-
 	HWND hwnd;
 	HINSTANCE hinst;
 
