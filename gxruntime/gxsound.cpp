@@ -73,6 +73,7 @@ bool gxSoundSample::loadOGG(const std::string &filename,std::vector<char> &buffe
 				arry[i*2]=tmparry[(i*div*2)+2];
 				arry[(i*2)+1]=tmparry[(i*div*2)+3];
 			}
+			//TODO: find out how to properly convert stereo to mono
 		}
 		buffer.insert(buffer.end(),arry,arry+(bytes/div));
 	} while (bytes>0);
@@ -100,6 +101,7 @@ gxChannel *gxSoundSample::play(){
 	}
 	retVal->setLoop(def_loop);
 	retVal->set3d(audio->get3dListenerPos(),audio->get3dListenerVel());
+	alSourcei(retVal->getALSource(),AL_SOURCE_RELATIVE,AL_TRUE);
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
 	retVal->setRange(def_range_near,def_range_far);
@@ -108,7 +110,7 @@ gxChannel *gxSoundSample::play(){
 	return retVal;
 }
 
-gxChannel *gxSoundSample::play3d( const float pos[3],const float vel[3] ){
+/*gxChannel *gxSoundSample::play3d( const float pos[3],const float vel[3] ){
 	SampleChannel* retVal = new SampleChannel(this);
 	if (!audio->reserveChannel( retVal ) ) {
 		delete retVal;
@@ -122,7 +124,7 @@ gxChannel *gxSoundSample::play3d( const float pos[3],const float vel[3] ){
 	alSourcei(retVal->getALSource(), AL_BUFFER, sample);
 	alSourcePlay(retVal->getALSource());
 	return retVal;
-}
+}*/
 
 void gxSoundSample::setLoop( bool loop ){
 	def_loop = loop;
@@ -161,6 +163,7 @@ gxChannel* gxSoundStream::play() {
 	}
 	retVal->setLoop(def_loop);
 	retVal->set3d(audio->get3dListenerPos(),audio->get3dListenerVel());
+	alSourcei(retVal->getALSource(),AL_SOURCE_RELATIVE,AL_TRUE);
 	retVal->setPitch(def_pitch);
 	retVal->setVolume(def_gain);
 	retVal->setRange(def_range_near,def_range_far);
@@ -169,7 +172,7 @@ gxChannel* gxSoundStream::play() {
 	return retVal;
 }
 
-gxChannel* gxSoundStream::play3d(const float pos[3], const float vel[3]) {
+/*gxChannel* gxSoundStream::play3d(const float pos[3], const float vel[3]) {
 	StreamChannel* retVal = new StreamChannel(this);
 	if (!audio->reserveChannel( retVal ) ) {
 		delete retVal;
@@ -183,7 +186,7 @@ gxChannel* gxSoundStream::play3d(const float pos[3], const float vel[3]) {
 	retVal->createThread(filename,is_3d);
 
 	return retVal;
-}
+}*/
 
 gxSoundStream* gxSoundStream::load(gxAudio* a, const std::string& name, bool use_3d) {
 	gxSoundStream *sound=d_new gxSoundStream( a,use_3d,name );

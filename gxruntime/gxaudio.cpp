@@ -92,7 +92,7 @@ void gxAudio::set3dOptions( float roll,float dopp,float dist ){
 
 void gxAudio::set3dListener( const float pos[3],const float vel[3],const float forward[3],const float up[3] ){
 	alListener3f(AL_POSITION,pos[0],pos[1],pos[2]);
-    float orientation[] = {forward[0],forward[1],forward[2],up[0],up[1],up[2]};
+    float orientation[] = {-forward[0],forward[1],-forward[2],up[0],up[1],up[2]};
     alListenerfv(AL_ORIENTATION,orientation);
     listenerPos[0] = pos[0]; listenerPos[1] = pos[1]; listenerPos[2] = pos[2];
     listenerTarget[0] = forward[0]; listenerTarget[1] = forward[1]; listenerTarget[2] = forward[2];

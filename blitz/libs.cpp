@@ -100,7 +100,11 @@ static const char *linkRuntime(){
 			ConstType *defType=0;
 			if( s[k]=='=' ){
 				int from=++k;
-				if( s[k]=='\"' ){
+				if( tolower(s.substr(k,3))=="nan" ){
+					float nan = pow(-1.f,0.5f);
+					defType=d_new ConstType( nan );
+					k+=3;
+				} else if( s[k]=='\"' ){
 					for( ++k;s[k]!='\"';++k ){}
 					string t=s.substr( from+1,k-from-1 );
 					defType=d_new ConstType( t );++k;

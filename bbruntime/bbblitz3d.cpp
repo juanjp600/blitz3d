@@ -2511,7 +2511,7 @@ void blitz3d_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "#TerrainHeight%terrain%terrain_x%terrain_z",bbTerrainHeight );
 	rtSym( "ModifyTerrain%terrain%terrain_x%terrain_z#height%realtime=0",bbModifyTerrain );
 
-	rtSym( "%GetListener%parent#rolloff_factor=1#doppler_scale=1#distance_scale=1",bbGetListener );
+	rtSym( "%GetListener%parent=0#rolloff_factor=1#doppler_scale=1#distance_scale=1",bbGetListener );
 	rtSym( "%EmitSound%sound%entity",bbEmitSound );
 
 	rtSym( "%CopyEntity%entity%parent=0",bbCopyEntity );

@@ -143,7 +143,8 @@ const Transform &Object::getPrevWorldTform()const{
 gxChannel *Object::emitSound( gxSound *sound ){
 	if( !sound ) return 0;
 
-	gxChannel *chan=sound->play3d( &getWorldTform().v.x,&velocity.x );
+	gxChannel *chan=sound->play();
+	chan->set3d( &getWorldTform().v.x,&velocity.x );
 	for( int k=0;k<(int)channels.size();++k ){
 		if( chan==channels[k] ) return chan;
 		if( !channels[k] ) return channels[k]=chan;

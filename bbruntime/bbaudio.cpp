@@ -77,7 +77,11 @@ gxChannel *bbPlaySound( gxSound *sound,float x,float y,float z,float vx,float vy
 	if( !sound ) return 0;
 	if (!debugSound( sound, "PlaySound" )) return 0;
     float pos[3]={x,y,z}; float vel[3]={vx,vy,vz};
-	return sound->play3d(pos,vel);
+	gxChannel* chan = sound->play();
+	if (!isnan(x)){
+		chan->set3d(pos,vel);
+	}
+	return chan;
 }
 
 void bbStopChannel( gxChannel *channel ){
@@ -155,7 +159,7 @@ void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "SoundVolume%sound#volume",bbSoundVolume );
 	rtSym( "SoundRange%sound#near#far",bbSoundRange );
 	//rtSym( "SoundPan%sound#pan",bbSoundPan );
-	rtSym( "%PlaySound%sound#x=0#y=0#z=0#vx=0#vy=0#vz=0",bbPlaySound );
+	rtSym( "%PlaySound%sound#x=NaN#y=0#z=0#vx=0#vy=0#vz=0",bbPlaySound );
 	rtSym( "StopChannel%channel",bbStopChannel );
 	rtSym( "PauseChannel%channel",bbPauseChannel );
 	rtSym( "ResumeChannel%channel",bbResumeChannel );

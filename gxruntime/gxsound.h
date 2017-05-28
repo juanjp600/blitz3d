@@ -24,7 +24,7 @@ protected:
 public:
 	//actions
 	virtual gxChannel *play() =0;
-	virtual gxChannel *play3d( const float pos[3],const float vel[3] ) =0;
+	//virtual gxChannel *play3d( const float pos[3],const float vel[3] ) =0;
 
 	//modifiers
 	virtual void setLoop( bool loop ) =0;
@@ -50,7 +50,7 @@ private:
 public:
 	//actions
 	gxChannel *play();
-	gxChannel *play3d( const float pos[3],const float vel[3] );
+	//gxChannel *play3d( const float pos[3],const float vel[3] );
 
 	ALuint getSample();
 
@@ -77,7 +77,7 @@ private:
 public:
 	//actions
 	gxChannel *play();
-	gxChannel *play3d( const float pos[3],const float vel[3] );
+	//gxChannel *play3d( const float pos[3],const float vel[3] );
 
 	//modifiers
 	void setLoop( bool loop );

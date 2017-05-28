@@ -29,7 +29,6 @@ void SampleChannel::stop(){
 	isPaused = false;
 	alSourceStop( source );
 	alSourceRewind( source );
-	delete this;
 }
 
 void SampleChannel::setLoop(bool loop) {
@@ -61,6 +60,8 @@ void SampleChannel::setRange(float inNear, float inFar) {
 }
 
 void SampleChannel::set3d( const float pos[3],const float vel[3] ){
+	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
+
 	alSource3f( source,AL_POSITION,pos[0],pos[1],pos[2] );
 	alSource3f( source,AL_VELOCITY,vel[0],vel[1],vel[2] );
 }
@@ -93,8 +94,6 @@ StreamChannel::StreamChannel(gxSoundStream* insound){
 }
 void StreamChannel::setSource( ALuint insource ){
 	source=insource;
-
-	alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
 
 	alSourceStop(source);
 	alSourceRewind(source);
@@ -130,6 +129,8 @@ void StreamChannel::setRange(float inNear, float inFar) {
 	alSourcef( source,AL_MAX_DISTANCE,inFar );
 }
 void StreamChannel::set3d( const float pos[3],const float vel[3] ){
+	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
+
 	alSource3f( source,AL_POSITION,pos[0],pos[1],pos[2] );
 	alSource3f( source,AL_VELOCITY,vel[0],vel[1],vel[2] );
 }
