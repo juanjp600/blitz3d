@@ -150,21 +150,21 @@ bool stream_destroy(){
 }
 
 void stream_link( void(*rtSym)(const char*,void*) ){
-	rtSym( "%Eof%stream",bbEof );
-	rtSym( "%ReadAvail%stream",bbReadAvail );
-	rtSym( "%ReadByte%stream",bbReadByte );
-	rtSym( "%ReadShort%stream",bbReadShort );
-	rtSym( "%ReadInt%stream",bbReadInt );
-	rtSym( "#ReadFloat%stream",bbReadFloat );
-	rtSym( "$ReadString%stream",bbReadString );
-	rtSym( "$ReadLine%stream",bbReadLine );
-	rtSym( "WriteByte%stream%byte",bbWriteByte );
-	rtSym( "WriteShort%stream%short",bbWriteShort );
-	rtSym( "WriteInt%stream%int",bbWriteInt );
-	rtSym( "WriteFloat%stream#float",bbWriteFloat );
-	rtSym( "WriteString%stream$string",bbWriteString );
-	rtSym( "WriteLine%stream$string",bbWriteLine );
-	rtSym( "CopyStream%src_stream%dest_stream%buffer_size=16384",bbCopyStream );
+	rtSym( "%Eof(BBStream)stream",bbEof );
+	rtSym( "%ReadAvail(BBStream)stream",bbReadAvail );
+	rtSym( "%ReadByte(BBStream)stream",bbReadByte );
+	rtSym( "%ReadShort(BBStream)stream",bbReadShort );
+	rtSym( "%ReadInt(BBStream)stream",bbReadInt );
+	rtSym( "#ReadFloat(BBStream)stream",bbReadFloat );
+	rtSym( "$ReadString(BBStream)stream",bbReadString );
+	rtSym( "$ReadLine(BBStream)stream",bbReadLine );
+	rtSym( "WriteByte(BBStream)stream%byte",bbWriteByte );
+	rtSym( "WriteShort(BBStream)stream%short",bbWriteShort );
+	rtSym( "WriteInt(BBStream)stream%int",bbWriteInt );
+	rtSym( "WriteFloat(BBStream)stream#float",bbWriteFloat );
+	rtSym( "WriteString(BBStream)stream$string",bbWriteString );
+	rtSym( "WriteLine(BBStream)stream$string",bbWriteLine );
+	rtSym( "CopyStream(BBStream)src_stream(BBStream)dest_stream%buffer_size=16384",bbCopyStream );
 }
 
 

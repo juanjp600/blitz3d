@@ -9,6 +9,7 @@ struct ArrayType;
 struct StructType;
 struct ConstType;
 struct VectorType;
+struct BlitzType;
 
 struct Type{
 	virtual ~Type(){}
@@ -23,12 +24,15 @@ struct Type{
 	virtual StructType *structType(){ return 0; }
 	virtual ConstType *constType(){ return 0; }
 	virtual VectorType *vectorType(){ return 0; }
+	virtual BlitzType *blitzType(){ return 0; }
 
 	//operators
 	virtual bool canCastTo( Type *t ){ return this==t; }
 
 	//built in types
 	static Type *void_type,*int_type,*float_type,*string_type,*null_type;
+
+	static vector<BlitzType*> blitzTypes;
 };
 
 struct FuncType : public Type{
@@ -56,6 +60,14 @@ struct StructType : public Type{
 	virtual bool canCastTo( Type *t );
 };
 
+struct BlitzType : public Type{
+	static bool allowCastToInt;
+	string ident;
+	BlitzType( const string &i ):ident(i){Type::blitzTypes.push_back(this);}
+	BlitzType *blitzType(){ return this; }
+	virtual bool canCastTo( Type *t );
+};
+
 struct ConstType : public Type{
 	Type *valueType;
 	int intValue;
@@ -64,7 +76,7 @@ struct ConstType : public Type{
 	ConstType( int n ):intValue(n),valueType(Type::int_type){}
 	ConstType( float n ):floatValue(n),valueType(Type::float_type){}
 	ConstType( const string &n ):stringValue(n),valueType(Type::string_type){}
-	ConstType( ):valueType(Type::null_type){}
+	ConstType( Type* t ):valueType(t){}
 	ConstType *constType(){ return this; }
 };
 

@@ -24,6 +24,7 @@ ProgNode *Parser::parse( const string &main ){
 
 	consts=d_new DeclSeqNode();
 	structs=d_new DeclSeqNode();
+	structConsts=d_new DeclSeqNode();
 	funcs=d_new DeclSeqNode();
 	datas=d_new DeclSeqNode();
 	StmtSeqNode *stmts=0;
@@ -32,11 +33,11 @@ ProgNode *Parser::parse( const string &main ){
 		stmts=parseStmtSeq( STMTS_PROG );
 		if( toker->curr()!=EOF ) exp( "end-of-file" );
 	}catch( Ex ){
-		delete stmts;delete datas;delete funcs;delete structs;delete consts;
+		delete stmts;delete datas;delete funcs;delete structs;delete structConsts;delete consts;
 		throw;
 	}
 
-	return d_new ProgNode( consts,structs,funcs,datas,stmts );
+	return d_new ProgNode( consts,structs,structConsts,funcs,datas,stmts );
 }
 
 void Parser::ex( const string &s ){
@@ -313,7 +314,22 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 		case BBCONST:
 			if( scope!=STMTS_PROG ) ex( "'Const' can only appear in main program" );
 			do{
-				toker->next();consts->push_back( parseVarDecl( DECL_GLOBAL,true ) );
+				toker->next();
+				string ident;string tag;
+				DeclNode* node = parseVarDecl( DECL_GLOBAL,true,ident,tag );
+
+				bool isBlitzType=false;
+				for (int i=0; i<Type::blitzTypes.size(); i++) {
+					if (tolower(Type::blitzTypes[i]->ident)==tolower(tag)) {
+						isBlitzType=true;break;
+					}
+				}
+
+				if ( tag.size()==0 || isBlitzType || tag=="%" || tag=="$" || tag=="#" ){
+					consts->push_back( node );
+				} else {
+					structConsts->push_back( node );
+				}
 			}while( toker->curr()==',' );
 			break;
 		case FUNCTION:
@@ -331,7 +347,8 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 		case LOCAL:
 			do{
 				toker->next();
-				DeclNode *d=parseVarDecl( DECL_LOCAL,false );
+				string tempident;string temptag;
+				DeclNode *d=parseVarDecl( DECL_LOCAL,false,tempident,temptag );
 				StmtNode *stmt=d_new DeclStmtNode( d );
 				stmt->pos=pos;pos=toker->pos();
 				stmts->push_back( stmt );
@@ -341,11 +358,16 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 			if( scope!=STMTS_PROG ) ex( "'Global' can only appear in main program" );
 			do{
 				toker->next();
-				DeclNode *d=parseVarDecl( DECL_GLOBAL,false );
+				string tempident;string temptag;
+				DeclNode *d=parseVarDecl( DECL_GLOBAL,false,tempident,temptag );
 				StmtNode *stmt=d_new DeclStmtNode( d );
 				stmt->pos=pos;pos=toker->pos();
 				stmts->push_back( stmt );
 			}while( toker->curr()==',' );
+			break;
+		case ALLOWPOINTERTOINT:
+			if( scope!=STMTS_PROG ) ex( "'Function' can only appear in main program" );
+			toker->next();BlitzType::allowCastToInt=true;
 			break;
 		case '.':
 			{
@@ -411,10 +433,10 @@ VarNode *Parser::parseVar( const string &ident,const string &tag ){
 	return var.release();
 }
 
-DeclNode *Parser::parseVarDecl( int kind,bool constant ){
+DeclNode *Parser::parseVarDecl( int kind,bool constant,string &ident,string &tag ){
 	int pos=toker->pos();
-	string ident=parseIdent();
-	string tag=parseTypeTag();
+	ident=parseIdent();
+	tag=parseTypeTag();
 	DeclNode *d;
 	if( toker->curr()=='[' ){
 		if( constant ) ex( "Blitz arrays may not be constant" );
@@ -457,7 +479,8 @@ DeclNode *Parser::parseFuncDecl(){
 	a_ptr<DeclSeqNode> params( d_new DeclSeqNode() );
 	if( toker->next()!=')' ){
 		for(;;){
-			params->push_back( parseVarDecl( DECL_PARAM,false ) );
+			string tempident;string temptag;
+			params->push_back( parseVarDecl( DECL_PARAM,false,tempident,temptag ) );
 			if( toker->curr()!=',' ) break;
 			toker->next();
 		}
@@ -480,8 +503,9 @@ DeclNode *Parser::parseStructDecl(){
 	a_ptr<DeclSeqNode> fields( d_new DeclSeqNode() );
 	while( toker->curr()==FIELD ){
 		do{
+			string tempident;string temptag;
 			toker->next();
-			fields->push_back( parseVarDecl( DECL_FIELD,false ) );
+			fields->push_back( parseVarDecl( DECL_FIELD,false,tempident,temptag ) );
 		}while( toker->curr()==',' );
 		while( toker->curr()=='\n' ) toker->next();
 	}

@@ -26,6 +26,7 @@ private:
 
 	DeclSeqNode *consts;
 	DeclSeqNode *structs;
+	DeclSeqNode *structConsts;
 	DeclSeqNode *funcs;
 	DeclSeqNode *datas;
 
@@ -44,7 +45,7 @@ private:
 	CallNode *parseCall( const string &ident,const string &tag );
 	IfNode *parseIf();
 
-	DeclNode *parseVarDecl( int kind,bool constant );
+	DeclNode *parseVarDecl( int kind,bool constant,string &ident,string &tag );
 	DimNode  *parseArrayDecl();
 	DeclNode *parseFuncDecl();
 	DeclNode *parseStructDecl();

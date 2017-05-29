@@ -30,6 +30,7 @@ static string typeTag( Type *t ){
 	if( t->intType() ) return "";
 	if( t->floatType() ) return "#";
 	if( t->stringType() ) return "$";
+	if( BlitzType *b=t->blitzType() ) return "."+b->ident;
 	if( StructType *s=t->structType() ) return "."+s->ident;
 	if( VectorType *v=t->vectorType() ){
 		string s=typeTag( v->elementType )+"[";

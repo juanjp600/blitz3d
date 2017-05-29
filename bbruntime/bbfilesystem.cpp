@@ -159,16 +159,16 @@ bool filesystem_destroy(){
 }
 
 void filesystem_link( void(*rtSym)(const char*,void*) ){
-	rtSym( "%OpenFile$filename",bbOpenFile );
-	rtSym( "%ReadFile$filename",bbReadFile );
-	rtSym( "%WriteFile$filename",bbWriteFile );
-	rtSym( "CloseFile%file_stream",bbCloseFile );
-	rtSym( "%FilePos%file_stream",bbFilePos );
-	rtSym( "%SeekFile%file_stream%pos",bbSeekFile );
+	rtSym( "(BBStream)OpenFile$filename",bbOpenFile );
+	rtSym( "(BBStream)ReadFile$filename",bbReadFile );
+	rtSym( "(BBStream)WriteFile$filename",bbWriteFile );
+	rtSym( "CloseFile(BBStream)file_stream",bbCloseFile );
+	rtSym( "%FilePos(BBStream)file_stream",bbFilePos );
+	rtSym( "%SeekFile(BBStream)file_stream%pos",bbSeekFile );
 
-	rtSym( "%ReadDir$dirname",bbReadDir );
-	rtSym( "CloseDir%dir",bbCloseDir );
-	rtSym( "$NextFile%dir",bbNextFile );
+	rtSym( "(BBDir)ReadDir$dirname",bbReadDir );
+	rtSym( "CloseDir(BBDir)dir",bbCloseDir );
+	rtSym( "$NextFile(BBDir)dir",bbNextFile );
 	rtSym( "$CurrentDir",bbCurrentDir );
 	rtSym( "ChangeDir$dir",bbChangeDir );
 	rtSym( "CreateDir$dir",bbCreateDir );

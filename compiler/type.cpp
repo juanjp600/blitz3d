@@ -13,7 +13,7 @@ static struct i_type : public Type{
 		return true; 
 	}
 	bool canCastTo( Type *t ){
-		return t==Type::int_type || t==Type::float_type || t==Type::string_type;
+		return t==Type::int_type || t==Type::float_type || t==Type::string_type || (t->blitzType() && BlitzType::allowCastToInt);
 	}
 }i;
 
@@ -36,7 +36,11 @@ static struct s_type : public Type{
 }s;
 
 bool StructType::canCastTo( Type *t ){
-	return t==this || t==Type::null_type || (this==Type::null_type && t->structType());
+	return t==this || t==Type::null_type || (this==Type::null_type && (t->structType() || t->blitzType()));
+}
+
+bool BlitzType::canCastTo( Type *t ){
+	return t==this || t==Type::null_type || (t==Type::int_type && BlitzType::allowCastToInt);
 }
 
 bool VectorType::canCastTo( Type *t ){
@@ -54,8 +58,26 @@ bool VectorType::canCastTo( Type *t ){
 
 static StructType n( "Null" );
 
+std::vector<BlitzType*> Type::blitzTypes;
+
+bool BlitzType::allowCastToInt = false;
+
+static BlitzType bbbank( "BBBank" );
+static BlitzType bbchannel( "BBChannel" );
+static BlitzType bbsound( "BBSound" );
+static BlitzType bbtexture( "BBTexture" );
+static BlitzType bbbrush( "BBBrush" );
+static BlitzType bbsurface( "BBSurface" );
+static BlitzType bbentity( "BBEntity" );
+static BlitzType bbbuffer( "BBBuffer" );
+static BlitzType bbimage( "BBImage" );
+static BlitzType bbfont( "BBFont" );
+static BlitzType bbstream( "BBStream" );
+static BlitzType bbdir( "BBDir" );
+
 Type *Type::void_type=&v;
 Type *Type::int_type=&i;
 Type *Type::float_type=&f;
 Type *Type::string_type=&s;
 Type *Type::null_type=&n;
+

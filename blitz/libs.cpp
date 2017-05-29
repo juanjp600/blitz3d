@@ -19,11 +19,23 @@ vector<UserFunc> userFuncs;
 
 static HMODULE linkerHMOD,runtimeHMOD;
 
-static Type *typeof( int c ){
+static Type *typeof( const string &s,int &pos ){
+	char c = s[pos];
 	switch( c ){
-	case '%':return Type::int_type;
-	case '#':return Type::float_type;
-	case '$':return Type::string_type;
+	case '%':pos++;return Type::int_type;
+	case '#':pos++;return Type::float_type;
+	case '$':pos++;return Type::string_type;
+	case '(':
+		string tag = "";
+		pos++;
+		while (s[pos]!=')') {
+			tag.push_back(s[pos]);
+			pos++;
+		};
+		pos++;
+		for (int i=0;i<Type::blitzTypes.size();i++){
+			if(tolower(Type::blitzTypes[i]->ident)==tolower(tag)) return Type::blitzTypes[i];
+		}
 	}
 	return Type::void_type;
 }
@@ -84,27 +96,32 @@ static const char *linkRuntime(){
 		//global!
 		int start=0,end;
 		Type *t=Type::void_type;
-		if( !isalpha( s[0] ) ){ start=1;t=typeof( s[0] ); }
+		if( !isalpha( s[start] ) ){
+			t=typeof( s,start );
+		}
 		int k;
-		for( k=1;k<(int)s.size();++k ){
+		for( k=start;k<(int)s.size();++k ){
 			if( !isalnum( s[k] ) && s[k]!='_' ) break;
 		}
 		end=k;
 		DeclSeq *params=d_new DeclSeq();
 		string n=s.substr( start,end-start );
 		while( k<(int)s.size() ){
-			Type *t=typeof(s[k++]);
+			Type *t=typeof(s,k);
 			int from=k;
 			for( ;isalnum(s[k])||s[k]=='_';++k ){}
 			string str=s.substr( from,k-from );
 			ConstType *defType=0;
 			if( s[k]=='=' ){
 				int from=++k;
-				if( tolower(s.substr(k,3))=="nan" ){
+				if (tolower(s.substr(k,4))=="null"){
+					defType=d_new ConstType( Type::null_type );
+					k+=4;
+				}else if( tolower(s.substr(k,3))=="nan" ){
 					float nan = pow(-1.f,0.5f);
 					defType=d_new ConstType( nan );
 					k+=3;
-				} else if( s[k]=='\"' ){
+				}else if( s[k]=='\"' ){
 					for( ++k;s[k]!='\"';++k ){}
 					string t=s.substr( from+1,k-from-1 );
 					defType=d_new ConstType( t );++k;

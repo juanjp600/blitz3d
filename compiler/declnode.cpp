@@ -66,7 +66,7 @@ void VarDeclNode::proto( DeclSeq *d,Environ *e ){
 			if( !c ) ex( "Expression must be constant" );
 			if( ty==Type::int_type ) ty=d_new ConstType( c->intValue() );
 			else if( ty==Type::float_type ) ty=d_new ConstType( c->floatValue() );
-			else if( ty->structType() ) ty=d_new ConstType( );
+			else if( ty->structType() ) ty=d_new ConstType( ty->structType() );
 			else ty=d_new ConstType( c->stringValue() );
 			e->types.push_back( ty );
 			delete expr;expr=0;
@@ -198,6 +198,7 @@ void StructDeclNode::translate( Codegen *g ){
 		if( type==Type::int_type ) t="__bbIntType";
 		else if( type==Type::float_type ) t="__bbFltType";
 		else if( type==Type::string_type ) t="__bbStrType";
+		else if( BlitzType *b=type->blitzType() ) t="__bbIntType";
 		else if( StructType *s=type->structType() ) t="_t"+s->ident;
 		else if( VectorType *v=type->vectorType() ) t=v->label;
 		g->p_data( t );
@@ -273,6 +274,7 @@ void VectorDeclNode::translate( Codegen *g ){
 	if( type==Type::int_type ) t="__bbIntType";
 	else if( type==Type::float_type ) t="__bbFltType";
 	else if( type==Type::string_type ) t="__bbStrType";
+	else if( BlitzType *b=type->blitzType() ) t="__bbIntType";
 	else if( StructType *s=type->structType() ) t="_t"+s->ident;
 	else if( VectorType *v=type->vectorType() ) t=v->label;
 	g->p_data( t );

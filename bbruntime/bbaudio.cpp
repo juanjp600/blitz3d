@@ -150,24 +150,24 @@ bool audio_destroy(){
 }
 
 void audio_link( void(*rtSym)(const char*,void*) ){
-	rtSym( "%LoadSound$filename%is3d=1",bbLoadSound );
-	rtSym( "%StreamSound$filename%is3d=1",bbStreamSound );
+	rtSym( "(BBSound)LoadSound$filename%is3d=1",bbLoadSound );
+	rtSym( "(BBSound)StreamSound$filename%is3d=1",bbStreamSound );
 
-	rtSym( "FreeSound%sound",bbFreeSound );
-	rtSym( "LoopSound%sound%loop=1",bbLoopSound );
-	rtSym( "SoundPitch%sound#pitch",bbSoundPitch );
-	rtSym( "SoundVolume%sound#volume",bbSoundVolume );
-	rtSym( "SoundRange%sound#near#far",bbSoundRange );
+	rtSym( "FreeSound(BBSound)sound",bbFreeSound );
+	rtSym( "LoopSound(BBSound)sound%loop=1",bbLoopSound );
+	rtSym( "SoundPitch(BBSound)sound#pitch",bbSoundPitch );
+	rtSym( "SoundVolume(BBSound)sound#volume",bbSoundVolume );
+	rtSym( "SoundRange(BBSound)sound#near#far",bbSoundRange );
 	//rtSym( "SoundPan%sound#pan",bbSoundPan );
-	rtSym( "%PlaySound%sound#x=NaN#y=0#z=0#vx=0#vy=0#vz=0",bbPlaySound );
-	rtSym( "StopChannel%channel",bbStopChannel );
-	rtSym( "PauseChannel%channel",bbPauseChannel );
-	rtSym( "ResumeChannel%channel",bbResumeChannel );
-	rtSym( "ChannelPitch%channel#pitch",bbChannelPitch );
-	rtSym( "ChannelVolume%channel#volume",bbChannelVolume );
-	rtSym( "ChannelRange%channel#near#far",bbChannelRange );
-	rtSym( "ChannelPos%channel#x#y#z#vx=0#vy=0#vz=0",bbChannelPos );
+	rtSym( "(BBChannel)PlaySound(BBSound)sound#x=NaN#y=0#z=0#vx=0#vy=0#vz=0",bbPlaySound );
+	rtSym( "StopChannel(BBChannel)channel",bbStopChannel );
+	rtSym( "PauseChannel(BBChannel)channel",bbPauseChannel );
+	rtSym( "ResumeChannel(BBChannel)channel",bbResumeChannel );
+	rtSym( "ChannelPitch(BBChannel)channel#pitch",bbChannelPitch );
+	rtSym( "ChannelVolume(BBChannel)channel#volume",bbChannelVolume );
+	rtSym( "ChannelRange(BBChannel)channel#near#far",bbChannelRange );
+	rtSym( "ChannelPos(BBChannel)channel#x#y#z#vx=0#vy=0#vz=0",bbChannelPos );
 	//rtSym( "ChannelPan%channel#pan",bbChannelPan );
-	rtSym( "%ChannelPlaying%channel",bbChannelPlaying );
+	rtSym( "%ChannelPlaying(BBChannel)channel",bbChannelPlaying );
 }
 

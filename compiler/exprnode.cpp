@@ -26,7 +26,7 @@ ExprNode *CastNode::semant( Environ *e ){
 		ExprNode *e;
 		if( type==Type::int_type ) e=d_new IntConstNode( c->intValue() );
 		else if( type==Type::float_type ) e=d_new FloatConstNode( c->floatValue() );
-		else if( type->structType() ) e=d_new NullConstNode();
+		else if( type->structType() || type->blitzType() ) e=d_new NullConstNode();
 		else e=d_new StringConstNode( c->stringValue() );
 		delete this;
 		return e;
@@ -398,6 +398,9 @@ TNode *BinExprNode::translate( Codegen *g ){
 ExprNode *ArithExprNode::semant( Environ *e ){
 	lhs=lhs->semant(e);
 	rhs=rhs->semant(e);
+	if( lhs->sem_type->blitzType() || rhs->sem_type->blitzType() ){
+		ex( "Arithmetic operator cannot be applied to internal type objects" );
+	}
 	if( lhs->sem_type->structType() || rhs->sem_type->structType() ){
 		ex( "Arithmetic operator cannot be applied to custom type objects" );
 	}
@@ -494,7 +497,12 @@ ExprNode *RelExprNode::semant( Environ *e ){
 	ConstNode *lc=lhs->constNode(),*rc=rhs->constNode();
 	if( lc && rc ){
 		ExprNode *expr;
-		if( opType==Type::string_type ){
+		if (opType==Type::null_type) {
+			switch ( op ){
+			case '=':expr=d_new IntConstNode( true );break;
+			case NE: expr=d_new IntConstNode( false );break;
+			}
+		}else if( opType==Type::string_type ){
 			switch( op ){
 			case '<':expr=d_new IntConstNode( lc->stringValue()< rc->stringValue() );break;
 			case '=':expr=d_new IntConstNode( lc->stringValue()==rc->stringValue() );break;

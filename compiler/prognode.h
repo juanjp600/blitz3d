@@ -15,6 +15,7 @@ struct ProgNode : public Node{
 
 	DeclSeqNode *consts;
 	DeclSeqNode *structs;
+	DeclSeqNode *structConsts;
 	DeclSeqNode *funcs;
 	DeclSeqNode *datas;
 	StmtSeqNode *stmts;
@@ -23,7 +24,7 @@ struct ProgNode : public Node{
 
 	string file_lab;
 
-	ProgNode( DeclSeqNode *c,DeclSeqNode *s,DeclSeqNode *f,DeclSeqNode *d,StmtSeqNode *ss ):consts(c),structs(s),funcs(f),datas(d),stmts(ss){}
+	ProgNode( DeclSeqNode *c,DeclSeqNode *s,DeclSeqNode *sc,DeclSeqNode *f,DeclSeqNode *d,StmtSeqNode *ss ):consts(c),structs(s),structConsts(sc),funcs(f),datas(d),stmts(ss){}
 	~ProgNode(){ 
 		delete consts;
 		delete structs;
