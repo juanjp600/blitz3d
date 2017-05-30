@@ -197,6 +197,14 @@ static void link(){
 
 		if( t[0]=='!' ) t=t.substr(1);
 
+		if( t[0]=='(' ){
+			for (int i=1;i<t.size();i++) {
+				if (t[i]==')') {
+					t=t.substr(i+1); break;
+				}
+			}
+		}
+
 		if( !isalnum(t[0]) ) t=t.substr(1);
 
 		for( int k=0;k<(int)t.size();++k ){

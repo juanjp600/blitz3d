@@ -78,7 +78,7 @@ gxChannel *bbPlaySound( gxSound *sound,float x,float y,float z,float vx,float vy
 	if (!debugSound( sound, "PlaySound" )) return 0;
     float pos[3]={x,y,z}; float vel[3]={vx,vy,vz};
 	gxChannel* chan = sound->play();
-	if (!isnan(x)){
+	if (gx_audio->verifyChannel(chan) && !isnan(x)){
 		chan->set3d(pos,vel);
 	}
 	return chan;

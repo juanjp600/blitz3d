@@ -51,7 +51,7 @@ int MainFrame::OnCreate( LPCREATESTRUCT lpCreateStruct ){
 
 	prefs.open();
 
-	string tb=prefs.homeDir+"/cfg/dbg_toolbar.bmp";
+	string tb=prefs.homeDir+"/../cfg/dbg_toolbar.bmp";
 
 	//Toolbar
 	HBITMAP toolbmp=(HBITMAP)LoadImage(

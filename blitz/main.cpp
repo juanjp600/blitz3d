@@ -107,6 +107,13 @@ static void dumpKeys( bool lang,bool mod,bool help ){
 		string t=keyWords[k];
 
 		if( t[0]=='_' )	continue;
+		if( t[0]=='(' ){
+			for (int i=1;i<t.size();i++) {
+				if (t[i]==')') {
+					t=t.substr(i+1); break;
+				}
+			}
+		}
 		if( !isalpha( t[0] ) ) t=t.substr( 1 );
 		for( int n=0;n<(int)t.size();++n ){
 			if( !isalnum(t[n]) && t[n]!='_' ){
