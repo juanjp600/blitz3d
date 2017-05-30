@@ -188,8 +188,8 @@ void bank_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "PokeShort(BBBank)bank%offset%value",bbPokeShort );
 	rtSym( "PokeInt(BBBank)bank%offset%value",bbPokeInt );
 	rtSym( "PokeFloat(BBBank)bank%offset#value",bbPokeFloat );
-	rtSym( "%ReadBytes(BBBank)bank%file%offset%count",bbReadBytes );
-	rtSym( "%WriteBytes(BBBank)bank%file%offset%count",bbWriteBytes );
+	rtSym( "%ReadBytes(BBBank)bank(BBStream)file%offset%count",bbReadBytes );
+	rtSym( "%WriteBytes(BBBank)bank(BBStream)file%offset%count",bbWriteBytes );
 	rtSym( "%CallDLL$dll_name$func_name(BBBank)in_bank=Null(BBBank)out_bank=Null",bbCallDLL );
 }
 

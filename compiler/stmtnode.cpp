@@ -413,7 +413,7 @@ void ReturnNode::semant( Environ *e ){
 				expr=d_new FloatConstNode( 0 );
 			}else if( e->returnType==Type::string_type ){
 				expr=d_new StringConstNode( "" );
-			}else if( e->returnType->structType() ){
+			}else if( e->returnType->structType() || e->returnType->blitzType() ){
 				expr=d_new NullConstNode();
 			}else{
 				expr=d_new IntConstNode( 0 );

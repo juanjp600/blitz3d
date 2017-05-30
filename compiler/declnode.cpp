@@ -67,6 +67,7 @@ void VarDeclNode::proto( DeclSeq *d,Environ *e ){
 			if( ty==Type::int_type ) ty=d_new ConstType( c->intValue() );
 			else if( ty==Type::float_type ) ty=d_new ConstType( c->floatValue() );
 			else if( ty->structType() ) ty=d_new ConstType( ty->structType() );
+			else if( ty->blitzType() ) ty=d_new ConstType( ty->blitzType() );
 			else ty=d_new ConstType( c->stringValue() );
 			e->types.push_back( ty );
 			delete expr;expr=0;

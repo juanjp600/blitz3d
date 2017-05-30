@@ -10,7 +10,7 @@
 //////////////////////////////////
 ExprNode *ExprNode::castTo( Type *ty,Environ *e ){
 	if( !sem_type->canCastTo( ty ) ){
-		ex( "Illegal type conversion" );
+		ex( "Illegal type conversion ("+sem_type->name()+" -> "+ty->name()+")" );
 	}
 
 	ExprNode *cast=d_new CastNode( this,ty );
@@ -117,11 +117,11 @@ void ExprSeqNode::castTo( DeclSeq *decls,Environ *e,bool cfunc ){
 		if( k<(int)exprs.size() && exprs[k] ){
 
 			if( cfunc && d->type->structType() ){
-				if( exprs[k]->sem_type->structType() ){
+				if( exprs[k]->sem_type->structType() || exprs[k]->sem_type->blitzType() ){
 				}else if( exprs[k]->sem_type->intType() ){
 					exprs[k]->sem_type=Type::void_type;
 				}else{
-					ex( "Illegal type conversion" );
+					ex( "Illegal type conversion ("+exprs[k]->sem_type->name()+" -> "+d->type->name()+")" );
 				}
 				continue;
 			}
@@ -481,7 +481,10 @@ TNode *ArithExprNode::translate( Codegen *g ){
 ExprNode *RelExprNode::semant( Environ *e ){
 	lhs=lhs->semant(e);
 	rhs=rhs->semant(e);
-	if( lhs->sem_type->structType() || rhs->sem_type->structType() ){
+	if( lhs->sem_type->blitzType() || rhs->sem_type->blitzType() ){
+		if( op!='=' && op!=NE ) ex( "Illegal operator for Blitz type objects" );
+		opType=lhs->sem_type!=Type::null_type ? lhs->sem_type : rhs->sem_type;
+	}else if( lhs->sem_type->structType() || rhs->sem_type->structType() ){
 		if( op!='=' && op!=NE ) ex( "Illegal operator for custom type objects" );
 		opType=lhs->sem_type!=Type::null_type ? lhs->sem_type : rhs->sem_type;
 	}else if( lhs->sem_type==Type::string_type || rhs->sem_type==Type::string_type ){
