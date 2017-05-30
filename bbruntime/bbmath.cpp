@@ -29,6 +29,9 @@ float bbLog10( float n ){ return (float)log10(n); }
 static inline float rnd(){
 	rnd_state=RND_A*(rnd_state%RND_Q)-RND_R*(rnd_state/RND_Q);
 	if( rnd_state<0 ) rnd_state+=RND_M;
+	if (rnd_state==0) {
+		rnd_state=RND_R;
+	}
 	return (rnd_state&65535)/65536.0f+(.5f/65536.0f);
 }
 
