@@ -117,8 +117,8 @@ void ExprSeqNode::castTo( DeclSeq *decls,Environ *e,bool cfunc ){
 		if( k<(int)exprs.size() && exprs[k] ){
 
 			if( cfunc && d->type->structType() ){
-				if( exprs[k]->sem_type->structType() || exprs[k]->sem_type->blitzType() ){
-				}else if( exprs[k]->sem_type->intType() ){
+				if( exprs[k]->sem_type->structType() ){
+				}else if( exprs[k]->sem_type->intType() || exprs[k]->sem_type->blitzType() ){
 					exprs[k]->sem_type=Type::void_type;
 				}else{
 					ex( "Illegal type conversion ("+exprs[k]->sem_type->name()+" -> "+d->type->name()+")" );
