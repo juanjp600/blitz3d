@@ -521,7 +521,11 @@ IfNode *Parser::parseIf(){
 	a_ptr<StmtSeqNode> stmts,elseOpt;
 
 	expr=parseExpr( false );
-	if( toker->curr()==THEN ) toker->next();
+	if( toker->curr()==THEN ) {
+		toker->next();
+	} else {
+		exp( "'Then'" );
+	}
 
 	bool blkif=isTerm( toker->curr() );
 	stmts=parseStmtSeq( blkif ? STMTS_BLOCK : STMTS_LINE );
