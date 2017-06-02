@@ -100,7 +100,8 @@ gxChannel *gxSoundSample::play(){
 		return 0;
 	}
 	retVal->setLoop(def_loop);
-	retVal->set3d(audio->get3dListenerPos(),audio->get3dListenerVel());
+	float pos[3]={0.f,0.f,0.f}; float vel[3]={0.f,0.f,0.f};
+	retVal->set3d(pos,vel);
 	alSourcei(retVal->getALSource(),AL_SOURCE_RELATIVE,AL_TRUE);
     retVal->setPitch(def_pitch);
     retVal->setVolume(def_gain);
@@ -162,7 +163,8 @@ gxChannel* gxSoundStream::play() {
 		return 0;
 	}
 	retVal->setLoop(def_loop);
-	retVal->set3d(audio->get3dListenerPos(),audio->get3dListenerVel());
+	float pos[3]={0.f,0.f,0.f}; float vel[3]={0.f,0.f,0.f};
+	retVal->set3d(pos,vel);
 	alSourcei(retVal->getALSource(),AL_SOURCE_RELATIVE,AL_TRUE);
 	retVal->setPitch(def_pitch);
 	retVal->setVolume(def_gain);

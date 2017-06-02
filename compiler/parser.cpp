@@ -366,7 +366,7 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 			}while( toker->curr()==',' );
 			break;
 		case ALLOWPOINTERTOINT:
-			if( scope!=STMTS_PROG ) ex( "'Function' can only appear in main program" );
+			if( scope!=STMTS_PROG ) ex( "'AllowBBPointerToInt' can only appear in main program" );
 			toker->next();BlitzType::allowCastToInt=true;
 			break;
 		case '.':

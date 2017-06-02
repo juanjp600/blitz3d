@@ -12,6 +12,9 @@ ExprNode *ExprNode::castTo( Type *ty,Environ *e ){
 	if( !sem_type->canCastTo( ty ) ){
 		ex( "Illegal type conversion ("+sem_type->name()+" -> "+ty->name()+")" );
 	}
+	if (sem_type==Type::string_type && ty==Type::int_type) {
+		ex( "String-to-int conversion must be explicit" );
+	}
 
 	ExprNode *cast=d_new CastNode( this,ty );
 	return cast->semant( e );
