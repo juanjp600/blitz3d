@@ -84,6 +84,12 @@ ALuint SampleChannel::getALSource() {
 	return source;
 }
 
+void SampleChannel::setTime( float seconds ){
+    ALint freq;
+    alGetBufferi(sound->getSample(),AL_FREQUENCY,&freq);
+    alSourcei(source,AL_SAMPLE_OFFSET,seconds*freq);
+}
+
 StreamChannel::StreamChannel(gxSoundStream* insound){
 	sound = insound;
 	source = 0;
@@ -147,7 +153,12 @@ ALuint StreamChannel::getALSource() {
 	return source;
 }
 
-static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool>& isLooping,std::atomic<bool>& isPlaying,std::atomic<bool>& markForDeletion,gxChannel* channel) {
+static void streamOGG(const std::string &filename,bool isPanned,
+                      std::atomic<bool>& isLooping,
+                      std::atomic<bool>& isPlaying,
+                      std::atomic<float>& seek,
+                      std::atomic<bool>& markForDeletion,
+                      gxChannel* channel) {
 	ALuint source = channel->getALSource();
 	ALenum format = 0; ALsizei freq = 0;
 	int endian = 0;
@@ -221,42 +232,101 @@ static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool
 			break;
 		}
 		std::this_thread::sleep_for(80ms);
-		ALint buffersFree = 0;
-		alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
+        if (seek>=0.f) {
+            ov_time_seek(&oggfile,seek);
 
-		while (buffersFree>0) {
-			bufData.clear();
-			do {
-				bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
-				if (bytes<=0 && isLooping) {
-					ov_raw_seek(&oggfile,0);
-					bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
-				}
-				if (bytes>0) {
-					for (unsigned int i=0;i<bytes/(div*2);i++) {
-						arry[i*2]=tmparry[i*div*2];
-						arry[(i*2)+1]=tmparry[(i*div*2)+1];
-						if (div>1) {
-							arry[i*2]=tmparry[(i*div*2)+2];
-							arry[(i*2)+1]=tmparry[(i*div*2)+3];
-						}
-					}
-					bufData.insert(bufData.end(),arry,arry+(bytes/div));
-				} else {
-					finalData = true;
-				}
-			} while (bytes>0 && bufData.size()<4096*16);
+            alSourceStop(source); //makes all buffers ready to dequeue
+            
+            ALuint tbuffers[4];
 
-			if (bufData.size()>0) {
-				ALuint buffer = 0;
-				alSourceUnqueueBuffers(source,1,&buffer);
+            ALint buffersFree = 0;
+            alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
 
-				alBufferData(buffer,format,&bufData[0],bufData.size(),freq);
-				alSourceQueueBuffers(source,1,&buffer);
+            //dequeue all buffers
+            for (int i=0;i<buffersFree;i++) {
+                alSourceUnqueueBuffers(source,1,&(tbuffers[i]));
+            }
+            //place them back in with the new data
+            for (int i=0;i<buffersFree;i++) {
+                bufData.clear();
+                do {
+                    bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
+                    if (bytes<=0 && isLooping) {
+                        ov_raw_seek(&oggfile,0);
+                        bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
+                    }
+                    for (unsigned int i=0;i<bytes/(div*2);i++) {
+                        arry[i*2]=tmparry[i*div*2];
+                        arry[(i*2)+1]=tmparry[(i*div*2)+1];
+                        if (div>1) {
+                            arry[i*2]=tmparry[(i*div*2)+2];
+                            arry[(i*2)+1]=tmparry[(i*div*2)+3];
+                        }
+                    }
+                    if (bytes<=0) {
+                        finalData = true;
+                    } else {
+                        bufData.insert(bufData.end(),arry,arry+(bytes/div));
+                    }
+                } while (bytes>0 && bufData.size()<4096*16);
+
+                if (bufData.size()>0) {
+                    ALuint buffer = tbuffers[i];
+                    alBufferData(buffer,format,&bufData[0],bufData.size(),freq);
+                    alSourceQueueBuffers(source,1,&buffer);
+                }
+            }
+
+            alSourceRewind(source);
+            alSourcePlay(source); //replay the source
+
+            seek = -1.f;
+        } else {
+		    ALint buffersFree = 0;
+            alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
+
+		    while (buffersFree>0) {
+			    bufData.clear();
+			    do {
+				    bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
+                    if (bytes<=0 && isLooping) {
+                        ov_raw_seek(&oggfile,0);
+                        bytes = ov_read(&oggfile,tmparry,4096,endian,2,1,&bitStream);
+                    }
+				    if (bytes>0) {
+					    for (unsigned int i=0;i<bytes/(div*2);i++) {
+						    arry[i*2]=tmparry[i*div*2];
+						    arry[(i*2)+1]=tmparry[(i*div*2)+1];
+						    if (div>1) {
+							    arry[i*2]=tmparry[(i*div*2)+2];
+							    arry[(i*2)+1]=tmparry[(i*div*2)+3];
+						    }
+					    }
+					    bufData.insert(bufData.end(),arry,arry+(bytes/div));
+				    } else {
+					    finalData = true;
+				    }
+			    } while (bytes>0 && bufData.size()<4096*16);
+
+			    if (bufData.size()>0) {
+				    ALuint buffer = 0;
+				    alSourceUnqueueBuffers(source,1,&buffer);
+
+				    alBufferData(buffer,format,&bufData[0],bufData.size(),freq);
+				    alSourceQueueBuffers(source,1,&buffer);
+			    }
+
+                if (seek >= 0.f) {
+                    alSourceStop(source);
+                    break;
+                }
+                if (finalData) { break; }
+
+                alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
 			}
-			if (finalData) break; //we can't fill any more buffers
+            
+            if (finalData) break; //we can't fill any more buffers
 
-			alGetSourcei(source,AL_BUFFERS_PROCESSED,&buffersFree);
 			std::this_thread::sleep_for(10ms);
 		}
 		if (finalData) {
@@ -265,9 +335,19 @@ static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool
 			while (playing==AL_PLAYING || playing==AL_PAUSED) {
 				std::this_thread::sleep_for(80ms);
 				alGetSourcei(source,AL_SOURCE_STATE,&playing);
+                if (seek>=0.f) {
+                    finalData = false;
+                    break;
+                }
 			}
-			isPlaying = false;
-			break;
+            if (seek>=0.f) {
+                finalData = false;
+                break;
+            }
+			if (finalData) {
+                isPlaying = false;
+			    break;
+            }
 		}
 	}
 
@@ -295,7 +375,17 @@ static void streamOGG(const std::string &filename,bool isPanned,std::atomic<bool
 void StreamChannel::createThread(const std::string &filename,bool is_3d) {
 	playing = true;
 	markedForDeletion = false;
-	thread = new std::thread(streamOGG,filename,is_3d,std::ref(looping),std::ref(playing),std::ref(markedForDeletion),this);
+    seek = -1.f;
+	thread = new std::thread(streamOGG,filename,is_3d,
+                                       std::ref(looping),
+                                       std::ref(playing),
+                                       std::ref(seek),
+                                       std::ref(markedForDeletion),
+                                       this);
+}
+
+void StreamChannel::setTime( float seconds ){
+    seek = seconds;
 }
 
 StreamChannel::~StreamChannel() {

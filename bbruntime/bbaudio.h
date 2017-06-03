@@ -24,6 +24,7 @@ void		 bbChannelPitch( gxChannel *channel,float pitch );
 void		 bbChannelVolume( gxChannel *channel,float volume );
 void		 bbChannelRange( gxChannel *channel,float inNear,float inFar );
 void		 bbChannelPos( gxChannel *channel,float x,float y,float z,float vx,float vy,float vz );
+void         bbChannelSeek( gxChannel *channel,float seconds );
 //void		 bbChannelPan( gxChannel *channel,float pan );
 int			 bbChannelPlaying( gxChannel *channel );
 

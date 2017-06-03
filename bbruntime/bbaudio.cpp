@@ -128,6 +128,12 @@ void bbChannelPos(gxChannel *channel, float x, float y, float z, float vx, float
 	channel->set3d(pos,vel);
 }
 
+void bbChannelSeek(gxChannel *channel,float seconds){
+    if ( !channel ) return;
+    if ( !gx_audio->verifyChannel(channel) ) return;
+    channel->setTime(seconds);
+}
+
 /*void bbChannelPan( gxChannel *channel,float pan ){
 	if( !channel ) return;
 	channel->setPan( pan );
@@ -167,6 +173,7 @@ void audio_link( void(*rtSym)(const char*,void*) ){
 	rtSym( "ChannelVolume(BBChannel)channel#volume",bbChannelVolume );
 	rtSym( "ChannelRange(BBChannel)channel#near#far",bbChannelRange );
 	rtSym( "ChannelPos(BBChannel)channel#x#y#z#vx=0#vy=0#vz=0",bbChannelPos );
+    rtSym( "ChannelSeek(BBChannel)channel#seconds",bbChannelSeek );
 	//rtSym( "ChannelPan%channel#pan",bbChannelPan );
 	rtSym( "%ChannelPlaying(BBChannel)channel",bbChannelPlaying );
 }
