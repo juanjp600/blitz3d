@@ -241,7 +241,7 @@
       <ProgramDataBaseFileName>.\bbruntime_dll___Win32_Blitz3DRelease\</ProgramDataBaseFileName>
       <CallingConvention>StdCall</CallingConvention>
       <ExceptionHandling>Async</ExceptionHandling>
-      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;../../dxsdk/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -264,7 +264,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>../_release/bin/runtime.dll</OutputFile>
       <ImportLibrary>.\bbruntime_dll___Win32_Blitz3DRelease\runtime.lib</ImportLibrary>
-      <AdditionalDependencies>wsock32.lib;amstrmid.lib;winmm.lib;../../dxsdk/lib/d3dim.lib;../../dxsdk/lib/d3drm.lib;../../dxsdk/lib/d3dx.lib;../../dxsdk/lib/d3dxd.lib;../../dxsdk/lib/d3dxof.lib;../../dxsdk/lib/ddraw.lib;../../dxsdk/lib/dinput.lib;../../dxsdk/lib/dsetup.lib;../../dxsdk/lib/dsound.lib;../../dxsdk/lib/dxguid.lib;odbc32.lib;odbccp32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wsock32.lib;amstrmid.lib;winmm.lib;odbc32.lib;odbccp32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>

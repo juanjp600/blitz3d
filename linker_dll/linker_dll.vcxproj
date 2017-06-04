@@ -116,7 +116,8 @@
       <ObjectFileName>.\linker_dll___Win32_Blitz3DRelease\</ObjectFileName>
       <ProgramDataBaseFileName>.\linker_dll___Win32_Blitz3DRelease\</ProgramDataBaseFileName>
       <CallingConvention>StdCall</CallingConvention>
-      <AdditionalIncludeDirectories>../../dxsdk/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

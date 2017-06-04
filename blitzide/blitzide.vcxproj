@@ -158,7 +158,8 @@
       <ObjectFileName>.\blitzide___Win32_Blitz3DRelease\</ObjectFileName>
       <ProgramDataBaseFileName>.\blitzide___Win32_Blitz3DRelease\</ProgramDataBaseFileName>
       <CallingConvention>StdCall</CallingConvention>
-      <AdditionalIncludeDirectories>../../dxsdk/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

@@ -20,9 +20,6 @@
 
 #include <math.h>
 #include <windows.h>
-#include <dx7/ddraw.h>
-#include <dx7/dinput.h>
-#include <dx7/d3d.h>
 
 using namespace std;
 
