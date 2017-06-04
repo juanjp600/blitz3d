@@ -385,7 +385,7 @@ void StreamChannel::createThread(const std::string &filename,bool is_3d) {
 }
 
 void StreamChannel::setTime( float seconds ){
-    seek = seconds;
+    seek = seconds; alSourceStop(source);
 }
 
 StreamChannel::~StreamChannel() {
