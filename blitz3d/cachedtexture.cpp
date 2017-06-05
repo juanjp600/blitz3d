@@ -30,15 +30,15 @@ struct CachedTexture::Rep{
 	Rep( const string &f,int flags,int w,int h,int first,int cnt ):
 	ref_cnt(1),file(f),flags(flags),w(w),h(h),first(first){
 		++active_texs;
-		if( !(flags & gxCanvas::CANVAS_TEX_CUBE) ){
-			if( w<=0 || h<=0 || first<0 || cnt<=0 ){
-				w=h=first=0;
-				if( gxCanvas *t=gx_graphics->loadCanvas( f,flags ) ){
-					frames.push_back( t );
-				}
-				return;
+		//if( !(flags & gxCanvas::CANVAS_TEX_CUBE) ){
+		if( w<=0 || h<=0 || first<0 || cnt<=0 ){
+			w=h=first=0;
+			if( gxCanvas *t=gx_graphics->loadCanvas( f,flags ) ){
+				frames.push_back( t );
 			}
+			return;
 		}
+		//}
 
 		int t_flags=flags & (
 			gxCanvas::CANVAS_TEX_RGB|
@@ -48,12 +48,8 @@ struct CachedTexture::Rep{
 
 		gxCanvas *t=gx_graphics->loadCanvas( f,t_flags );
 		if( !t ) return;
-		if( !t->getDepth() ){
-			gx_graphics->freeCanvas( t );
-			return;
-		}
 
-		if( flags & gxCanvas::CANVAS_TEX_CUBE ){
+		/*if( flags & gxCanvas::CANVAS_TEX_CUBE ){
 			int w=t->getWidth()/6;
 			if( w*6!=t->getWidth() ) return;
 			int h=t->getHeight();
@@ -68,22 +64,22 @@ struct CachedTexture::Rep{
 				}
 				tex->setCubeFace(1);
 			}
-		}else{
-			int x_tiles=t->getWidth()/w;
-			int y_tiles=t->getHeight()/h;
-			if( first+cnt>x_tiles*y_tiles ){
-				gx_graphics->freeCanvas( t );
-				return;
-			}
-			int x=(first%x_tiles)*w;
-			int y=(first/x_tiles)*h;
-			while( cnt-- ){
-				gxCanvas *p=gx_graphics->createCanvas( w,h,flags );
-				gx_graphics->copy( p,0,0,p->getWidth(),p->getHeight(),t,x,y,w,h );
-				frames.push_back(p);
-				x=x+w;if( x+w>t->getWidth() ){ x=0;y=y+h; }
-			}
+		}else{*/
+		int x_tiles=t->getWidth()/w;
+		int y_tiles=t->getHeight()/h;
+		if( first+cnt>x_tiles*y_tiles ){
+			gx_graphics->freeCanvas( t );
+			return;
 		}
+		int x=(first%x_tiles)*w;
+		int y=(first/x_tiles)*h;
+		while( cnt-- ){
+			gxCanvas *p=gx_graphics->createCanvas( w,h,flags );
+			gx_graphics->copy( p,0,0,p->getWidth(),p->getHeight(),t,x,y,w,h );
+			frames.push_back(p);
+			x=x+w;if( x+w>t->getWidth() ){ x=0;y=y+h; }
+		}
+		//}
 		gx_graphics->freeCanvas( t );
 	}
 

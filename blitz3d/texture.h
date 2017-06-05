@@ -33,9 +33,9 @@ public:
 	const gxScene::Matrix *getMatrix()const;
 	int getBlend()const;
 	int getFlags()const;
-	DWORD getBumpEnvMat( int x,int y )const;
-	DWORD getBumpEnvScale()const;
-	DWORD getBumpEnvOffset()const;
+	float getBumpEnvMat( int x,int y )const;
+	float getBumpEnvScale()const;
+	float getBumpEnvOffset()const;
 	CachedTexture *getCachedTexture()const;
 
 	bool isTransparent()const;

@@ -2,6 +2,8 @@
 #include "std.h"
 #include "object.h"
 
+#include "../gxruntime/gxchannel.h"
+
 extern gxRuntime *gx_runtime;
 
 Object::Object():

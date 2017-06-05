@@ -1,0 +1,30 @@
+#ifndef GXCANVAS_H
+#define GXCANVAS_H
+
+#include "gxscene.h"
+
+class gxCanvas {
+public:
+	enum{
+		CANVAS_TEX_RGB=			0x0001,
+		CANVAS_TEX_ALPHA=		0x0002,
+		CANVAS_TEX_MASK=		0x0004,
+		CANVAS_TEX_MIPMAP=		0x0008,
+		CANVAS_TEX_CLAMPU=		0x0010,
+		CANVAS_TEX_CLAMPV=		0x0020,
+		CANVAS_TEX_SPHERE=		0x0040,
+		//CANVAS_TEX_CUBE=		0x0080,
+		CANVAS_TEX_VIDMEM=		0x0100,
+		CANVAS_TEX_HICOLOR=		0x0200,
+
+		CANVAS_TEXTURE=			0x10000,
+		CANVAS_NONDISPLAY=		0x20000,
+		CANVAS_HIGHCOLOR=		0x40000
+	};
+
+	//ACCESSORS
+	int getWidth()const;
+	int getHeight()const;
+};
+
+#endif

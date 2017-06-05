@@ -4,6 +4,8 @@
 #include "frustum.h"
 #include "camera.h"
 
+#include "../gxruntime/gxmesh.h"
+
 static Vector vts[17][17];
 
 extern gxGraphics *gx_graphics;

@@ -2,6 +2,8 @@
 #include "std.h"
 #include "listener.h"
 
+#include "../gxruntime/gxaudio.h"
+
 extern gxAudio *gx_audio;
 
 Listener::Listener( float roll,float dopp,float dist ){

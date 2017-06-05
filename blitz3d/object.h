@@ -9,6 +9,7 @@
 #include "collision.h"
 
 class gxSound;
+class gxChannel;
 
 struct ObjCollision{
 	Object *with;

@@ -3,6 +3,7 @@
 #define CACHEDTEXTURE_H
 
 #include "../gxruntime/gxcanvas.h"
+#include "../gxruntime/gxgraphics.h"
 
 class CachedTexture{
 public:

@@ -5,6 +5,7 @@
 #include "animation.h"
 #include "pivot.h"
 
+#if 0
 #include <dx7/dxfile.h>
 #include <dx7/rmxfguid.h>
 #include <dx7/rmxftmpl.h>
@@ -383,3 +384,4 @@ MeshModel *Loader_X::load( const string &filename,const Transform &t,int hint ){
 	frames_map.clear();
 	return e;
 }
+#endif
