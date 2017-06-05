@@ -24,6 +24,7 @@ public:
 	void clearRelatedChannels( gxSound* sound );
 	bool verifyChannel( gxChannel* chan );
 
+	static const float posScale;
 private:
     ALCdevice* device;
     ALCcontext* context;
