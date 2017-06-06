@@ -35,6 +35,11 @@ gxAudio::~gxAudio(){
 
 	//free all channels
 	for (unsigned int i=0;i<SOURCE_COUNT;i++) {
+		if (channels[i]) {
+			channels[i]->stop();
+			while (!channels[i]->canDispose()) {}
+			delete channels[i];
+		}
 		alDeleteSources(1,&sources[i]);
 	}
     
