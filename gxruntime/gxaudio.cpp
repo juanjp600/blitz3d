@@ -2,6 +2,8 @@
 #include "std.h"
 #include "gxaudio.h"
 
+const float gxAudio::posScale = 0.01f;
+
 gxAudio::gxAudio( gxRuntime *r ):
 runtime(r){
 	for( int k=0;k<SOURCE_COUNT;++k ) channels[k]=0;
@@ -33,6 +35,11 @@ gxAudio::~gxAudio(){
 
 	//free all channels
 	for (unsigned int i=0;i<SOURCE_COUNT;i++) {
+		if (channels[i]) {
+			channels[i]->stop();
+			while (!channels[i]->canDispose()) {}
+			delete channels[i];
+		}
 		alDeleteSources(1,&sources[i]);
 	}
     
@@ -91,7 +98,7 @@ void gxAudio::set3dOptions( float roll,float dopp,float dist ){
 }
 
 void gxAudio::set3dListener( const float pos[3],const float vel[3],const float forward[3],const float up[3] ){
-	alListener3f(AL_POSITION,pos[0],pos[1],pos[2]);
+	alListener3f(AL_POSITION,pos[0]*posScale,pos[1]*posScale,pos[2]*posScale);
     float orientation[] = {-forward[0],forward[1],-forward[2],up[0],up[1],up[2]};
     alListenerfv(AL_ORIENTATION,orientation);
     listenerPos[0] = pos[0]; listenerPos[1] = pos[1]; listenerPos[2] = pos[2];

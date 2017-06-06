@@ -55,14 +55,14 @@ void SampleChannel::setVolume( float volume ){
 }
 
 void SampleChannel::setRange(float inNear, float inFar) {
-	alSourcef( source,AL_REFERENCE_DISTANCE,inNear );
-	alSourcef( source,AL_MAX_DISTANCE,inFar );
+	alSourcef( source,AL_REFERENCE_DISTANCE,inNear*gxAudio::posScale );
+	alSourcef( source,AL_MAX_DISTANCE,inFar*gxAudio::posScale );
 }
 
 void SampleChannel::set3d( const float pos[3],const float vel[3] ){
 	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
 
-	alSource3f( source,AL_POSITION,pos[0],pos[1],pos[2] );
+	alSource3f( source,AL_POSITION,pos[0]*gxAudio::posScale,pos[1]*gxAudio::posScale,pos[2]*gxAudio::posScale );
 	alSource3f( source,AL_VELOCITY,vel[0],vel[1],vel[2] );
 }
 
@@ -133,13 +133,13 @@ void StreamChannel::setVolume( float volume ){
 	alSourcef( source,AL_GAIN,volume );
 }
 void StreamChannel::setRange(float inNear, float inFar) {
-	alSourcef( source,AL_REFERENCE_DISTANCE,inNear );
-	alSourcef( source,AL_MAX_DISTANCE,inFar );
+	alSourcef( source,AL_REFERENCE_DISTANCE,inNear*gxAudio::posScale );
+	alSourcef( source,AL_MAX_DISTANCE,inFar*gxAudio::posScale );
 }
 void StreamChannel::set3d( const float pos[3],const float vel[3] ){
 	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
 
-	alSource3f( source,AL_POSITION,pos[0],pos[1],pos[2] );
+	alSource3f( source,AL_POSITION,pos[0]*gxAudio::posScale,pos[1]*gxAudio::posScale,pos[2]*gxAudio::posScale );
 	alSource3f( source,AL_VELOCITY,vel[0],vel[1],vel[2] );
 }
 bool StreamChannel::isPlaying(){
@@ -313,7 +313,7 @@ static void streamOGG(const std::string &filename,bool isPanned,
 				if (bufData.size()>0) {
 					ALuint buffer = 0;
 					alSourceUnqueueBuffers(source,1,&buffer);
-
+					
 					alBufferData(buffer,format,&bufData[0],bufData.size(),freq);
 					alSourceQueueBuffers(source,1,&buffer);
 				}
