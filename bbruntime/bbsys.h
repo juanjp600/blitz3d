@@ -4,6 +4,7 @@
 
 #include "basic.h"
 #include "../gxruntime/gxruntime.h"
+#include "../gxruntime/gxdevice.h"
 
 extern bool debug;
 extern gxRuntime *gx_runtime;

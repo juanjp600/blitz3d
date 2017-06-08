@@ -41,17 +41,11 @@ static void fail( const char *p ){
 }
 
 static int desktopDepth(){
-	HDC hdc=GetDC( GetDesktopWindow() );
-	return GetDeviceCaps( hdc,BITSPIXEL );
+	//HDC hdc=GetDC( GetDesktopWindow() );
+	return 32;//GetDeviceCaps( hdc,BITSPIXEL );
 }
 
 int _stdcall WinMain( HINSTANCE inst,HINSTANCE prev,char *cmd,int show ){
-
-	if( desktopDepth()<16 ) fail( md_err );
-
-#ifndef PLUS
-	if( getDXVersion()<7 ) fail( dx_err );
-#endif
 
 	if( getIEVersion()<4 ) fail( ie_err );
 

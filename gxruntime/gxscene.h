@@ -1,6 +1,11 @@
 #ifndef GXSCENE_H
 #define GXSCENE_H
 
+#include <vector>
+
+class gxLight;
+class gxMesh;
+
 class gxScene {
 public:
 	enum{
@@ -56,6 +61,10 @@ public:
 		}tex_states[MAX_TEXTURES];
 	};
 
+	void setDither( bool enable );
+	void setAntialias( bool enable );
+	void setWireframe( bool enable );
+	void setFlippedTris( bool enable );
 	void setAmbient( const float rgb[3] );
 	void setAmbient2( const float rgb[3] );
 	void setFogColor( const float rgb[3] );
@@ -70,14 +79,20 @@ public:
 	void setRenderState( const RenderState &state );
 
 	//rendering
-	//bool begin( const std::vector<gxLight*> &lights );
+	bool begin( const std::vector<gxLight*> &lights );
 	void clear( const float rgb[3],float alpha,float z,bool clear_argb,bool clear_z );
-	//void render( gxMesh *mesh,int first_vert,int vert_cnt,int first_tri,int tri_cnt );
+	void render( gxMesh *mesh,int first_vert,int vert_cnt,int first_tri,int tri_cnt );
 	void end();
 
 	void setZMode();
 	void setAmbient();
 	void setFogMode();
+
+	//lighting
+	gxLight *createLight( int flags );
+	void freeLight( gxLight *l );
+
+	float textureLodBias;
 };
 
 #endif

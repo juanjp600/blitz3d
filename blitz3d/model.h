@@ -2,6 +2,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "../gxruntime/gxmesh.h"
+
 #include "brush.h"
 #include "object.h"
 #include "rendercontext.h"
@@ -10,8 +12,6 @@ class Sprite;
 class Terrain;
 class PlaneModel;
 class Q3BSPModel;
-
-class gxMesh;
 
 class Model : public Object{
 public:

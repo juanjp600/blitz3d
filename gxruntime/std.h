@@ -1,6 +1,6 @@
 
-#ifndef STD_H
-#define STD_H
+#ifndef GXRUNTIME_STD_H
+#define GXRUNTIME_STD_H
 
 #include "../config/config.h"
 #include "../stdutil/stdutil.h"

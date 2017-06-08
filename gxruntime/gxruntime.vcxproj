@@ -249,10 +249,14 @@
     <ClInclude Include="gxaudio.h" />
     <ClInclude Include="gxcanvas.h" />
     <ClInclude Include="gxchannel.h" />
+    <ClInclude Include="gxdevice.h" />
     <ClInclude Include="gxdir.h" />
     <ClInclude Include="gxfilesystem.h" />
+    <ClInclude Include="gxfont.h" />
     <ClInclude Include="gxgraphics.h" />
+    <ClInclude Include="gxinput.h" />
     <ClInclude Include="gxlight.h" />
+    <ClInclude Include="gxmovie.h" />
     <ClInclude Include="gxruntime.h" />
     <ClInclude Include="gxscene.h" />
     <ClInclude Include="gxsound.h" />

@@ -37,9 +37,9 @@ struct Texture::Rep{
 
 	int tex_blend,tex_flags;
 	bool transparent;
-	DWORD bumpEnvMat[2][2];
-	DWORD bumpEnvScale;
-	DWORD bumpEnvOffset;
+	float bumpEnvMat[2][2];
+	float bumpEnvScale;
+	float bumpEnvOffset;
 
 	float sx,sy,tx,ty,rot;
 	bool mat_used,mat_valid;
@@ -147,17 +147,17 @@ void Texture::setFlags( int flags ){
 
 void Texture::setBumpEnvMat( int x,int y,float envmat ){
 	if( !rep ) return;
-	rep->bumpEnvMat[x][y] = *((DWORD*)&envmat);
+	rep->bumpEnvMat[x][y] = envmat;
 }
 
 void Texture::setBumpEnvScale( float envscale ){
 	if( !rep ) return;
-	rep->bumpEnvScale = *((DWORD*)&envscale);
+	rep->bumpEnvScale = envscale;
 }
 
 void Texture::setBumpEnvOffset( float envoffset ){
 	if( !rep ) return;
-	rep->bumpEnvOffset = *((DWORD*)&envoffset);
+	rep->bumpEnvOffset = envoffset;
 }
 
 bool Texture::isTransparent()const{
@@ -184,15 +184,15 @@ int Texture::getFlags()const{
 	return rep ? rep->tex_flags : 0;
 }
 
-DWORD Texture::getBumpEnvMat( int x,int y )const{
+float Texture::getBumpEnvMat( int x,int y )const{
 	return rep ? rep->bumpEnvMat[x][y] : 0;
 }
 
-DWORD Texture::getBumpEnvScale()const{
+float Texture::getBumpEnvScale()const{
 	return rep ? rep->bumpEnvScale : 0;
 }
 
-DWORD Texture::getBumpEnvOffset()const{
+float Texture::getBumpEnvOffset()const{
 	return rep ? rep->bumpEnvOffset : 0;
 }
 

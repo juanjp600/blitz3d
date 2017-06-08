@@ -475,26 +475,6 @@ void  bbLoaderMatrix( BBStr *ext,float xx,float xy,float xz,float yx,float yy,fl
 	delete ext;
 }
 
-int   bbHWTexUnits(){
-	if (!debug3d("HWTexUnits")) return 0;
-	return gx_scene->hwTexUnits();
-}
-
-int	  bbGfxDriverCaps3D(){
-	if (!debug3d("GfxDriverCaps3D")) return 0;
-	return gx_scene->gfxDriverCaps3D();
-}
-
-void  bbHWMultiTex( int enable ){
-	if (!debug3d("HWMultiTex")) return;
-	gx_scene->setHWMultiTex( !!enable );
-}
-
-void  bbWBuffer( int enable ){
-	if (!debug3d("WBuffer")) return;
-	gx_scene->setWBuffer( !!enable );
-}
-
 void  bbDither( int enable ){
 	if (!debug3d("Dither")) return;
 	gx_scene->setDither( !!enable );
@@ -550,13 +530,13 @@ void  bbRenderWorld( float tween ){
 	if (!debug3d("RenderWorld")) return;
 
 #ifndef BETA
-	tri_count=gx_scene->getTrianglesDrawn();
+	//tri_count=gx_scene->getTrianglesDrawn();
 	world->render( tween );
-	tri_count=gx_scene->getTrianglesDrawn()-tri_count;
+	//tri_count=gx_scene->getTrianglesDrawn()-tri_count;
 	return;
 #endif
 
-	int tris=gx_scene->getTrianglesDrawn();
+	//int tris=gx_scene->getTrianglesDrawn();
 	int render_ms=gx_runtime->getMilliSecs();
 	world->render( tween );
 	render_ms=gx_runtime->getMilliSecs()-render_ms;
@@ -575,7 +555,7 @@ void  bbRenderWorld( float tween ){
 
 	if( !stats_mode ) return;
 
-	tris=gx_scene->getTrianglesDrawn()-tris;
+	//tris=gx_scene->getTrianglesDrawn()-tris;
 
 	static int time;
 	int frame_ms=gx_runtime->getMilliSecs()-time;
@@ -588,9 +568,9 @@ void  bbRenderWorld( float tween ){
 	string t_fps="000"+itoa(fps);t_fps=t_fps.substr( t_fps.size()-4 );
 	string t_ups="000"+itoa(ups);t_ups=t_ups.substr( t_ups.size()-4 );
 	string t_rps="000"+itoa(rps);t_rps=t_rps.substr( t_rps.size()-4 );
-	string t_tris="00000"+itoa(tris);t_tris=t_tris.substr( t_tris.size()-6 );
+	//string t_tris="00000"+itoa(tris);t_tris=t_tris.substr( t_tris.size()-6 );
 
-	string t="FPS:"+t_fps+" UPS:"+t_ups+" RPS:"+t_rps+" TRIS:"+t_tris;
+	string t="FPS:"+t_fps+" UPS:"+t_ups+" RPS:"+t_rps;//+" TRIS:"+t_tris;
 
 	bbText( 0,bbGraphicsHeight()-bbFontHeight(),d_new BBStr(t),0,0 );
 }
@@ -713,20 +693,6 @@ BBStr *bbTextureName( Texture *t ){
 	if (!debugTexture(t,"TextureName")) return d_new BBStr("");
 	CachedTexture *c=t->getCachedTexture();
 	return c ? d_new BBStr( c->getName().c_str() ) : d_new BBStr("");
-}
-
-void bbSetCubeFace( Texture *t,int face ){
-	if (!debugTexture(t,"SetCubeFace")) return;
-	if( gxCanvas *c=t->getCanvas( 0 ) ){
-		c->setCubeFace(face);
-	}
-}
-
-void bbSetCubeMode( Texture *t,int mode ){
-	if (!debugTexture(t,"SetCubeMode")) return;
-	if( gxCanvas *c=t->getCanvas( 0 ) ){
-		c->setCubeMode( mode );
-	}
 }
 
 gxCanvas *bbTextureBuffer( Texture *t,int frame ){
@@ -1597,16 +1563,14 @@ Entity *  bbLoadTerrain( BBStr *file,Entity *p ){
 	while( (1<<shift)<w ) ++shift;
 	if( (1<<shift)!=w ) RTEX( "Illegal terrain size" );
 	Terrain *t=d_new Terrain( shift );
-	c->lock();
 	for( int y=0;y<h;++y ){
 		for( int x=0;x<w;++x ){
-			int rgb=c->getPixelFast( x,y );
+			int rgb=c->getPixel( x,y );
 			int r=(rgb>>16)&0xff,g=(rgb>>8)&0xff,b=rgb&0xff;
 			float p=(r>g?(r>b?r:b):(g>b?g:b))/255.0f;
 			t->setHeight( x,h-1-y,p,false );
 		}
 	}
-	c->unlock();
 	gx_graphics->freeCanvas( c );
 	return insertEntity( t,p );
 }
@@ -2332,10 +2296,6 @@ bool blitz3d_destroy(){
 
 void blitz3d_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "LoaderMatrix$file_ext#xx#xy#xz#yx#yy#yz#zx#zy#zz",bbLoaderMatrix );
-	rtSym( "HWMultiTex%enable",bbHWMultiTex );
-	rtSym( "%HWTexUnits",bbHWTexUnits );
-	rtSym( "%GfxDriverCaps3D",bbGfxDriverCaps3D );
-	rtSym( "WBuffer%enable",bbWBuffer );
 	rtSym( "Dither%enable",bbDither );
 	rtSym( "AntiAlias%enable",bbAntiAlias );
 	rtSym( "WireFrame%enable",bbWireFrame );
@@ -2366,8 +2326,6 @@ void blitz3d_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%TextureWidth(BBTexture)texture",bbTextureWidth );
 	rtSym( "%TextureHeight(BBTexture)texture",bbTextureHeight );
 	rtSym( "$TextureName(BBTexture)texture",bbTextureName );
-	rtSym( "SetCubeFace(BBTexture)texture%face",bbSetCubeFace );
-	rtSym( "SetCubeMode(BBTexture)texture%mode",bbSetCubeMode );
 	rtSym( "(BBBuffer)TextureBuffer(BBTexture)texture%frame=0",bbTextureBuffer );
 	rtSym( "ClearTextureFilters",bbClearTextureFilters );
 	rtSym( "TextureFilter$match_text%texture_flags=0",bbTextureFilter );

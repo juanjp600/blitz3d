@@ -3,11 +3,15 @@
 #include "bbgraphics.h"
 #include "bbinput.h"
 
+#include "../gxruntime/gxcanvas.h"
+#include "../gxruntime/gxfont.h"
+#include "../gxruntime/gxmovie.h"
+
 gxGraphics *gx_graphics;
 gxCanvas *gx_canvas;
 
 struct GfxMode{
-	int w,h,d,caps;
+	int w,h,d;
 };
 
 class bbImage{
@@ -89,21 +93,6 @@ static inline bool debugCanvas( gxCanvas *c,const char* a ){
 		errorLog.push_back(std::string(a)+std::string(": Buffer does not exist"));
 	}
 	return false;
-}
-
-static inline bool debugDriver( int n,const char* a ){
-	if( debug ){
-		if( n<1 || n>gx_runtime->numGraphicsDrivers() ){
-			RTEX( "Illegal graphics driver index" );
-			return false;
-		}
-	} else {
-		if( n<1 || n>gx_runtime->numGraphicsDrivers() ){
-			errorLog.push_back(std::string(a)+std::string(": Illegal graphics driver index"));
-			return false;
-		}
-	}
-	return true;
 }
 
 static inline bool debugMode( int n,const char* a ){
@@ -199,9 +188,6 @@ static gxCanvas *tformCanvas( gxCanvas *c,float m[2][2],int x_handle,int y_handl
 	t->setHandle( (int)-minx,(int)-miny );
 	t->setMask( c->getMask() );
 
-	c->lock();
-	t->lock();
-
 	v.y=miny+.5f;
 	for( int y=0;y<ih;++v.y,++y ){
 		v.x=minx+.5f;
@@ -211,9 +197,6 @@ static gxCanvas *tformCanvas( gxCanvas *c,float m[2][2],int x_handle,int y_handl
 			t->setPixel( x,y,rgb );
 		}
 	}
-
-	t->unlock();
-	c->unlock();
 
 	return t;
 }
@@ -242,39 +225,20 @@ static bool saveCanvas( gxCanvas *c,const string &f ){
 	unsigned char *temp=d_new unsigned char[ tempsize ];
 	memset( temp,0,tempsize );
 
-	c->lock();
 	for( int y=c->getHeight()-1;y>=0;--y ){
 		unsigned char *dest=temp;
 		for( int x=0;x<c->getWidth();++x ){
-			unsigned rgb=c->getPixelFast( x,y );
+			unsigned rgb=c->getPixel( x,y );
 			*dest++=rgb&0xff;
 			*dest++=(rgb>>8)&0xff;
 			*dest++=(rgb>>16)&0xff;
 		}
 		out.write( (char*)temp,tempsize );
 	}
-	c->unlock();
-
+	
 	delete [] temp;
 
 	return out.good();
-}
-
-int bbCountGfxDrivers(){
-	return gx_runtime->numGraphicsDrivers();
-}
-
-BBStr *	bbGfxDriverName( int n ){
-	if (!debugDriver( n,"GfxDriverName" )) return d_new BBStr("");
-	string t;int caps;
-	gx_runtime->graphicsDriverInfo( n-1,&t,&caps );
-	return d_new BBStr( t );
-}
-
-void  bbSetGfxDriver( int n ){
-	if (!debugDriver( n,"SetGfxDriver" )) return;
-	gfx_modes.clear();
-	gx_driver=n-1;
 }
 
 int  bbCountGfxModes(){
@@ -282,7 +246,7 @@ int  bbCountGfxModes(){
 	int n=gx_runtime->numGraphicsModes( gx_driver );
 	for( int k=0;k<n;++k ){
 		GfxMode m;
-		gx_runtime->graphicsModeInfo( gx_driver,k,&m.w,&m.h,&m.d,&m.caps );
+		gx_runtime->graphicsModeInfo( gx_driver,k,&m.w,&m.h,&m.d );
 		gfx_modes.push_back( m );
 	}
 	return gfx_modes.size();
@@ -307,8 +271,7 @@ static int modeExists( int w,int h,int d,bool bb3d ){
 	int cnt=gx_runtime->numGraphicsModes( gx_driver );
 	for( int k=0;k<cnt;++k ){
 		int tw,th,td,tc;
-		gx_runtime->graphicsModeInfo( gx_driver,k,&tw,&th,&td,&tc );
-		if( bb3d && !(tc&gxRuntime::GFXMODECAPS_3D) ) continue;
+		gx_runtime->graphicsModeInfo( gx_driver,k,&tw,&th,&td );
 		if( w==tw && h==th && d==td ) return 1;
 	}
 	return 0;
@@ -320,10 +283,7 @@ int  bbGfxModeExists( int w,int h,int d ){
 
 #ifdef PRO
 int  bbGfxDriver3D( int n ){
-	if (!debugDriver( n,"GfxDriver3D" )) return 0;
-	string t;int caps;
-	gx_runtime->graphicsDriverInfo( n-1,&t,&caps );
-	return (caps & gxRuntime::GFXMODECAPS_3D) ? 1 : 0;
+	return 1;
 }
 
 int  bbCountGfxModes3D(){
@@ -331,8 +291,8 @@ int  bbCountGfxModes3D(){
 	int n=gx_runtime->numGraphicsModes( gx_driver );
 	for( int k=0;k<n;++k ){
 		GfxMode m;
-		gx_runtime->graphicsModeInfo( gx_driver,k,&m.w,&m.h,&m.d,&m.caps );
-		if( m.caps & gxRuntime::GFXMODECAPS_3D) gfx_modes.push_back( m );
+		gx_runtime->graphicsModeInfo( gx_driver,k,&m.w,&m.h,&m.d );
+		gfx_modes.push_back( m );
 	}
 	return gfx_modes.size();
 }
@@ -342,23 +302,20 @@ int  bbGfxMode3DExists( int w,int h,int d ){
 }
 
 int  bbGfxMode3D( int n ){
-	if (!debugMode( n,"GfxMode3D" )) return 0;
-	return gfx_modes[n-1].caps & gxRuntime::GFXMODECAPS_3D ? 1 :0;
+	return 1;
 }
 
 int  bbWindowed3D(){
-	int tc;
-	gx_runtime->windowedModeInfo( &tc );
-	return (tc & gxRuntime::GFXMODECAPS_3D) ? 1 : 0;
+	return 1;
 }
 #endif
 
 int  bbTotalVidMem(){
-	return gx_graphics->getTotalVidmem();
+	return -1;//TODO: check if this is necessary //gx_graphics->getTotalVidmem();
 }
 
 int  bbAvailVidMem(){
-	return gx_graphics->getAvailVidmem();
+	return -1;//TODO: check if this is necessary //gx_graphics->getAvailVidmem();
 }
 
 void bbSetBuffer( gxCanvas *buff ){
@@ -400,10 +357,10 @@ int bbSaveBuffer( gxCanvas *c,BBStr *str ){
 	return saveCanvas( c,t ) ? 1 : 0;
 }
 
-void bbBufferDirty( gxCanvas *c ){
+/*void bbBufferDirty( gxCanvas *c ){
 	if (!debugCanvas( c,"BufferDirty" )) return;
 	c->backup();
-}
+}*/
 
 static void graphics( int w,int h,int d,int flags ){
 	freeGraphics();
@@ -416,23 +373,8 @@ static void graphics( int w,int h,int d,int flags ){
 	curr_clsColor=0;
 	curr_color=0xffffffff;
 	curr_font=gx_graphics->getDefaultFont();
-	gxCanvas *buff=(flags & gxGraphics::GRAPHICS_3D) ?
-		gx_graphics->getBackCanvas() : gx_graphics->getFrontCanvas();
+	gxCanvas *buff=gx_graphics->getBackCanvas();
 	bbSetBuffer( buff );
-}
-
-void bbGraphics( int w,int h,int d,int mode ){
-	int flags=0;
-	switch( mode ){
-	case 0:flags|=debug ? gxGraphics::GRAPHICS_WINDOWED : 0 ;break;
-	case 1:break;
-	case 2:flags|=gxGraphics::GRAPHICS_WINDOWED;break;
-	case 3:flags|=gxGraphics::GRAPHICS_WINDOWED|gxGraphics::GRAPHICS_SCALED;break;
-	case 6:flags|=gxGraphics::GRAPHICS_WINDOWED|gxGraphics::GRAPHICS_AUTOSUSPEND;break;
-	case 7:flags|=gxGraphics::GRAPHICS_WINDOWED|gxGraphics::GRAPHICS_SCALED|gxGraphics::GRAPHICS_AUTOSUSPEND;break;
-	default:RTEX( "Illegal Graphics mode" );
-	}
-	graphics( w,h,d,flags );
 }
 
 #ifdef PRO
@@ -472,35 +414,40 @@ int bbGraphicsLost(){
 	return gx_runtime->graphicsLost();
 }
 
-void  bbSetGamma( int r,int g,int b,float dr,float dg,float db ){
+void bbSetGamma( int r,int g,int b,float dr,float dg,float db ){
 	if( dr<0 ) dr=0;
 	else if( dr>255.0f ) dr=255.0f;
 	if( dg<0 ) dg=0;
 	else if( dg>255.0f ) dg=255.0f;
 	if( db<0 ) db=0;
 	else if( db>255.0f ) db=255.0f;
-	gx_graphics->setGamma( r,g,b,dr,dg,db );
+	RTEX("Gamma not implemented");
+	//gx_graphics->setGamma( r,g,b,dr,dg,db );
 }
 
 void  bbUpdateGamma( int calibrate ){
-	gx_graphics->updateGamma( !!calibrate );
+	RTEX("Gamma not implemented");
+	//gx_graphics->updateGamma( !!calibrate );
 }
 
 float  bbGammaRed( int n ){
 	float dr,dg,db;
-	gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
+	RTEX("Gamma not implemented");
+	//gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
 	return dr;
 }
 
 float  bbGammaGreen( int n ){
 	float dr,dg,db;
-	gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
+	RTEX("Gamma not implemented");
+	//gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
 	return dg;
 }
 
 float  bbGammaBlue( int n ){
 	float dr,dg,db;
-	gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
+	RTEX("Gamma not implemented");
+	//gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
 	return db;
 }
 
@@ -512,7 +459,7 @@ gxCanvas *bbBackBuffer(){
 	return gx_graphics->getBackCanvas();
 }
 
-void bbLockBuffer( gxCanvas *buff ){
+/*void bbLockBuffer( gxCanvas *buff ){
 	if( buff ) { if (!debugCanvas( buff,"LockBuffer" )) return; }
 	(buff ? buff : gx_canvas)->lock();
 }
@@ -520,7 +467,7 @@ void bbLockBuffer( gxCanvas *buff ){
 void bbUnlockBuffer( gxCanvas *buff ){
 	if( buff ) { if (!debugCanvas( buff,"UnlockBuffer" )) return; }
 	(buff ? buff : gx_canvas)->unlock();
-}
+}*/
 
 int bbReadPixel( int x,int y,gxCanvas *buff ){
 	if( buff ) { if (!debugCanvas( buff,"ReadPixel" )) return 0; }
@@ -532,19 +479,19 @@ void bbWritePixel( int x,int y,int argb,gxCanvas *buff ){
 	(buff ? buff : gx_canvas)->setPixel( x,y,argb );
 }
 
-int bbReadPixelFast( int x,int y,gxCanvas *buff ){
+/*int bbReadPixelFast( int x,int y,gxCanvas *buff ){
 	return (buff ? buff : gx_canvas)->getPixelFast( x,y );
 }
 
 void bbWritePixelFast( int x,int y,int argb,gxCanvas *buff ){
 	(buff ? buff : gx_canvas)->setPixelFast( x,y,argb );
-}
+}*/
 
 void bbCopyPixel( int src_x,int src_y,gxCanvas *src,int dest_x,int dest_y,gxCanvas *buff ){
 	(buff ? buff : gx_canvas)->copyPixel( dest_x,dest_y,src ? src : gx_canvas,src_x,src_y );
 }
 
-void bbCopyPixelFast( int src_x,int src_y,gxCanvas *src,int dest_x,int dest_y,gxCanvas *buff ){
+/*void bbCopyPixelFast( int src_x,int src_y,gxCanvas *src,int dest_x,int dest_y,gxCanvas *buff ){
 	(buff ? buff : gx_canvas)->copyPixelFast( dest_x,dest_y,src ? src : gx_canvas,src_x,src_y );
 }
 
@@ -555,7 +502,7 @@ int bbScanLine(){
 void bbVWait( int n ){
 	gx_graphics->vwait();
 	if( !gx_runtime->idle() ) RTEX( 0 );
-}
+}*/
 
 void bbFlip( int vwait ){
 	gx_graphics->flip( vwait ? true : false );
@@ -571,7 +518,7 @@ int bbGraphicsHeight(){
 }
 
 int bbGraphicsDepth(){
-	return gx_graphics->getDepth();
+	return 32;
 }
 
 void bbOrigin( int x,int y ){
@@ -713,7 +660,7 @@ bbImage *bbLoadImage( BBStr *s ){
 	string t=*s;delete s;
 	gxCanvas *c=gx_graphics->loadCanvas( t,0 );
 	if( !c ) return 0;
-	if( auto_dirty ) c->backup();
+	//if( auto_dirty ) c->backup();
 	if( auto_midhandle ) c->setHandle( c->getWidth()/2,c->getHeight()/2 );
 	vector<gxCanvas*> frames;
 	frames.push_back( c );
@@ -751,7 +698,7 @@ bbImage *bbLoadAnimImage( BBStr *s,int w,int h,int first,int cnt ){
 			gx_graphics->freeCanvas( pic );return 0;
 		}
 		c->blit( 0,0,pic,src_x,src_y,w,h,true );
-		if( auto_dirty ) c->backup();
+		//if( auto_dirty ) c->backup();
 		if( auto_midhandle ) c->setHandle( c->getWidth()/2,c->getHeight()/2 );
 		frames.push_back( c );
 		src_x+=w;if( src_x+w>pic->getWidth() ){ src_x=0;src_y+=h; }
@@ -777,7 +724,7 @@ bbImage *bbCopyImage( bbImage *i ){
 		t->getHandle( &x,&y );
 		t->setHandle( 0,0 );
 		c->blit( 0,0,t,0,0,t->getWidth(),t->getHeight(),true );
-		if( auto_dirty ) c->backup();
+		//if( auto_dirty ) c->backup();
 		t->setHandle( x,y );
 		c->setHandle( x,y );
 		c->setMask( t->getMask() );
@@ -796,7 +743,7 @@ bbImage *bbCreateImage( int w,int h,int n ){
 			for( --k;k>=0;--k ) gx_graphics->freeCanvas( frames[k] );
 			return 0;
 		}
-		if( auto_dirty ) c->backup();
+		//if( auto_dirty ) c->backup();
 		if( auto_midhandle ) c->setHandle( c->getWidth()/2,c->getHeight()/2 );
 		frames.push_back( c );
 	}
@@ -833,7 +780,7 @@ void bbGrabImage( bbImage *i,int x,int y,int n ){
 	x+=src_ox-dst_hx;y+=src_oy-dst_hy;
 	c->setViewport( 0,0,c->getWidth(),c->getHeight() );
 	c->blit( 0,0,gx_canvas,x,y,c->getWidth(),c->getHeight(),true );
-	if( auto_dirty ) c->backup();
+	//if( auto_dirty ) c->backup();
 }
 
 gxCanvas *bbImageBuffer( bbImage *i,int n ){
@@ -996,7 +943,7 @@ void bbTFormImage( bbImage *i,float a,float b,float c,float d ){
 		int hx,hy;c->getHandle( &hx,&hy );
 		gxCanvas *t=tformCanvas( c,m,hx,hy );
 		i->replaceFrame( k,t );
-		t->backup();
+		//t->backup();
 	}
 }
 
@@ -1027,8 +974,8 @@ static gxCanvas *startPrinting(){
 	
 	gxCanvas *c=gx_graphics->getFrontCanvas();
 
-	c->lock();
-	c->unlock();
+	//c->lock();
+	//c->unlock();
 
 	c->getOrigin( &p_ox,&p_oy );
 	c->getHandle( &p_hx,&p_hy );
@@ -1246,9 +1193,9 @@ bool graphics_destroy(){
 void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 
 	//gfx driver info
-	rtSym( "%CountGfxDrivers",bbCountGfxDrivers );
-	rtSym( "$GfxDriverName%driver",bbGfxDriverName );
-	rtSym( "SetGfxDriver%driver",bbSetGfxDriver );
+	//rtSym( "%CountGfxDrivers",bbCountGfxDrivers );
+	//rtSym( "$GfxDriverName%driver",bbGfxDriverName );
+	//rtSym( "SetGfxDriver%driver",bbSetGfxDriver );
 
 	//gfx mode info
 	rtSym( "%CountGfxModes",bbCountGfxModes );
@@ -1269,7 +1216,7 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 #endif
 
 	//display mode
-	rtSym( "Graphics%width%height%depth=0%mode=0",bbGraphics );
+	rtSym( "Graphics%width%height%depth=0%mode=0",bbGraphics3D ); //TODO: consider removing Graphics symbol altogether
 #ifdef PRO
 	rtSym( "Graphics3D%width%height%depth=0%mode=0",bbGraphics3D );
 #endif
@@ -1284,8 +1231,8 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 
 	rtSym( "(BBBuffer)FrontBuffer",bbFrontBuffer );
 	rtSym( "(BBBuffer)BackBuffer",bbBackBuffer );
-	rtSym( "%ScanLine",bbScanLine );
-	rtSym( "VWait%frames=1",bbVWait );
+	//rtSym( "%ScanLine",bbScanLine );
+	//rtSym( "VWait%frames=1",bbVWait );
 	rtSym( "Flip%vwait=1",bbFlip );
 	rtSym( "%GraphicsWidth",bbGraphicsWidth );
 	rtSym( "%GraphicsHeight",bbGraphicsHeight );
@@ -1296,7 +1243,7 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "(BBBuffer)GraphicsBuffer",bbGraphicsBuffer );
 	rtSym( "%LoadBuffer(BBBuffer)buffer$bmpfile",bbLoadBuffer );
 	rtSym( "%SaveBuffer(BBBuffer)buffer$bmpfile",bbSaveBuffer );
-	rtSym( "BufferDirty(BBBuffer)buffer",bbBufferDirty );
+	//rtSym( "BufferDirty(BBBuffer)buffer",bbBufferDirty );
 
 	//fast pixel reads/write
 	rtSym( "LockBuffer(BBBuffer)buffer=Null",bbLockBuffer );
@@ -1306,7 +1253,7 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%ReadPixelFast%x%y(BBBuffer)buffer=Null",bbReadPixelFast );
 	rtSym( "WritePixelFast%x%y%argb(BBBuffer)buffer=Null",bbWritePixelFast );
 	rtSym( "CopyPixel%src_x%src_y(BBBuffer)src_buffer%dest_x%dest_y(BBBuffer)dest_buffer=Null",bbCopyPixel );
-	rtSym( "CopyPixelFast%src_x%src_y(BBBuffer)src_buffer%dest_x%dest_y(BBBuffer)dest_buffer=Null",bbCopyPixelFast );
+	//rtSym( "CopyPixelFast%src_x%src_y(BBBuffer)src_buffer%dest_x%dest_y(BBBuffer)dest_buffer=Null",bbCopyPixelFast );
 
 	//rendering
 	rtSym( "Origin%x%y",bbOrigin );

@@ -1,6 +1,6 @@
 
-#ifndef STD_H
-#define STD_H
+#ifndef BLITZ3D_STD_H
+#define BLITZ3D_STD_H
 
 #pragma warning( disable:4786 )
 

@@ -12,10 +12,10 @@ extern gxScene *gx_scene;
 class bbImage;
 
 //general graphics functions
-int		 bbCountGfxDrivers();
-BBStr *	 bbGfxDriverName( int n );
-BBStr *	 bbGfxDriverDesc( int n );
-void	 bbSetGfxDriver( int n );
+//int		 bbCountGfxDrivers();
+//BBStr *	 bbGfxDriverName( int n );
+//BBStr *	 bbGfxDriverDesc( int n );
+//void	 bbSetGfxDriver( int n );
 int		 bbGfxModeExists( int w,int h,int d );
 int		 bbCountGfxModes();
 int		 bbGfxModeWidth( int n );
@@ -28,13 +28,13 @@ int		 bbAvailVidMem();
 int		 bbTotalVidMem();
 
 //mode functions
-void	 bbGraphics( int w,int h,int d,int mode );
+//void	 bbGraphics( int w,int h,int d,int mode );
 gxCanvas * bbFrontBuffer();
 gxCanvas * bbBackBuffer();
 void	 bbEndGraphics();
 int		 bbGraphicsLost();
-int		 bbScanLine();
-void	 bbVWait( int n );
+//int		 bbScanLine();
+//void	 bbVWait( int n );
 void	 bbFlip( int vwait );
 
 //graphics buffer functions

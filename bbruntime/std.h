@@ -1,6 +1,6 @@
 
-#ifndef STD_H
-#define STD_H
+#ifndef BBRUNTIME_STD_H
+#define BBRUNTIME_STD_H
 
 //#ifndef _WINSOCKAPI_
 //#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */ 

@@ -2,6 +2,7 @@
 #include "std.h"
 #include "object.h"
 
+#include "../gxruntime/gxsound.h"
 #include "../gxruntime/gxchannel.h"
 
 extern gxRuntime *gx_runtime;

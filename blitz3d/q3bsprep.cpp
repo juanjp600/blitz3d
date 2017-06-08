@@ -221,15 +221,15 @@ void Q3BSPRep::createLightMaps(){
 		Texture tex( 128,128,1+8+16+32,1 );
 		tex.setBlend( gxScene::BLEND_ADD );
 		gxCanvas *c=tex.getCanvas(0);
-		c->lock();
+		//c->lock();
 		for( int y=0;y<128;++y ){
 			for( int x=0;x<128;++x ){
 				unsigned argb=0xff000000|(adj[rgb[0]]<<16)|(adj[rgb[1]]<<8)|adj[rgb[2]];
-				c->setPixelFast( x,y,argb );
+				c->setPixel( x,y,argb );
 				rgb+=3;
 			}
 		}
-		c->unlock();
+		//c->unlock();
 		light_maps.push_back( tex );
 	}
 }

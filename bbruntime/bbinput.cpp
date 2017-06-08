@@ -2,6 +2,8 @@
 #include "std.h"
 #include "bbsys.h"
 
+#include "../gxruntime/gxinput.h"
+
 gxInput *gx_input;
 gxDevice *gx_mouse;
 gxDevice *gx_keyboard;
@@ -231,13 +233,13 @@ void bbFlushJoy(){
 	for (int k = 0; k<(int)gx_joysticks.size(); ++k) gx_joysticks[k]->flush();
 }
 
-void  bbEnableDirectInput( int enable ){
+/*void  bbEnableDirectInput( int enable ){
 	gx_runtime->enableDirectInput( !!enable );
 }
 
 int  bbDirectInputEnabled(){
 	return gx_runtime->directInputEnabled();
-}
+}*/
 
 void input_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%KeyDown%key",bbKeyDown );
@@ -282,6 +284,6 @@ void input_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%JoyVDir%port=0",bbJoyVDir );
 	rtSym( "FlushJoy",bbFlushJoy );
 
-	rtSym( "EnableDirectInput%enable",bbEnableDirectInput );
-	rtSym( "%DirectInputEnabled",bbDirectInputEnabled );
+	//rtSym( "EnableDirectInput%enable",bbEnableDirectInput );
+	//rtSym( "%DirectInputEnabled",bbDirectInputEnabled );
 }

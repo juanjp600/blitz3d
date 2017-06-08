@@ -3,6 +3,8 @@
 #include "bbsys.h"
 #include "bbruntime.h"
 
+#include "../gxruntime/gxtimer.h"
+
 void  bbEnd(){
 	RTEX( 0 );
 }

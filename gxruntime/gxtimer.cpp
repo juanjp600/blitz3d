@@ -1,7 +1,7 @@
 
 #include "std.h"
-#include "gxtimer.h"
 #include "gxruntime.h"
+#include "gxtimer.h"
 
 gxTimer::gxTimer( gxRuntime *rt,int hertz ):
 runtime(rt),ticks_get(0),ticks_put(0){
