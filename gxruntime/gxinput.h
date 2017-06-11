@@ -17,13 +17,6 @@ public:
 	bool acquire();
 	void unacquire();
 
-	void wm_keydown( int key );
-	void wm_keyup( int key );
-	void wm_mousedown( int key );
-	void wm_mouseup( int key );
-	void wm_mousemove( int x,int y );
-	void wm_mousewheel( int dz );
-
 private:
 
 	/***** GX INTERFACE *****/

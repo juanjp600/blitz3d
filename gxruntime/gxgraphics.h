@@ -36,7 +36,7 @@ public:
 	//ACCESSORS
 	int getWidth()const;
 	int getHeight()const;
-	
+
 	gxCanvas *getFrontCanvas()const;
 	gxCanvas *getBackCanvas()const;
 	gxFont *getDefaultFont()const;

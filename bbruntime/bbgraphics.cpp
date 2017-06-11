@@ -37,8 +37,6 @@ private:
 //degrees to radians
 static const float dtor=0.0174532925199432957692369076848861f;
 
-static int gx_driver;	//current graphics driver
-
 static bool filter;
 static bool auto_dirty;
 static bool auto_midhandle;
@@ -241,15 +239,12 @@ static bool saveCanvas( gxCanvas *c,const string &f ){
 	return out.good();
 }
 
+int  bbCountGfxModes3D(){
+	return 0; //TODO: find out how to reimplement this
+}
+
 int  bbCountGfxModes(){
-	gfx_modes.clear();
-	int n=gx_runtime->numGraphicsModes( gx_driver );
-	for( int k=0;k<n;++k ){
-		GfxMode m;
-		gx_runtime->graphicsModeInfo( gx_driver,k,&m.w,&m.h,&m.d );
-		gfx_modes.push_back( m );
-	}
-	return gfx_modes.size();
+	return bbCountGfxModes3D();
 }
 
 int  bbGfxModeWidth( int n ){
@@ -267,18 +262,12 @@ int  bbGfxModeDepth( int n ){
 	return gfx_modes[n-1].d;
 }
 
-static int modeExists( int w,int h,int d,bool bb3d ){
-	int cnt=gx_runtime->numGraphicsModes( gx_driver );
-	for( int k=0;k<cnt;++k ){
-		int tw,th,td,tc;
-		gx_runtime->graphicsModeInfo( gx_driver,k,&tw,&th,&td );
-		if( w==tw && h==th && d==td ) return 1;
-	}
-	return 0;
+static int modeExists( int w,int h,int d ){
+	return 0; //TODO: find out how to reimplement this
 }
 
 int  bbGfxModeExists( int w,int h,int d ){
-	return modeExists( w,h,d,false );
+	return modeExists( w,h,d );
 }
 
 #ifdef PRO
@@ -286,19 +275,8 @@ int  bbGfxDriver3D( int n ){
 	return 1;
 }
 
-int  bbCountGfxModes3D(){
-	gfx_modes.clear();
-	int n=gx_runtime->numGraphicsModes( gx_driver );
-	for( int k=0;k<n;++k ){
-		GfxMode m;
-		gx_runtime->graphicsModeInfo( gx_driver,k,&m.w,&m.h,&m.d );
-		gfx_modes.push_back( m );
-	}
-	return gfx_modes.size();
-}
-
 int  bbGfxMode3DExists( int w,int h,int d ){
-	return modeExists( w,h,d,true );
+	return modeExists( w,h,d );
 }
 
 int  bbGfxMode3D( int n ){
@@ -365,7 +343,7 @@ int bbSaveBuffer( gxCanvas *c,BBStr *str ){
 static void graphics( int w,int h,int d,int flags ){
 	freeGraphics();
 	gx_runtime->closeGraphics( gx_graphics );
-	gx_graphics=gx_runtime->openGraphics( w,h,d,gx_driver,flags );
+	gx_graphics=gx_runtime->openGraphics( w,h,d,flags );
 	if( !gx_runtime->idle() ) RTEX( 0 );
 	if( !gx_graphics ){
 		RTEX( "Unable to set graphics mode" );
@@ -398,7 +376,7 @@ void bbGraphics3D( int w,int h,int d,int mode ){
 void bbEndGraphics(){
 	freeGraphics();
 	gx_runtime->closeGraphics( gx_graphics );
-	gx_graphics=gx_runtime->openGraphics( 400,300,0,0,gxGraphics::GRAPHICS_WINDOWED );
+	gx_graphics=gx_runtime->openGraphics( 400,300,0,gxGraphics::GRAPHICS_WINDOWED );
 	if( !gx_runtime->idle() ) RTEX( 0 );
 	if( gx_graphics ){
 		curr_clsColor=0;
@@ -411,7 +389,7 @@ void bbEndGraphics(){
 }
 
 int bbGraphicsLost(){
-	return gx_runtime->graphicsLost();
+	return 0; //TODO: remove probably?
 }
 
 void bbSetGamma( int r,int g,int b,float dr,float dg,float db ){
@@ -1165,11 +1143,10 @@ void bbHidePointer(){
 bool graphics_create(){
 	p_canvas=0;
 	filter=true;
-	gx_driver=0;
 	freeGraphics();
 	auto_dirty=true;
 	auto_midhandle=false;
-	gx_graphics=gx_runtime->openGraphics( 400,300,0,0,gxGraphics::GRAPHICS_WINDOWED );
+	gx_graphics=gx_runtime->openGraphics( 400,300,0,gxGraphics::GRAPHICS_WINDOWED );
 	if( gx_graphics ){
 		curr_clsColor=0;
 		curr_color=0xffffffff;
@@ -1246,12 +1223,12 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 	//rtSym( "BufferDirty(BBBuffer)buffer",bbBufferDirty );
 
 	//fast pixel reads/write
-	rtSym( "LockBuffer(BBBuffer)buffer=Null",bbLockBuffer );
-	rtSym( "UnlockBuffer(BBBuffer)buffer=Null",bbUnlockBuffer );
+	//rtSym( "LockBuffer(BBBuffer)buffer=Null",bbLockBuffer );
+	//rtSym( "UnlockBuffer(BBBuffer)buffer=Null",bbUnlockBuffer );
 	rtSym( "%ReadPixel%x%y(BBBuffer)buffer=Null",bbReadPixel );
 	rtSym( "WritePixel%x%y%argb(BBBuffer)buffer=Null",bbWritePixel );
-	rtSym( "%ReadPixelFast%x%y(BBBuffer)buffer=Null",bbReadPixelFast );
-	rtSym( "WritePixelFast%x%y%argb(BBBuffer)buffer=Null",bbWritePixelFast );
+	//rtSym( "%ReadPixelFast%x%y(BBBuffer)buffer=Null",bbReadPixelFast );
+	//rtSym( "WritePixelFast%x%y%argb(BBBuffer)buffer=Null",bbWritePixelFast );
 	rtSym( "CopyPixel%src_x%src_y(BBBuffer)src_buffer%dest_x%dest_y(BBBuffer)dest_buffer=Null",bbCopyPixel );
 	//rtSym( "CopyPixelFast%src_x%src_y(BBBuffer)src_buffer%dest_x%dest_y(BBBuffer)dest_buffer=Null",bbCopyPixelFast );
 

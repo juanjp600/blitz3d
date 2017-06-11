@@ -107,7 +107,7 @@ void Runtime::execute( void (*pc)(),const char *args,Debugger *dbg ){
 	while( params.size() && params[0]==' ' ) params=params.substr( 1 );
 	while( params.size() && params[params.size()-1]==' ' ) params=params.substr( 0,params.size()-1 );
 
-	if( gx_runtime=gxRuntime::openRuntime( hinst,params,dbg ) ){
+	if( gx_runtime=gxRuntime::openRuntime( params,dbg ) ){
 
 #ifdef PRODEMO
 		shareProtCheck( killer );

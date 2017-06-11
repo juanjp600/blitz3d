@@ -37,6 +37,7 @@ private:
 
 	/***** GX INTERFACE *****/
 public:
+	//TODO: check if locking even makes sense anymore
 	bool lock( bool all );
 	void unlock();
 

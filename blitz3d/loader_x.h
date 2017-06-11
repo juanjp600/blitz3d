@@ -6,7 +6,7 @@
 
 class Loader_X : public MeshLoader{
 public:
-	MeshModel *load( const string &f,const Transform &conv,int hint );
+	MeshModel *load( const string &f,const Transform &conv,int hint ) {return 0;}; //TODO: reimplement
 };
 
 #endif

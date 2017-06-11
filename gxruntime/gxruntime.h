@@ -1,7 +1,7 @@
 #ifndef GXRUNTIME_H
 #define GXRUNTIME_H
 
-#include <windows.h>
+//#include <windows.h>
 #include <string>
 #include <vector>
 
@@ -13,8 +13,8 @@ class gxTimer;
 
 class gxRuntime{
 public:
-	HWND hwnd;
-	HINSTANCE hinst;
+	//HWND hwnd;
+	//HINSTANCE hinst;
 
 	gxAudio *audio;
 	gxInput *input;
@@ -24,9 +24,9 @@ public:
 	void flip( bool vwait );
 	void moveMouse( int x,int y );
 
-	LRESULT windowProc( HWND hwnd,UINT msg,WPARAM w,LPARAM l );
+	//LRESULT windowProc( HWND hwnd,UINT msg,WPARAM w,LPARAM l );
 
-	struct GfxMode;	
+	//struct GfxMode;
 
 	//return true if program should continue, or false for quit.
 	bool idle();
@@ -56,21 +56,32 @@ public:
 	gxInput *openInput( int flags );
 	void closeInput( gxInput *input );
 
-	gxGraphics *openGraphics( int w,int h,int d,int driver,int flags );
+	gxGraphics *openGraphics( int w,int h,int d,int flags );
 	void closeGraphics( gxGraphics *graphics );
-	bool graphicsLost();
 
 	gxFileSystem *openFileSystem( int flags );
 	void closeFileSystem( gxFileSystem *filesys );
 
 	gxTimer *createTimer( int hertz );
 	void freeTimer( gxTimer *timer );
+private:
+	//gxRuntime( HINSTANCE hinst,const std::string &cmd_line,HWND hwnd );
+	gxRuntime( const std::string &cmd_line );
+	~gxRuntime();
 
-	int numGraphicsModes( int driver );
-	void graphicsModeInfo( int driver,int mode,int *w,int *h,int *d );
+	int t_style;
+	std::string cmd_line;
+	bool pointer_visible;
+	std::string app_title;
+	std::string app_close;
+
+	bool enum_all;
+
+	void forceSuspend();
 	/***** APP INTERFACE *****/
 public:
-	static gxRuntime *openRuntime( HINSTANCE hinst,const std::string &cmd_line,class Debugger *debugger );
+	//static gxRuntime *openRuntime( HINSTANCE hinst,const std::string &cmd_line,class Debugger *debugger );
+	static gxRuntime *openRuntime( const std::string &cmd_line,class Debugger *debugger );
 	static void closeRuntime( gxRuntime *runtime );
 
 	void asyncStop();
