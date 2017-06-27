@@ -8,6 +8,8 @@ class gxMesh;
 
 class gxScene {
 public:
+	gxScene(int flags);
+
 	enum{
 		FX_FULLBRIGHT=	0x0001,
 		FX_VERTEXCOLOR=	0x0002,

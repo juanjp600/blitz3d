@@ -1,6 +1,7 @@
 
 #include "std.h"
 #include "gxruntime.h"
+#include "gxgraphics.h"
 
 #include "../debugger/debugger.h"
 
@@ -25,7 +26,7 @@ void gxRuntime::moveMouse(int x, int y) {
 }
 
 bool gxRuntime::idle() {
-	return false;
+	return true;
 }
 
 bool gxRuntime::delay(int ms) {
@@ -115,10 +116,10 @@ void gxRuntime::closeInput(gxInput *input) {
 }
 
 gxGraphics *gxRuntime::openGraphics(int w, int h, int d, int flags) {
-	return 0;
+	return graphics = d_new gxGraphics(w,h,d,flags);
 }
 void gxRuntime::closeGraphics(gxGraphics *graphics) {
-
+	delete graphics;
 }
 
 gxFileSystem *gxRuntime::openFileSystem(int flags) {
@@ -135,12 +136,20 @@ void gxRuntime::freeTimer(gxTimer *timer) {
 
 }
 
+gxRuntime::gxRuntime(const std::string &cmd_line) {
+	this->cmd_line = cmd_line;
+	//graphics = openGraphics(1280,720,32,gxGraphics::GRAPHICS_WINDOWED);
+}
+
 gxRuntime *gxRuntime::openRuntime(const std::string &cmd_line, Debugger *debugger) {
-	return 0;
+	gxRuntime* rt = d_new gxRuntime(cmd_line);
+	return rt;
 }
 void gxRuntime::closeRuntime(gxRuntime *runtime) {
-
+	delete runtime;
 }
+
+gxRuntime::~gxRuntime() {}
 
 void gxRuntime::asyncStop() {
 

@@ -146,6 +146,8 @@ void bbDeleteFile( BBStr *f ){
 }
 
 bool filesystem_create(){
+	return true; //TODO: REMOVE
+
 	if( gx_filesys=gx_runtime->openFileSystem( 0 ) ){
 		return true;
 	}

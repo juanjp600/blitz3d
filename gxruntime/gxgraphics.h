@@ -1,6 +1,7 @@
 #ifndef GXGRAPHICS_H
 #define GXGRAPHICS_H
 
+#include <irrlicht.h>
 #include <set>
 
 class gxRuntime;
@@ -15,12 +16,23 @@ class gxGraphics {
 public:
 	gxRuntime *runtime;
 private:
-	gxCanvas *front_canvas,*back_canvas;
+	irr::IrrlichtDevice* irrDevice;
+	irr::video::IVideoDriver* irrDriver;
+	irr::video::IShaderConstantSetCallBack* flipShaderCallback;
+	irr::video::E_MATERIAL_TYPE flipMaterialType;
+	irr::scene::IMeshSceneNode* flipQuad;
+
+	int w,h,d,flags;
+
+	gxCanvas *back_canvas;
 
 	std::set<gxCanvas*> canvas_set;
 
 	gxFont *def_font;
 public:
+	gxGraphics(int inW, int inH, int inD, int inFlags);
+	~gxGraphics();
+
 	enum{
 		GRAPHICS_WINDOWED=1,	//windowed mode
 		GRAPHICS_SCALED=2,		//scaled window

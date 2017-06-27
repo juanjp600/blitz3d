@@ -2,6 +2,7 @@
 #define GXCANVAS_H
 
 #include "gxscene.h"
+#include <irrlicht.h>
 
 class gxGraphics;
 class gxFont;
@@ -10,7 +11,12 @@ class gxCanvas {
 private:
 	int flags;
 	gxGraphics *graphics;
+	irr::video::ITexture* irrTex;
 public:
+	irr::video::ITexture* getIrrTex();
+
+	gxCanvas(irr::video::IVideoDriver* driver,int w,int h,int flags);
+
 	enum{
 		CANVAS_TEX_RGB=			0x0001,
 		CANVAS_TEX_ALPHA=		0x0002,

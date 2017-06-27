@@ -1,5 +1,13 @@
 #include "gxcanvas.h"
 
+gxCanvas::gxCanvas(irr::video::IVideoDriver* driver,int w, int h, int flags) {
+	irrTex = driver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(w,h),"rtcanvas",irr::video::ECF_A8R8G8B8);
+}
+
+irr::video::ITexture* gxCanvas::getIrrTex() {
+	return irrTex;
+}
+
 //MANIPULATORS
 void gxCanvas::setFont(gxFont *font) {
 

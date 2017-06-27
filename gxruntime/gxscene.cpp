@@ -1,5 +1,9 @@
 #include "gxscene.h"
 
+gxScene::gxScene(int flags) {
+
+}
+
 void gxScene::setDither(bool enable) {
 
 }

@@ -14,6 +14,8 @@ static const float JLT=-1.0f/3.0f;
 static const float JHT=1.0f/3.0f;
 
 bool input_create(){
+	return true; //TODO: REMOVE
+
 	if( gx_input=gx_runtime->openInput( 0 ) ){
 		if( gx_keyboard=gx_input->getKeyboard() ){
 			if( gx_mouse=gx_input->getMouse() ){

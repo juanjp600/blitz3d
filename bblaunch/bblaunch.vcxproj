@@ -88,8 +88,8 @@
     <OutDir>../_release/</OutDir>
     <IntDir>.\bblaunch___Win32_Blitz3DRelease\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\DX7_Sdk\DXF\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\DX7_Sdk\DXF\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\irrlicht-shader-pipeline\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;$(LibraryPath)</LibraryPath>
     <TargetName>Blitz3D</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

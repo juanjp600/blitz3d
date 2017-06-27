@@ -188,6 +188,7 @@ void bbruntime_link( void (*rtSym)( const char *sym,void *pc ) ){
 static void sue( const char *t ){
 	string p=string( "Startup Error: " )+t;
 	gx_runtime->debugInfo( p.c_str() );
+	MessageBoxA(0,p.c_str(),"ohno!",0);
 }
 
 bool bbruntime_create(){

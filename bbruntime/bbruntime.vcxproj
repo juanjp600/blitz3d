@@ -93,13 +93,14 @@
     <OutDir>.\bbruntime___Win32_Blitz3DRelease\</OutDir>
     <IntDir>.\bbruntime___Win32_Blitz3DRelease\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\DX7_Sdk\DXF\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\DX7_Sdk\DXF\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\irrlicht-shader-pipeline\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\irrlicht-shader-pipeline\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

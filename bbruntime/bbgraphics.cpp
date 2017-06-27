@@ -376,7 +376,7 @@ void bbGraphics3D( int w,int h,int d,int mode ){
 void bbEndGraphics(){
 	freeGraphics();
 	gx_runtime->closeGraphics( gx_graphics );
-	gx_graphics=gx_runtime->openGraphics( 400,300,0,gxGraphics::GRAPHICS_WINDOWED );
+	gx_graphics=gx_runtime->openGraphics( 400,300,32,gxGraphics::GRAPHICS_WINDOWED );
 	if( !gx_runtime->idle() ) RTEX( 0 );
 	if( gx_graphics ){
 		curr_clsColor=0;
@@ -427,10 +427,6 @@ float  bbGammaBlue( int n ){
 	RTEX("Gamma not implemented");
 	//gx_graphics->getGamma( n,n,n,&dr,&dg,&db );
 	return db;
-}
-
-gxCanvas *bbFrontBuffer(){
-	return gx_graphics->getFrontCanvas();
 }
 
 gxCanvas *bbBackBuffer(){
@@ -1146,12 +1142,12 @@ bool graphics_create(){
 	freeGraphics();
 	auto_dirty=true;
 	auto_midhandle=false;
-	gx_graphics=gx_runtime->openGraphics( 400,300,0,gxGraphics::GRAPHICS_WINDOWED );
+	gx_graphics=gx_runtime->openGraphics( 400,300,32,gxGraphics::GRAPHICS_WINDOWED );
 	if( gx_graphics ){
 		curr_clsColor=0;
 		curr_color=0xffffffff;
 		curr_font=gx_graphics->getDefaultFont();
-		bbSetBuffer( bbFrontBuffer() );
+		bbSetBuffer( bbBackBuffer() );
 		return true;
 	}
 	return false;
@@ -1206,7 +1202,7 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "#GammaGreen%green",bbGammaGreen );
 	rtSym( "#GammaBlue%blue",bbGammaBlue );
 
-	rtSym( "(BBBuffer)FrontBuffer",bbFrontBuffer );
+	//rtSym( "(BBBuffer)FrontBuffer",bbFrontBuffer );
 	rtSym( "(BBBuffer)BackBuffer",bbBackBuffer );
 	//rtSym( "%ScanLine",bbScanLine );
 	//rtSym( "VWait%frames=1",bbVWait );
