@@ -1,7 +1,9 @@
 #include "gxcanvas.h"
+#include "gxgraphics.h"
 
-gxCanvas::gxCanvas(irr::video::IVideoDriver* driver,int w, int h, int flags) {
-	irrTex = driver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(w,h),"rtcanvas",irr::video::ECF_A8R8G8B8);
+gxCanvas::gxCanvas(gxGraphics* gfx,int w, int h, int flags) {
+	irrTex = gfx->irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(w,h),"rtcanvas",irr::video::ECF_A8R8G8B8);
+	graphics = gfx;
 }
 
 irr::video::ITexture* gxCanvas::getIrrTex() {
@@ -16,7 +18,7 @@ void gxCanvas::setMask(unsigned argb) {
 
 }
 void gxCanvas::setColor(unsigned argb) {
-
+	color = irr::video::SColor(255,(argb>>16)&255,(argb>>8)&255,argb&255);
 }
 void gxCanvas::setClsColor(unsigned argb) {
 
@@ -38,10 +40,10 @@ void gxCanvas::plot(int x, int y) {
 
 }
 void gxCanvas::line(int x, int y, int x2, int y2) {
-
+	graphics->irrDriver->draw2DLine(irr::core::vector2di(x,y),irr::core::vector2di(x2,y2),color);
 }
 void gxCanvas::rect(int x, int y, int w, int h, bool solid) {
-
+	graphics->irrDriver->draw2DRectangle(color,irr::core::recti(x,y,x+w,y+h));
 }
 void gxCanvas::oval(int x, int y, int w, int h, bool solid) {
 

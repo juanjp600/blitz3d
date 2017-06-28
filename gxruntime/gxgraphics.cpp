@@ -66,7 +66,9 @@ const char FLIP_SHADER_CODE[] =
 	"	float4 Output;\n"\
 	"\n"\
 	"    float4 col0 = imgTexture.Sample( st0, input.TexCoord0 ).rgba;\n"\
-	"	\n"\
+	"	 \n"\
+	//"	 Output = (float4(1.0,0.0,0.0,1.0)+col0)*float4(0.5,0.5,0.5,0.5);\n"\
+
 	"	 Output = col0;\n"\
 	"    Output[3] = 1.0;\n"\
 	"	\n"\
@@ -92,48 +94,9 @@ gxGraphics::gxGraphics(int inW, int inH, int inD, int inFlags) {
 
 	flipMaterialType = (irr::video::E_MATERIAL_TYPE)gpu->addHighLevelShaderMaterial(FLIP_SHADER_CODE,"vertexMain",irr::video::EVST_VS_5_0,FLIP_SHADER_CODE,"pixelMain",irr::video::EPST_PS_5_0,flipShaderCallback);
 
-	back_canvas = new gxCanvas(irrDriver,w,h,gxCanvas::CANVAS_TEX_RGB);
+	back_canvas = 0;
 
-	//NOTE: red and blue are swapped for background color
-	irrDriver->setRenderTarget(back_canvas->getIrrTex(),true,true,irr::video::SColor(255,40,60,0));
-
-	irrDriver->draw2DRectangle(irr::video::SColor(255,5,0,255),irr::core::recti(300,300,600,600));
-	//NOTE: draw2DRectangleOutline is BROKEN
-	irrDriver->setRenderTarget(0,false,false);
-
-	irr::scene::SMesh* mesh = new irr::scene::SMesh();
-	irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(irrDriver->getVertexDescriptor(0));
-
-	irr::video::S3DVertex verts[4];
-	verts[0]=irr::video::S3DVertex(irr::core::vector3df(-1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,0.f)); //top left
-	verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(1.f,0.f)); //top right
-	verts[2]=irr::video::S3DVertex(irr::core::vector3df(-1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,1.f)); //bottom left
-	verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(1.f,1.f)); //bottom right
-	
-	irr::scene::CVertexBuffer<irr::video::S3DVertex>* vertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
-	irr::scene::CIndexBuffer* indexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
-
-	for (unsigned int j = 0; j<4; ++j) {
-		vertexBuffer->addVertex(verts[j]);
-	}
-
-	indexBuffer->addIndex(1);
-	indexBuffer->addIndex(0);
-	indexBuffer->addIndex(2);
-	indexBuffer->addIndex(2);
-	indexBuffer->addIndex(3);
-	indexBuffer->addIndex(1);
-
-	buf->setVertexBuffer(vertexBuffer, 0);
-	buf->setIndexBuffer(indexBuffer);
-	
-	buf->getMaterial().MaterialType = flipMaterialType;
-	buf->getMaterial().BackfaceCulling = true;
-	buf->getMaterial().setTexture(0,back_canvas->getIrrTex());
-
-	mesh->addMeshBuffer(buf);
-
-	flipQuad = irrDevice->getSceneManager()->addMeshSceneNode(mesh);
+	flipQuad = 0;
 }
 
 gxGraphics::~gxGraphics()
@@ -144,10 +107,11 @@ gxGraphics::~gxGraphics()
 
 //MANIPULATORS
 void gxGraphics::flip(bool vwait) {
-	irrDriver->beginScene(true,true);
+	irrDriver->setRenderTarget(0,true,true,irr::video::SColor(255,100,50,0));
 	flipQuad->render();
 	irrDriver->endScene();
 	irrDevice->run();
+	irrDriver->beginScene(false,false);
 }
 
 //SPECIAL!
@@ -163,10 +127,48 @@ int gxGraphics::getHeight()const {
 	return 0;
 }
 
-gxCanvas *gxGraphics::getFrontCanvas()const {
-	return 0; //there's no good reason to try accessing the front canvas directly, so I won't allow it
-}
-gxCanvas *gxGraphics::getBackCanvas()const {
+gxCanvas *gxGraphics::getBackCanvas() {
+	if (!back_canvas)
+	{
+		back_canvas = new gxCanvas(this,w,h,gxCanvas::CANVAS_TEX_RGB);
+
+		irrDriver->beginScene(false,false);
+		irrDriver->setRenderTarget(back_canvas->getIrrTex(),true,true,irr::video::SColor(255,0,0,0));
+
+		irr::scene::SMesh* mesh = new irr::scene::SMesh();
+		irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(irrDriver->getVertexDescriptor(0));
+
+		irr::video::S3DVertex verts[4];
+		verts[0]=irr::video::S3DVertex(irr::core::vector3df(-1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,0.f)); //top left
+		verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(1.f,0.f)); //top right
+		verts[2]=irr::video::S3DVertex(irr::core::vector3df(-1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,1.f)); //bottom left
+		verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(1.f,1.f)); //bottom right
+
+		irr::scene::CVertexBuffer<irr::video::S3DVertex>* vertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+		irr::scene::CIndexBuffer* indexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
+
+		for (unsigned int j = 0; j<4; ++j) {
+			vertexBuffer->addVertex(verts[j]);
+		}
+
+		indexBuffer->addIndex(1);
+		indexBuffer->addIndex(0);
+		indexBuffer->addIndex(2);
+		indexBuffer->addIndex(2);
+		indexBuffer->addIndex(3);
+		indexBuffer->addIndex(1);
+
+		buf->setVertexBuffer(vertexBuffer, 0);
+		buf->setIndexBuffer(indexBuffer);
+
+		buf->getMaterial().MaterialType = flipMaterialType;
+		buf->getMaterial().BackfaceCulling = true;
+		buf->getMaterial().setTexture(0,back_canvas->getIrrTex());
+
+		mesh->addMeshBuffer(buf);
+
+		flipQuad = irrDevice->getSceneManager()->addMeshSceneNode(mesh);
+	}
 	return back_canvas;
 }
 gxFont *gxGraphics::getDefaultFont()const {
@@ -175,14 +177,16 @@ gxFont *gxGraphics::getDefaultFont()const {
 
 //OBJECTS
 gxCanvas *gxGraphics::createCanvas(int width, int height, int flags) {
-	return 0;
+	gxCanvas* newCanvas = new gxCanvas(this,width,height,flags);
+	canvas_set.insert(newCanvas);
+	return newCanvas;
 }
 gxCanvas *gxGraphics::loadCanvas(const std::string &file, int flags) {
 	return 0;
 }
 gxCanvas *gxGraphics::verifyCanvas(gxCanvas *canvas) {
-	if (canvas == back_canvas) return canvas;
-	return 0;
+	if (canvas == back_canvas && !!back_canvas) return canvas;
+	return canvas_set.count(canvas) ? canvas : 0;
 }
 void gxGraphics::freeCanvas(gxCanvas *canvas) {
 

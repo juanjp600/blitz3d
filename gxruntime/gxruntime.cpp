@@ -30,6 +30,7 @@ bool gxRuntime::idle() {
 }
 
 bool gxRuntime::delay(int ms) {
+	Sleep( ms );
 	return true;
 }
 

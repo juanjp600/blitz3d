@@ -12,10 +12,11 @@ private:
 	int flags;
 	gxGraphics *graphics;
 	irr::video::ITexture* irrTex;
+	irr::video::SColor color;
 public:
 	irr::video::ITexture* getIrrTex();
 
-	gxCanvas(irr::video::IVideoDriver* driver,int w,int h,int flags);
+	gxCanvas(gxGraphics* gfx,int w,int h,int flags);
 
 	enum{
 		CANVAS_TEX_RGB=			0x0001,

@@ -15,13 +15,13 @@ class gxMesh;
 class gxGraphics {
 public:
 	gxRuntime *runtime;
-private:
+
 	irr::IrrlichtDevice* irrDevice;
 	irr::video::IVideoDriver* irrDriver;
 	irr::video::IShaderConstantSetCallBack* flipShaderCallback;
 	irr::video::E_MATERIAL_TYPE flipMaterialType;
 	irr::scene::IMeshSceneNode* flipQuad;
-
+private:
 	int w,h,d,flags;
 
 	gxCanvas *back_canvas;
@@ -49,8 +49,7 @@ public:
 	int getWidth()const;
 	int getHeight()const;
 
-	gxCanvas *getFrontCanvas()const;
-	gxCanvas *getBackCanvas()const;
+	gxCanvas *getBackCanvas();
 	gxFont *getDefaultFont()const;
 
 	//OBJECTS

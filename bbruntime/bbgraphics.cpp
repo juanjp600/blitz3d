@@ -299,6 +299,8 @@ int  bbAvailVidMem(){
 void bbSetBuffer( gxCanvas *buff ){
 	if (!debugCanvas( buff,"SetBuffer" )) return;
 	gx_canvas=buff;
+	gx_graphics->irrDriver->setRenderTarget(gx_canvas->getIrrTex(),false,false);
+	gx_canvas->rect(-10,-10,2,2,true); //TODO: fix engine instead of using workarounds
 	curs_x=curs_y=0;
 	gx_canvas->setOrigin( 0,0 );
 	gx_canvas->setViewport( 0,0,gx_canvas->getWidth(),gx_canvas->getHeight() );
@@ -382,7 +384,7 @@ void bbEndGraphics(){
 		curr_clsColor=0;
 		curr_color=0xffffffff;
 		curr_font=gx_graphics->getDefaultFont();
-		bbSetBuffer( gx_graphics->getFrontCanvas() );
+		bbSetBuffer( gx_graphics->getBackCanvas() );
 		return;
 	}
 	RTEX( "Unable to set graphics mode" );
@@ -480,6 +482,8 @@ void bbVWait( int n ){
 
 void bbFlip( int vwait ){
 	gx_graphics->flip( vwait ? true : false );
+	gx_graphics->irrDriver->setRenderTarget(gx_canvas->getIrrTex(),false,false);
+	gx_canvas->rect(-10,-10,2,2,true); //TODO: fix engine instead of using workarounds
 	if( !gx_runtime->idle() ) RTEX( 0 );
 }
 
@@ -731,7 +735,7 @@ void bbFreeImage( bbImage *i ){
 	const vector<gxCanvas*> &f=i->getFrames();
 	for( int k=0;k<(int)f.size();++k ){
 		if( f[k]==gx_canvas ){
-			bbSetBuffer( gx_graphics->getFrontCanvas() );
+			bbSetBuffer( gx_graphics->getBackCanvas() );
 			break;
 		}
 	}
@@ -906,7 +910,7 @@ void bbTFormImage( bbImage *i,float a,float b,float c,float d ){
 	int k;
 	for( k=0;k<(int)f.size();++k ){
 		if( f[k]==gx_canvas ){
-			bbSetBuffer( gx_graphics->getFrontCanvas() );
+			bbSetBuffer( gx_graphics->getBackCanvas() );
 			break;
 		}
 	}
@@ -946,7 +950,7 @@ static int p_ox,p_oy,p_hx,p_hy,p_vpx,p_vpy,p_vpw,p_vph;
 
 static gxCanvas *startPrinting(){
 	
-	gxCanvas *c=gx_graphics->getFrontCanvas();
+	gxCanvas *c=gx_graphics->getBackCanvas();
 
 	//c->lock();
 	//c->unlock();
@@ -1123,7 +1127,7 @@ BBStr *bbInput( BBStr *prompt ){
 }
 
 void bbLocate( int x,int y ){
-	gxCanvas *c=gx_graphics->getFrontCanvas();
+	gxCanvas *c=gx_graphics->getBackCanvas();
 	curs_x=x<0 ? 0 : (x > c->getWidth() ? c->getWidth() : x);
 	curs_y=y<0 ? 0 : (y > c->getHeight() ? c->getHeight() : y);
 }
