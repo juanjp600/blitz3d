@@ -1,9 +1,20 @@
 #include "gxcanvas.h"
 #include "gxgraphics.h"
+#include "gxfont.h"
 
-gxCanvas::gxCanvas(gxGraphics* gfx,int w, int h, int flags) {
+gxCanvas::gxCanvas(gxGraphics* gfx,int inW, int inH, int inFlags) {
+	w = inW; h = inH; flags = inFlags;
 	irrTex = gfx->irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(w,h),"rtcanvas",irr::video::ECF_A8R8G8B8);
 	graphics = gfx;
+}
+
+void gxCanvas::reset() {
+	graphics->irrDriver->removeTexture(irrTex);
+	irrTex = graphics->irrDriver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(w,h),"rtcanvas",irr::video::ECF_A8R8G8B8);
+}
+
+gxCanvas::~gxCanvas() {
+	graphics->irrDriver->removeTexture(irrTex);
 }
 
 irr::video::ITexture* gxCanvas::getIrrTex() {
@@ -11,8 +22,8 @@ irr::video::ITexture* gxCanvas::getIrrTex() {
 }
 
 //MANIPULATORS
-void gxCanvas::setFont(gxFont *font) {
-
+void gxCanvas::setFont(gxFont *inFont) {
+	font = inFont;
 }
 void gxCanvas::setMask(unsigned argb) {
 
@@ -49,7 +60,7 @@ void gxCanvas::oval(int x, int y, int w, int h, bool solid) {
 
 }
 void gxCanvas::text(int x, int y, const std::string &t) {
-
+	font->render(this,color.getAlpha()<<24|color.getRed()<<16|color.getGreen()<<8|color.getBlue(),x,y,t);
 }
 void gxCanvas::blit(int x, int y, gxCanvas *src, int src_x, int src_y, int src_w, int src_h, bool solid) {
 

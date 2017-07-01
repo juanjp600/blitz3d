@@ -26,7 +26,7 @@ void gxRuntime::moveMouse(int x, int y) {
 }
 
 bool gxRuntime::idle() {
-	return true;
+	return graphics ? graphics->isRunning() : true;
 }
 
 bool gxRuntime::delay(int ms) {
@@ -117,10 +117,13 @@ void gxRuntime::closeInput(gxInput *input) {
 }
 
 gxGraphics *gxRuntime::openGraphics(int w, int h, int d, int flags) {
-	return graphics = d_new gxGraphics(w,h,d,flags);
+	graphics = gxGraphics::open(w,h,d,flags);
+	return graphics;
 }
-void gxRuntime::closeGraphics(gxGraphics *graphics) {
-	delete graphics;
+void gxRuntime::closeGraphics(gxGraphics *inGraphics) {
+	if (graphics == inGraphics) graphics = 0;
+
+	inGraphics->close();
 }
 
 gxFileSystem *gxRuntime::openFileSystem(int flags) {
@@ -139,7 +142,6 @@ void gxRuntime::freeTimer(gxTimer *timer) {
 
 gxRuntime::gxRuntime(const std::string &cmd_line) {
 	this->cmd_line = cmd_line;
-	//graphics = openGraphics(1280,720,32,gxGraphics::GRAPHICS_WINDOWED);
 }
 
 gxRuntime *gxRuntime::openRuntime(const std::string &cmd_line, Debugger *debugger) {

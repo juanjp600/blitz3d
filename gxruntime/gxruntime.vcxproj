@@ -88,8 +88,8 @@
     <OutDir>.\gxruntime___Win32_Blitz3DRelease\</OutDir>
     <IntDir>.\gxruntime___Win32_Blitz3DRelease\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\irrlicht-shader-pipeline\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\irrlicht-shader-pipeline\include;..\..\FreeType\include;..\..\FreeType\include\freetype2;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;..\..\FreeType\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -161,6 +161,8 @@
     <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>.\gxruntime___Win32_Blitz3DRelease\gxruntime.lib</OutputFile>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -228,6 +230,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CGUITTFont.cpp" />
     <ClCompile Include="gxaudio.cpp" />
     <ClCompile Include="gxcanvas.cpp" />
     <ClCompile Include="gxchannel.cpp" />
@@ -257,6 +260,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asmcoder.h" />
+    <ClInclude Include="CGUITTFont.h" />
     <ClInclude Include="gxaudio.h" />
     <ClInclude Include="gxcanvas.h" />
     <ClInclude Include="gxchannel.h" />
@@ -273,6 +277,7 @@
     <ClInclude Include="gxscene.h" />
     <ClInclude Include="gxsound.h" />
     <ClInclude Include="gxtimer.h" />
+    <ClInclude Include="irrUString.h" />
     <ClInclude Include="std.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -298,9 +298,8 @@ int  bbAvailVidMem(){
 
 void bbSetBuffer( gxCanvas *buff ){
 	if (!debugCanvas( buff,"SetBuffer" )) return;
+	gx_graphics->setRenderCanvas(buff);
 	gx_canvas=buff;
-	gx_graphics->irrDriver->setRenderTarget(gx_canvas->getIrrTex(),false,false);
-	gx_canvas->rect(-10,-10,2,2,true); //TODO: fix engine instead of using workarounds
 	curs_x=curs_y=0;
 	gx_canvas->setOrigin( 0,0 );
 	gx_canvas->setViewport( 0,0,gx_canvas->getWidth(),gx_canvas->getHeight() );
@@ -344,8 +343,12 @@ int bbSaveBuffer( gxCanvas *c,BBStr *str ){
 
 static void graphics( int w,int h,int d,int flags ){
 	freeGraphics();
-	gx_runtime->closeGraphics( gx_graphics );
-	gx_graphics=gx_runtime->openGraphics( w,h,d,flags );
+	if (!gx_graphics) {
+		gx_graphics = gx_runtime->openGraphics(w,h,d,flags);
+	} else {
+		gx_graphics->resize(w,h);
+	}
+
 	if( !gx_runtime->idle() ) RTEX( 0 );
 	if( !gx_graphics ){
 		RTEX( "Unable to set graphics mode" );
@@ -374,21 +377,6 @@ void bbGraphics3D( int w,int h,int d,int mode ){
 	blitz3d_open();
 }
 #endif
-
-void bbEndGraphics(){
-	freeGraphics();
-	gx_runtime->closeGraphics( gx_graphics );
-	gx_graphics=gx_runtime->openGraphics( 400,300,32,gxGraphics::GRAPHICS_WINDOWED );
-	if( !gx_runtime->idle() ) RTEX( 0 );
-	if( gx_graphics ){
-		curr_clsColor=0;
-		curr_color=0xffffffff;
-		curr_font=gx_graphics->getDefaultFont();
-		bbSetBuffer( gx_graphics->getBackCanvas() );
-		return;
-	}
-	RTEX( "Unable to set graphics mode" );
-}
 
 int bbGraphicsLost(){
 	return 0; //TODO: remove probably?
@@ -482,8 +470,6 @@ void bbVWait( int n ){
 
 void bbFlip( int vwait ){
 	gx_graphics->flip( vwait ? true : false );
-	gx_graphics->irrDriver->setRenderTarget(gx_canvas->getIrrTex(),false,false);
-	gx_canvas->rect(-10,-10,2,2,true); //TODO: fix engine instead of using workarounds
 	if( !gx_runtime->idle() ) RTEX( 0 );
 }
 
@@ -1197,7 +1183,7 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 #ifdef PRO
 	rtSym( "Graphics3D%width%height%depth=0%mode=0",bbGraphics3D );
 #endif
-	rtSym( "EndGraphics",bbEndGraphics );
+	//rtSym( "EndGraphics",bbEndGraphics );
 	rtSym( "%GraphicsLost",bbGraphicsLost );
 
 	rtSym( "SetGamma%src_red%src_green%src_blue#dest_red#dest_green#dest_blue",bbSetGamma );

@@ -18,20 +18,35 @@ public:
 
 	irr::IrrlichtDevice* irrDevice;
 	irr::video::IVideoDriver* irrDriver;
+	bool sceneOpen = false;
 	irr::video::IShaderConstantSetCallBack* flipShaderCallback;
-	irr::video::E_MATERIAL_TYPE flipMaterialType;
-	irr::scene::IMeshSceneNode* flipQuad;
+	irr::video::E_MATERIAL_TYPE quad2dMaterialType;
+	irr::scene::IMeshSceneNode* flipQuad; irr::scene::IMesh* flipMesh;
+	irr::scene::IMeshBuffer* flipBuf;
+
+	bool isRunning();
 private:
 	int w,h,d,flags;
 
 	gxCanvas *back_canvas;
+	gxCanvas *currRenderCanvas;
 
 	std::set<gxCanvas*> canvas_set;
+	std::set<gxFont*> font_set;
 
 	gxFont *def_font;
-public:
+
+	bool running;
+
 	gxGraphics(int inW, int inH, int inD, int inFlags);
 	~gxGraphics();
+public:
+	static gxGraphics* open(int inW, int inH, int inD, int inFlags);
+	void close();
+
+	void cleanup();
+	void resize(int inW,int inH);
+
 
 	enum{
 		GRAPHICS_WINDOWED=1,	//windowed mode
@@ -40,6 +55,7 @@ public:
 		GRAPHICS_AUTOSUSPEND=8	//suspend graphics when app suspended
 	};
 	//MANIPULATORS
+	void setRenderCanvas( gxCanvas* canvas );
 	void flip( bool vwait );
 
 	//SPECIAL!

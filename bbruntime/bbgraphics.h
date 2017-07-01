@@ -31,7 +31,7 @@ int		 bbTotalVidMem();
 //void	 bbGraphics( int w,int h,int d,int mode );
 //gxCanvas * bbFrontBuffer();
 gxCanvas * bbBackBuffer();
-void	 bbEndGraphics();
+//void	 bbEndGraphics();
 int		 bbGraphicsLost();
 //int		 bbScanLine();
 //void	 bbVWait( int n );

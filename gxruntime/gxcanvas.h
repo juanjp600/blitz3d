@@ -9,14 +9,19 @@ class gxFont;
 
 class gxCanvas {
 private:
-	int flags;
+	int flags; int w; int h;
 	gxGraphics *graphics;
+	
 	irr::video::ITexture* irrTex;
 	irr::video::SColor color;
+
+	gxFont* font;
 public:
 	irr::video::ITexture* getIrrTex();
 
-	gxCanvas(gxGraphics* gfx,int w,int h,int flags);
+	gxCanvas(gxGraphics* gfx,int inW,int inH,int inFlags);
+	~gxCanvas();
+	void reset();
 
 	enum{
 		CANVAS_TEX_RGB=			0x0001,
@@ -35,7 +40,7 @@ public:
 		CANVAS_HIGHCOLOR=		0x40000
 	};
 	//MANIPULATORS
-	void setFont( gxFont *font );
+	void setFont( gxFont *inFont );
 	void setMask( unsigned argb );
 	void setColor( unsigned argb );
 	void setClsColor( unsigned argb );

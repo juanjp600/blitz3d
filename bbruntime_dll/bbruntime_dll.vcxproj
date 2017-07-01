@@ -98,8 +98,8 @@
     <OutDir>../_release/bin/</OutDir>
     <IntDir>.\bbruntime_dll___Win32_Blitz3DRelease\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\irrlicht-shader-pipeline\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\irrlicht-shader-pipeline\include;..\..\FreeType\include;..\..\FreeType\include\freetype2;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;..\..\FreeType\lib;$(LibraryPath)</LibraryPath>
     <TargetName>runtime</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -264,7 +264,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>../_release/bin/runtime.dll</OutputFile>
       <ImportLibrary>.\bbruntime_dll___Win32_Blitz3DRelease\runtime.lib</ImportLibrary>
-      <AdditionalDependencies>wsock32.lib;amstrmid.lib;winmm.lib;odbc32.lib;odbccp32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\..\FreeType\lib\freetype28.lib;..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio\irrlicht.lib;wsock32.lib;amstrmid.lib;winmm.lib;odbc32.lib;odbccp32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>

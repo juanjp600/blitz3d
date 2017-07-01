@@ -4,15 +4,15 @@
 
 #include <string>
 
+#include <irrlicht.h>
+#include "CGUITTFont.h"
+
 class gxCanvas;
 class gxGraphics;
 
 class gxFont{
 public:
-	gxFont(
-		gxGraphics *graphics,gxCanvas *canvas,
-		int width,int height,int begin_char,int end_char,int def_char,
-		int *offs,int *widths );
+	gxFont( gxGraphics *inGraphics,const char* filename,int size );
 	~gxFont();
 
 	int charWidth( int c )const;
@@ -20,9 +20,10 @@ public:
 
 private:
 	gxGraphics *graphics;
-	gxCanvas *canvas,*t_canvas;
-	int width,height,begin_char,end_char,def_char;
-	int *offs,*widths;
+	//int width,height,begin_char,end_char,def_char;
+	//int *offs,*widths;
+
+	irr::gui::CGUITTFont* internalFont;
 
 	/***** GX INTERFACE *****/
 public:
