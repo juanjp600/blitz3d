@@ -46,7 +46,8 @@ public:
 
 	void cleanup();
 	void resize(int inW,int inH);
-
+	void resizeCanvas(gxCanvas* canvas,int inW,int inH);
+	void setDefaultMaterial();
 
 	enum{
 		GRAPHICS_WINDOWED=1,	//windowed mode

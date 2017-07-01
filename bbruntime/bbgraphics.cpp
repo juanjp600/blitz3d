@@ -162,43 +162,6 @@ static float vmax( float a,float b,float c,float d ){
 	float t=a;if( b>t ) t=b;if( c>t ) t=c;if( d>t ) t=d;return t;
 }
 
-static gxCanvas *tformCanvas( gxCanvas *c,float m[2][2],int x_handle,int y_handle ){
-
-	vec2 v,v0,v1,v2,v3;
-	float i[2][2];
-	float dt=1.0f/(m[0][0]*m[1][1]-m[1][0]*m[0][1]);
-	i[0][0]=dt*m[1][1];i[1][0]=-dt*m[1][0];
-	i[0][1]=-dt*m[0][1];i[1][1]=dt*m[0][0];
-
-	float ox=(float)x_handle,oy=(float)y_handle;
-	v0.x=-ox;v0.y=-oy;	//tl
-	v1.x=c->getWidth()-ox;v1.y=-oy;	//tr
-	v2.x=c->getWidth()-ox;v2.y=c->getHeight()-oy;	//br
-	v3.x=-ox;v3.y=c->getHeight()-oy;	//bl
-	v0=vrot(m,v0);v1=vrot(m,v1);v2=vrot(m,v2);v3=vrot(m,v3);
-	float minx=floor( vmin( v0.x,v1.x,v2.x,v3.x ) );
-	float miny=floor( vmin( v0.y,v1.y,v2.y,v3.y ) );
-	float maxx=ceil( vmax( v0.x,v1.x,v2.x,v3.x ) );
-	float maxy=ceil( vmax( v0.y,v1.y,v2.y,v3.y ) );
-	int iw=(int)(maxx-minx),ih=(int)(maxy-miny);
-
-	gxCanvas *t=gx_graphics->createCanvas( iw,ih,0 );
-	t->setHandle( (int)-minx,(int)-miny );
-	t->setMask( c->getMask() );
-
-	v.y=miny+.5f;
-	for( int y=0;y<ih;++v.y,++y ){
-		v.x=minx+.5f;
-		for( int x=0;x<iw;++v.x,++x ){
-			vec2 q=vrot(i,v);
-			unsigned rgb=filter ? getPixel( c,q.x+ox,q.y+oy ) : c->getPixel((int) floor(q.x+ox),(int)floor(q.y+oy) );
-			t->setPixel( x,y,rgb );
-		}
-	}
-
-	return t;
-}
-
 static bool saveCanvas( gxCanvas *c,const string &f ){
 
 	ofstream out( f.c_str(),ios::binary );
@@ -314,20 +277,7 @@ gxCanvas *bbGraphicsBuffer(){
 
 int bbLoadBuffer( gxCanvas *c,BBStr *str ){
 	if (!debugCanvas( c,"LoadBuffer" )) return 0;
-	string s=*str;delete str;
-	gxCanvas *t=gx_graphics->loadCanvas( s,0 );
-	if( !t ) return 0;
-	float m[2][2];
-	m[0][0]=(float)c->getWidth()/(float)t->getWidth();
-	m[1][1]=(float)c->getHeight()/(float)t->getHeight();
-	m[1][0]=m[0][1]=0;
-	gxCanvas *p=tformCanvas( t,m,0,0 );
-	gx_graphics->freeCanvas( t );
-	int ox,oy;
-	c->getOrigin( &ox,&oy );c->setOrigin( 0,0 );
-	c->blit( 0,0,p,0,0,p->getWidth(),p->getHeight(),true );
-	gx_graphics->freeCanvas( p );
-	return 1;
+	return 0;
 }
 
 int bbSaveBuffer( gxCanvas *c,BBStr *str ){
@@ -755,12 +705,14 @@ gxCanvas *bbImageBuffer( bbImage *i,int n ){
 void bbDrawImage( bbImage *i,int x,int y,int frame ){
 	if (!debugImage( i,frame,"DrawImage" )) return;
 	gxCanvas *c=i->getFrames()[frame];
+	//printf("drawimage\n");
 	gx_canvas->blit( x,y,c,0,0,c->getWidth(),c->getHeight(),false );
 }
 
 void bbDrawBlock( bbImage *i,int x,int y,int frame ){
 	if (!debugImage( i,frame,"DrawBlock" )) return;
 	gxCanvas *c=i->getFrames()[frame];
+	//printf("drawblock\n");
 	gx_canvas->blit( x,y,c,0,0,c->getWidth(),c->getHeight(),true );
 }
 
@@ -892,23 +844,7 @@ int bbImageRectCollide( bbImage *i,int x,int y,int f,int x2,int y2,int w2,int h2
 
 void bbTFormImage( bbImage *i,float a,float b,float c,float d ){
 	if (!debugImage( i,0,"TFormImage" )) return;
-	const vector<gxCanvas*> &f=i->getFrames();
-	int k;
-	for( k=0;k<(int)f.size();++k ){
-		if( f[k]==gx_canvas ){
-			bbSetBuffer( gx_graphics->getBackCanvas() );
-			break;
-		}
-	}
-	float m[2][2];
-	m[0][0]=a;m[1][0]=b;m[0][1]=c;m[1][1]=d;
-	for( k=0;k<(int)f.size();++k ){
-		gxCanvas *c=f[k];
-		int hx,hy;c->getHandle( &hx,&hy );
-		gxCanvas *t=tformCanvas( c,m,hx,hy );
-		i->replaceFrame( k,t );
-		//t->backup();
-	}
+	//TODO: reimplement
 }
 
 void bbScaleImage( bbImage *i,float w,float h ){
@@ -919,13 +855,14 @@ void bbScaleImage( bbImage *i,float w,float h ){
 void bbResizeImage( bbImage *i,float w,float h ){
 	if (!debugImage( i,0,"ResizeImage" )) return;
 	gxCanvas *c=i->getFrames()[0];
-	bbTFormImage( i,w/(float)c->getWidth(),0,0,h/(float)c->getHeight() );
+	c->resize(w,h);
+	//bbTFormImage( i,w/(float)c->getWidth(),0,0,h/(float)c->getHeight() );
 }
 
 void bbRotateImage( bbImage *i,float d ){
 	if (!debugImage( i,0,"RotateImage" )) return;
 	d*=-dtor;
-	bbTFormImage( i,cos(d),-sin(d),sin(d),cos(d) );
+	//bbTFormImage( i,cos(d),-sin(d),sin(d),cos(d) );
 }
 
 void bbTFormFilter( int enable ){

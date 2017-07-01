@@ -68,7 +68,7 @@ const char* QUAD2D_SHADER_CODE =
 	{\n\
 		float4 Output;\n\
 		\n\
-	    float4 col0 = imgTexture.Sample( st0, input.TexCoord0 ).rgba;\n\
+	    float4 col0 = imgTexture.Sample( st0, input.TexCoord0 ).bgra;\n\
 		\n\
 		Output = col0;\n\
 		\n\
@@ -95,12 +95,32 @@ void gxGraphics::resize(int inW,int inH) {
 	irrDevice->setWindowSize(irr::core::dimension2d<irr::u32>(w,h));
 	irrDevice->run();
 
-	back_canvas = new gxCanvas(this,w,h,0);
-	flipMesh->getMeshBuffer(0)->getMaterial().setTexture(0,back_canvas->getIrrTex());
-	flipQuad->getMesh()->getMeshBuffer(0)->getMaterial().setTexture(0,back_canvas->getIrrTex());
-	flipQuad->setMaterialTexture(0,back_canvas->getIrrTex());
+	back_canvas = new gxCanvas(this,w,h,gxCanvas::CANVAS_TEX_VIDMEM);
+	flipMesh->getMeshBuffer(0)->getMaterial().setTexture(0,back_canvas->getRenderTex());
+	flipQuad->getMesh()->getMeshBuffer(0)->getMaterial().setTexture(0,back_canvas->getRenderTex());
+	flipQuad->setMaterialTexture(0,back_canvas->getRenderTex());
 	setRenderCanvas(back_canvas);
 	flip(false);
+}
+
+void gxGraphics::resizeCanvas(gxCanvas* canvas,int inW, int inH) {
+	if (!sceneOpen) {
+		irrDriver->beginScene(false,false);
+		sceneOpen = true;
+	}
+	irrDriver->setRenderTarget(canvas->getRenderTex(),false,false);
+	setDefaultMaterial();
+	irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,255),irr::core::recti(0,0,inW,inH));
+	irrDriver->draw2DImage(canvas->getIrrTex(),irr::core::recti(0,0,inW,inH),irr::core::recti(0,0,canvas->getWidth(),canvas->getHeight()));
+	irrDriver->setRenderTarget(0,false,false);
+	irrDriver->endScene();
+	sceneOpen = false;
+}
+
+void gxGraphics::setDefaultMaterial() {
+	irr::video::SMaterial mat;
+	mat.MaterialType = irr::video::EMT_SOLID;
+	irrDriver->setMaterial(mat);
 }
 
 gxGraphics* gxGraphics::open(int inW, int inH, int inD, int inFlags) {
@@ -118,10 +138,10 @@ gxGraphics* gxGraphics::open(int inW, int inH, int inD, int inFlags) {
 
 	graphics->flipShaderCallback->drop();
 
-	graphics->back_canvas = new gxCanvas(graphics,inW,inH,0);
+	graphics->currRenderCanvas = 0;
 
+	graphics->back_canvas = new gxCanvas(graphics,inW,inH,gxCanvas::CANVAS_TEX_VIDMEM);
 	graphics->setRenderCanvas(graphics->back_canvas);
-
 	irr::video::IVertexDescriptor* vDesc = graphics->irrDriver->getVertexDescriptor(0);
 
 	irr::scene::SMesh* mesh = new irr::scene::SMesh();
@@ -152,7 +172,7 @@ gxGraphics* gxGraphics::open(int inW, int inH, int inD, int inFlags) {
 
 	buf->getMaterial().MaterialType = graphics->quad2dMaterialType;
 	buf->getMaterial().BackfaceCulling = true;
-	buf->getMaterial().setTexture(0,graphics->back_canvas->getIrrTex());
+	buf->getMaterial().setTexture(0,graphics->back_canvas->getRenderTex());
 
 	mesh->addMeshBuffer(buf);
 	buf->drop();
@@ -207,9 +227,9 @@ void gxGraphics::setRenderCanvas(gxCanvas* canvas) {
 		irrDriver->beginScene(false,false);
 		sceneOpen = true;
 	}
+	if (currRenderCanvas) currRenderCanvas->cleanupRenderTex();
 	currRenderCanvas = canvas;
-	irrDriver->setRenderTarget(canvas->getIrrTex(),false,false);
-	canvas->rect(-10,-10,2,2,true); //TODO: fix engine instead of using workarounds
+	irrDriver->setRenderTarget(canvas->getRenderTex(),false,false);
 }
 
 void gxGraphics::flip(bool vwait) {
@@ -218,7 +238,6 @@ void gxGraphics::flip(bool vwait) {
 		sceneOpen = true;
 	}
 	irrDriver->setRenderTarget(0,true,true,irr::video::SColor(255,100,60,0));
-	irrDriver->setViewPort(irr::core::recti(0,0,w,h));
 	flipQuad->render();
 	irrDriver->endScene(); sceneOpen = false;
 	running = irrDevice->run();
@@ -256,7 +275,9 @@ gxCanvas *gxGraphics::createCanvas(int width, int height, int flags) {
 	return newCanvas;
 }
 gxCanvas *gxGraphics::loadCanvas(const std::string &file, int flags) {
-	return 0;
+	gxCanvas* newCanvas = new gxCanvas(this,file,flags);
+	canvas_set.insert(newCanvas);
+	return newCanvas;
 }
 gxCanvas *gxGraphics::verifyCanvas(gxCanvas *canvas) {
 	if (canvas == back_canvas && !!back_canvas) return back_canvas;

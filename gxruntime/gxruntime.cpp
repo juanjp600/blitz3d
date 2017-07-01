@@ -2,6 +2,7 @@
 #include "std.h"
 #include "gxruntime.h"
 #include "gxgraphics.h"
+#include "gxaudio.h"
 
 #include "../debugger/debugger.h"
 
@@ -102,11 +103,17 @@ void gxRuntime::debugLog( const char *t ){
 	if( debugger ) debugger->debugLog( t );
 }
 
-gxAudio *gxRuntime::openAudio(int flags) {
-	return 0;
-}
-void gxRuntime::closeAudio(gxAudio *audio) {
+gxAudio *gxRuntime::openAudio( int flags ){
+	if( audio ) return 0;
 
+	audio=d_new gxAudio( this );
+	return audio;
+}
+
+void gxRuntime::closeAudio( gxAudio *a ){
+	if( !audio || audio!=a ) return;
+	delete audio;
+	audio=0;
 }
 
 gxInput *gxRuntime::openInput(int flags) {

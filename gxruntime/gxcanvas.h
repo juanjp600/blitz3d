@@ -12,14 +12,19 @@ private:
 	int flags; int w; int h;
 	gxGraphics *graphics;
 	
+	bool isRenderTarget;
+	irr::video::ITexture* renderTex;
 	irr::video::ITexture* irrTex;
 	irr::video::SColor color;
 
 	gxFont* font;
 public:
 	irr::video::ITexture* getIrrTex();
+	irr::video::ITexture* getRenderTex();
+	void cleanupRenderTex();
 
 	gxCanvas(gxGraphics* gfx,int inW,int inH,int inFlags);
+	gxCanvas(gxGraphics* gfx,const std::string &filename,int inFlags);
 	~gxCanvas();
 	void reset();
 
@@ -40,6 +45,8 @@ public:
 		CANVAS_HIGHCOLOR=		0x40000
 	};
 	//MANIPULATORS
+	void resize(int inW,int inH);
+
 	void setFont( gxFont *inFont );
 	void setMask( unsigned argb );
 	void setColor( unsigned argb );
