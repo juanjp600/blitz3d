@@ -61,7 +61,7 @@ public:
 	void rect( int x,int y,int w,int h,bool solid );
 	void oval( int x,int y,int w,int h,bool solid );
 	void text( int x,int y,const std::string &t );
-	void blit( int x,int y,gxCanvas *src,int src_x,int src_y,int src_w,int src_h,bool solid );
+	void blit( int x,int y,int w,int h,gxCanvas *src,int src_x,int src_y,int src_w,int src_h,bool solid );
 
 	bool collide( int x,int y,const gxCanvas *src,int src_x,int src_y,bool solid )const;
 	bool rect_collide( int x,int y,int rect_x,int rect_y,int rect_w,int rect_h,bool solid )const;

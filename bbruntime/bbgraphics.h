@@ -12,15 +12,15 @@ extern gxScene *gx_scene;
 class bbImage;
 
 //general graphics functions
-//int		 bbCountGfxDrivers();
-//BBStr *	 bbGfxDriverName( int n );
+int		 bbCountGfxDrivers();
+BBStr *	 bbGfxDriverName( int n );
 //BBStr *	 bbGfxDriverDesc( int n );
-//void	 bbSetGfxDriver( int n );
-int		 bbGfxModeExists( int w,int h,int d );
+void	 bbSetGfxDriver( int n );
+int		 bbGfxModeExists( int w,int h );
 int		 bbCountGfxModes();
 int		 bbGfxModeWidth( int n );
 int		 bbGfxModeHeight( int n );
-int		 bbGfxModeDepth( int n );
+//int		 bbGfxModeDepth( int n );
 int		 bbGraphicsWidth();
 int		 bbGraphicsHeight();
 int		 bbGraphicsDepth();
@@ -87,6 +87,7 @@ int		 bbSaveImage( bbImage *i,BBStr *filename,int frame );
 void	 bbGrabImage( bbImage *i,int x,int y,int n );
 gxCanvas * bbImageBuffer( bbImage *i,int n );
 void	 bbDrawImage( bbImage *i,int x,int y,int frame );
+void	 bbDrawImageScaled( bbImage *i,int x,int y,int w,int h,int frame );
 void	 bbDrawBlock( bbImage *i,int x,int y,int frame );
 void	 bbTileImage( bbImage *i,int x,int y,int frame );
 void	 bbTileBlock( bbImage *i,int x,int y,int frame );
@@ -112,9 +113,9 @@ int		 bbImageRectOverlap( bbImage *i,int x,int y,int r_x,int r_y,int r_w,int r_h
 int		 bbImageRectCollide( bbImage *i,int x,int y,int f,int r_x,int r_y,int r_w,int r_h );
 
 //simple print functions
-void	 bbWrite( BBStr *str );
-void	 bbPrint( BBStr *str );
-BBStr *	 bbInput( BBStr *prompt );
-void	 bbLocate( int x,int y );
+//void	 bbWrite( BBStr *str );
+//void	 bbPrint( BBStr *str );
+//BBStr *	 bbInput( BBStr *prompt );
+//void	 bbLocate( int x,int y );
 
 #endif

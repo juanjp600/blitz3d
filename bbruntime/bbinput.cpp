@@ -5,85 +5,78 @@
 #include "../gxruntime/gxinput.h"
 
 gxInput *gx_input;
-gxDevice *gx_mouse;
-gxDevice *gx_keyboard;
-vector<gxDevice*> gx_joysticks;
+//gxDevice *gx_mouse;
+//gxDevice *gx_keyboard;
+//vector<gxDevice*> gx_joysticks;
 
 static int mouse_x,mouse_y,mouse_z;
 static const float JLT=-1.0f/3.0f;
 static const float JHT=1.0f/3.0f;
 
 bool input_create(){
-	return true; //TODO: REMOVE
-
 	if( gx_input=gx_runtime->openInput( 0 ) ){
-		if( gx_keyboard=gx_input->getKeyboard() ){
-			if( gx_mouse=gx_input->getMouse() ){
-				gx_joysticks.clear();
-				for( int k=0;k<gx_input->numJoysticks();++k ){
-					gx_joysticks.push_back( gx_input->getJoystick(k) );
-				}
-				mouse_x=mouse_y=mouse_z=0;
-				return true;
-			}
-		}
-		gx_runtime->closeInput( gx_input );
-		gx_input=0;
+		return true;
 	}
 	return false;
 }
 
 bool input_destroy(){
-	gx_joysticks.clear();
+	//gx_joysticks.clear();
 	gx_runtime->closeInput( gx_input );
 	gx_input=0;
 	return true;
 }
 
 int bbKeyDown( int n ){
-	return gx_keyboard->keyDown( n );
+	return gx_input->keyDown( n );
 }
 
 int bbKeyHit( int n ){
-	return gx_keyboard->keyHit( n );
+	return gx_input->keyHit( n );
 }
 
 int bbGetKey(){
-	return gx_input->toAscii( gx_keyboard->getKey() );
+	return gx_input->getKey();
 }
 
 int bbWaitKey(){
-	for(;;){
+	/*for(;;){
 		if( !gx_runtime->idle() ) RTEX( 0 );
 		if( int key=gx_keyboard->getKey( ) ){
 			if( key=gx_input->toAscii( key ) ) return key;
 		}
 		gx_runtime->delay( 20 );
-	}
+	}*/
+	return 0;
 }
 
 void bbFlushKeys(){
-	gx_keyboard->flush();
+	gx_input->flushKeys();
+}
+
+BBStr * bbTextInput(BBStr * prev) {
+	return d_new BBStr(gx_input->textInput(std::string(prev->c_str())));
 }
 
 int bbMouseDown( int n ){
-	return gx_mouse->keyDown( n );
+	return gx_input->mouseDown( n-1 );
 }
 
 int bbMouseHit( int n ){
-	return gx_mouse->keyHit( n );
+	return gx_input->mouseHit( n-1 );
 }
 
 int bbGetMouse(){
-	return gx_mouse->getKey();
+	return 0;//gx_mouse->getKey();
 }
 
 int bbWaitMouse(){
-	for(;;){
+	/*for(;;){
 		if( !gx_runtime->idle() ) RTEX( 0 );
 		if( int key=gx_mouse->getKey() ) return key;
 		gx_runtime->delay( 20 );
-	}
+	}*/
+	return 0;
 }
 
 int bbMouseWait(){
@@ -91,15 +84,15 @@ int bbMouseWait(){
 }
 
 int bbMouseX(){
-	return (int)gx_mouse->getAxisState( 0 );
+	return gx_input->getMouseX();//(int)gx_mouse->getAxisState( 0 );
 }
 
 int bbMouseY(){
-	return (int)gx_mouse->getAxisState( 1 );
+	return gx_input->getMouseY();//(int)gx_mouse->getAxisState( 1 );
 }
 
 int bbMouseZ(){
-	return (int)gx_mouse->getAxisState( 2 )/120;
+	return 0;//(int)gx_mouse->getAxisState( 2 )/120;
 }
 
 int bbMouseXSpeed(){
@@ -121,7 +114,7 @@ int bbMouseZSpeed(){
 }
 
 void bbFlushMouse(){
-	gx_mouse->flush();
+	gx_input->flushMouse();
 }
 
 void bbMoveMouse( int x,int y ){
@@ -129,110 +122,111 @@ void bbMoveMouse( int x,int y ){
 }
 
 int bbJoyType( int port ){
-	return gx_input->getJoystickType( port );
+	return 0;//gx_input->getJoystickType( port );
 }
 
 int bbJoyDown( int n,int port ){
-	if( port<0 || port>=(int)gx_joysticks.size() ) return 0;
-	return gx_joysticks[port]->keyDown( n );
+	//if( port<0 || port>=(int)gx_joysticks.size() ) return 0;
+	return 0;//gx_joysticks[port]->keyDown( n );
 }
 
 int bbJoyHit( int n,int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->keyHit( n );
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->keyHit( n );
 }
 
 int bbGetJoy( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getKey();
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getKey();
 }
 
 int bbWaitJoy( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	/*if (port<0 || port >= (int)gx_joysticks.size()) return 0;
 	for(;;){
 		if( !gx_runtime->idle() ) RTEX( 0 );
 		if( int key=gx_joysticks[port]->getKey() ) return key;
 		gx_runtime->delay( 20 );
-	}
+	}*/
+	return 0;
 }
 
 float bbJoyX( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(0);
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(0);
 }
 
 float bbJoyY( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(1);
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(1);
 }
 
 float bbJoyZ( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(2);
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(2);
 }
 
 float bbJoyU( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(3);
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(3);
 }
 
 float bbJoyV( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(4);
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(4);
 }
 
 float bbJoyPitch( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(5)*180;
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(5)*180;
 }
 
 float bbJoyYaw( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(6)*180;
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(6)*180;
 }
 
 float bbJoyRoll( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return gx_joysticks[port]->getAxisState(7)*180;
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//gx_joysticks[port]->getAxisState(7)*180;
 }
 
 int  bbJoyHat( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	return (int)gx_joysticks[port]->getAxisState(8);
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	return 0;//(int)gx_joysticks[port]->getAxisState(8);
 }
 
 int	bbJoyXDir( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	float t=gx_joysticks[port]->getAxisState(0);
-	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	//float t=gx_joysticks[port]->getAxisState(0);
+	return 0;//t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int bbJoyYDir( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	float t=gx_joysticks[port]->getAxisState(1);
-	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	//float t=gx_joysticks[port]->getAxisState(1);
+	return 0;//t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int	bbJoyZDir( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	float t=gx_joysticks[port]->getAxisState(2);
-	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	//float t=gx_joysticks[port]->getAxisState(2);
+	return 0;//t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int	bbJoyUDir( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	float t=gx_joysticks[port]->getAxisState(3);
-	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	//float t=gx_joysticks[port]->getAxisState(3);
+	return 0;//t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 int	bbJoyVDir( int port ){
-	if (port<0 || port >= (int)gx_joysticks.size()) return 0;
-	float t=gx_joysticks[port]->getAxisState(4);
-	return t<JLT ? -1 : ( t>JHT ? 1 : 0 );
+	//if (port<0 || port >= (int)gx_joysticks.size()) return 0;
+	//float t=gx_joysticks[port]->getAxisState(4);
+	return 0;////t<JLT ? -1 : ( t>JHT ? 1 : 0 );
 }
 
 void bbFlushJoy(){
-	for (int k = 0; k<(int)gx_joysticks.size(); ++k) gx_joysticks[k]->flush();
+	//for (int k = 0; k<(int)gx_joysticks.size(); ++k) gx_joysticks[k]->flush();
 }
 
 /*void  bbEnableDirectInput( int enable ){
@@ -248,6 +242,7 @@ void input_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%KeyHit%key",bbKeyHit );
 	rtSym( "%GetKey",bbGetKey );
 	rtSym( "%WaitKey",bbWaitKey );
+	rtSym( "$TextInput$prev",bbTextInput );
 	rtSym( "FlushKeys",bbFlushKeys );
 
 	rtSym( "%MouseDown%button",bbMouseDown );

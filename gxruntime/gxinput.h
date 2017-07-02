@@ -2,20 +2,21 @@
 #ifndef GXINPUT_H
 #define GXINPUT_H
 
-#include "gxdevice.h"
+#include <irrlicht.h>
+#include <string>
+//#include "gxdevice.h"
 
 class gxRuntime;
+class MainEventReceiver;
 
 class gxInput{
 public:
 	gxRuntime *runtime;
-	
+	irr::IrrlichtDevice* irrDevice;
+	MainEventReceiver* eventReceiver;
+
 	gxInput( gxRuntime *runtime );
 	~gxInput();
-
-	void reset();
-	bool acquire();
-	void unacquire();
 
 private:
 
@@ -28,13 +29,17 @@ public:
 	};
 
 	void moveMouse( int x,int y );
+	int getMouseX();
+	int getMouseY();
+	bool mouseDown(int button);
+	int mouseHit(int button);
+	void flushMouse();
 
-	gxDevice *getMouse()const;
-	gxDevice *getKeyboard()const;
-	gxDevice *getJoystick( int port )const;
-	int getJoystickType( int port )const;
-	int numJoysticks()const;
-	int toAscii( int key )const;
+	int getKey();
+	bool keyDown(int key);
+	int keyHit(int key);
+	std::string textInput(const std::string &prev);
+	void flushKeys();
 };
 
 #endif

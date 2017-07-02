@@ -3,6 +3,7 @@
 #include "gxruntime.h"
 #include "gxgraphics.h"
 #include "gxaudio.h"
+#include "gxinput.h"
 
 #include "../debugger/debugger.h"
 
@@ -23,7 +24,7 @@ void gxRuntime::flip(bool vwait) {
 }
 
 void gxRuntime::moveMouse(int x, int y) {
-
+	input->moveMouse(x,y);
 }
 
 bool gxRuntime::idle() {
@@ -104,7 +105,7 @@ void gxRuntime::debugLog( const char *t ){
 }
 
 gxAudio *gxRuntime::openAudio( int flags ){
-	if( audio ) return 0;
+	if( audio ) return audio;
 
 	audio=d_new gxAudio( this );
 	return audio;
@@ -117,7 +118,8 @@ void gxRuntime::closeAudio( gxAudio *a ){
 }
 
 gxInput *gxRuntime::openInput(int flags) {
-	return 0;
+	input = d_new gxInput(this);
+	return input;
 }
 void gxRuntime::closeInput(gxInput *input) {
 
@@ -149,6 +151,7 @@ void gxRuntime::freeTimer(gxTimer *timer) {
 
 gxRuntime::gxRuntime(const std::string &cmd_line) {
 	this->cmd_line = cmd_line;
+	audio = 0; input = 0;
 }
 
 gxRuntime *gxRuntime::openRuntime(const std::string &cmd_line, Debugger *debugger) {

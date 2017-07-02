@@ -10,9 +10,9 @@
 gxGraphics *gx_graphics;
 gxCanvas *gx_canvas;
 
-struct GfxMode{
+/*struct GfxMode{
 	int w,h,d;
-};
+};*/
 
 class bbImage{
 public:
@@ -48,7 +48,7 @@ static gxFont *curr_font;
 static unsigned curr_color;
 static unsigned curr_clsColor;
 
-static vector<GfxMode> gfx_modes;
+//static vector<GfxMode> gfx_modes;
 
 static inline bool debugImage( bbImage *i,int frame,const char* a ){
 	if( debug ){
@@ -95,12 +95,12 @@ static inline bool debugCanvas( gxCanvas *c,const char* a ){
 
 static inline bool debugMode( int n,const char* a ){
 	if( debug ){
-		if( n<1 || n>gfx_modes.size() ){
+		if( n<1 || n>gx_graphics->getGfxModeCount() ){
 			RTEX( "Illegal graphics mode index" );
 			return false;
 		}
 	} else {
-		if( n<1 || n>gfx_modes.size() ){
+		if( n<1 || n>gx_graphics->getGfxModeCount() ){
 			errorLog.push_back(std::string(a)+std::string(": Illegal graphics mode index"));
 			return false;
 		}
@@ -202,8 +202,20 @@ static bool saveCanvas( gxCanvas *c,const string &f ){
 	return out.good();
 }
 
+int bbCountGfxDrivers() {
+	return 0;
+}
+
+BBStr * bbGfxDriverName( int n ) {
+	return d_new BBStr("");
+}
+
+void bbSetGfxDriver(int n) {
+
+}
+
 int  bbCountGfxModes3D(){
-	return 0; //TODO: find out how to reimplement this
+	return gx_graphics->getGfxModeCount();
 }
 
 int  bbCountGfxModes(){
@@ -212,34 +224,23 @@ int  bbCountGfxModes(){
 
 int  bbGfxModeWidth( int n ){
 	if (!debugMode( n,"GfxModeWidth" )) return 0;
-	return gfx_modes[n-1].w;
+	return gx_graphics->getGfxModeWidth(n-1);
 }
 
 int  bbGfxModeHeight( int n ){
 	if (!debugMode( n,"GfxModeHeight" )) return 0;
-	return gfx_modes[n-1].h;
+	return gx_graphics->getGfxModeHeight(n-1);
 }
 
-int  bbGfxModeDepth( int n ){
-	if (!debugMode( n,"GfxModeDepth" )) return 0;
-	return gfx_modes[n-1].d;
-}
-
-static int modeExists( int w,int h,int d ){
-	return 0; //TODO: find out how to reimplement this
-}
-
-int  bbGfxModeExists( int w,int h,int d ){
-	return modeExists( w,h,d );
+int  bbGfxModeExists( int w,int h ){
+	for (int i=0;i<gx_graphics->getGfxModeCount();i++) {
+		if (gx_graphics->getGfxModeWidth(i)==w && gx_graphics->getGfxModeHeight(i)==h) return i;
+	}
 }
 
 #ifdef PRO
 int  bbGfxDriver3D( int n ){
 	return 1;
-}
-
-int  bbGfxMode3DExists( int w,int h,int d ){
-	return modeExists( w,h,d );
 }
 
 int  bbGfxMode3D( int n ){
@@ -504,7 +505,7 @@ void bbCopyRect( int sx,int sy,int w,int h,int dx,int dy,gxCanvas *src,gxCanvas 
 	else src=gx_canvas;
 	if( dest ) { if (!debugCanvas( dest,"CopyRect (dest)" )) return; }
 	else dest=gx_canvas;
-	dest->blit( dx,dy,src,sx,sy,w,h,true );
+	dest->blit( dx,dy,w,h,src,sx,sy,w,h,true );
 }
 
 gxFont *bbLoadFont( BBStr *name,int height,int bold,int italic,int underline ){
@@ -611,7 +612,7 @@ bbImage *bbLoadAnimImage( BBStr *s,int w,int h,int first,int cnt ){
 			for( --k;k>=0;--k ) gx_graphics->freeCanvas( frames[k] );
 			gx_graphics->freeCanvas( pic );return 0;
 		}
-		c->blit( 0,0,pic,src_x,src_y,w,h,true );
+		c->blit( 0,0,w,h,pic,src_x,src_y,w,h,true );
 		//if( auto_dirty ) c->backup();
 		if( auto_midhandle ) c->setHandle( c->getWidth()/2,c->getHeight()/2 );
 		frames.push_back( c );
@@ -637,7 +638,7 @@ bbImage *bbCopyImage( bbImage *i ){
 		int x,y;
 		t->getHandle( &x,&y );
 		t->setHandle( 0,0 );
-		c->blit( 0,0,t,0,0,t->getWidth(),t->getHeight(),true );
+		c->blit( 0,0,t->getWidth(),t->getHeight(),t,0,0,t->getWidth(),t->getHeight(),true );
 		//if( auto_dirty ) c->backup();
 		t->setHandle( x,y );
 		c->setHandle( x,y );
@@ -693,7 +694,7 @@ void bbGrabImage( bbImage *i,int x,int y,int n ){
 	c->getHandle( &dst_hx,&dst_hy );
 	x+=src_ox-dst_hx;y+=src_oy-dst_hy;
 	c->setViewport( 0,0,c->getWidth(),c->getHeight() );
-	c->blit( 0,0,gx_canvas,x,y,c->getWidth(),c->getHeight(),true );
+	c->blit( 0,0,c->getWidth(),c->getHeight(),gx_canvas,x,y,c->getWidth(),c->getHeight(),true );
 	//if( auto_dirty ) c->backup();
 }
 
@@ -706,14 +707,21 @@ void bbDrawImage( bbImage *i,int x,int y,int frame ){
 	if (!debugImage( i,frame,"DrawImage" )) return;
 	gxCanvas *c=i->getFrames()[frame];
 	//printf("drawimage\n");
-	gx_canvas->blit( x,y,c,0,0,c->getWidth(),c->getHeight(),false );
+	gx_canvas->blit( x,y,c->getWidth(),c->getHeight(),c,0,0,c->getWidth(),c->getHeight(),false );
+}
+
+void bbDrawImageScaled( bbImage *i,int x,int y,int w,int h,int frame ){
+	if (!debugImage( i,frame,"DrawImage" )) return;
+	gxCanvas *c=i->getFrames()[frame];
+	//printf("drawimage\n");
+	gx_canvas->blit( x,y,w,h,c,0,0,c->getWidth(),c->getHeight(),false );
 }
 
 void bbDrawBlock( bbImage *i,int x,int y,int frame ){
 	if (!debugImage( i,frame,"DrawBlock" )) return;
 	gxCanvas *c=i->getFrames()[frame];
 	//printf("drawblock\n");
-	gx_canvas->blit( x,y,c,0,0,c->getWidth(),c->getHeight(),true );
+	gx_canvas->blit( x,y,c->getWidth(),c->getHeight(),c,0,0,c->getWidth(),c->getHeight(),true );
 }
 
 static void tile( bbImage *i,int x,int y,int frame,bool solid ){
@@ -735,7 +743,7 @@ static void tile( bbImage *i,int x,int y,int frame,bool solid ){
 
 	for( y=-h;y<vp_h;y+=h ){
 		for( x=-w;x<vp_w;x+=w ){
-			gx_canvas->blit( x+dx,y+dy,c,0,0,w,h,solid );
+			gx_canvas->blit( x+dx,y+dy,w,h,c,0,0,w,h,solid );
 		}
 	}
 }
@@ -753,13 +761,13 @@ void bbTileBlock( bbImage *i,int x,int y,int frame ){
 void bbDrawImageRect( bbImage *i,int x,int y,int r_x,int r_y,int r_w,int r_h,int frame ){
 	if (!debugImage( i,frame,"DrawImageRect" )) return;
 	gxCanvas *c=i->getFrames()[frame];
-	gx_canvas->blit( x,y,c,r_x,r_y,r_w,r_h,false );
+	gx_canvas->blit( x,y,r_w,r_h,c,r_x,r_y,r_w,r_h,false );
 }
 
 void bbDrawBlockRect( bbImage *i,int x,int y,int r_x,int r_y,int r_w,int r_h,int frame ){
 	if (!debugImage( i,frame,"DrawBlockRect" )) return;
 	gxCanvas *c=i->getFrames()[frame];
-	gx_canvas->blit( x,y,c,r_x,r_y,r_w,r_h,true );
+	gx_canvas->blit( x,y,r_w,r_h,c,r_x,r_y,r_w,r_h,true );
 }
 
 void bbMaskImage( bbImage *i,int r,int g,int b ){
@@ -893,7 +901,7 @@ static gxCanvas *startPrinting(){
 	int dy=curs_y+curr_font->getHeight()-c->getHeight();
 	if( dy>0 ){
 		curs_y=c->getHeight()-curr_font->getHeight();
-		c->blit( 0,0,c,0,dy,c->getWidth(),c->getHeight()-dy,true );
+		c->blit( 0,0,c->getWidth(),c->getHeight()-dy,c,0,dy,c->getWidth(),c->getHeight()-dy,true );
 		c->setColor( curr_clsColor );
 		c->rect( 0,c->getHeight()-dy,c->getWidth(),dy,true );
 		c->setColor( curr_color );
@@ -909,7 +917,7 @@ static void endPrinting( gxCanvas *c ){
 	if( !gx_runtime->idle() ) RTEX( 0 );
 }
 
-void bbWrite( BBStr *str ){
+/*void bbWrite( BBStr *str ){
 	gxCanvas *c=startPrinting();
 	c->text( curs_x,curs_y,*str );
 	curs_x+=curr_font->getWidth( *str );
@@ -1053,7 +1061,7 @@ void bbLocate( int x,int y ){
 	gxCanvas *c=gx_graphics->getBackCanvas();
 	curs_x=x<0 ? 0 : (x > c->getWidth() ? c->getWidth() : x);
 	curs_y=y<0 ? 0 : (y > c->getHeight() ? c->getHeight() : y);
-}
+}*/
 
 void bbShowPointer(){
 	gx_runtime->setPointerVisible( true );
@@ -1082,7 +1090,7 @@ bool graphics_create(){
 
 bool graphics_destroy(){
 	freeGraphics();
-	gfx_modes.clear();
+	//gfx_modes.clear();
 	if( gx_graphics ){
 		gx_runtime->closeGraphics( gx_graphics );
 		gx_graphics=0;
@@ -1093,9 +1101,9 @@ bool graphics_destroy(){
 void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 
 	//gfx driver info
-	//rtSym( "%CountGfxDrivers",bbCountGfxDrivers );
-	//rtSym( "$GfxDriverName%driver",bbGfxDriverName );
-	//rtSym( "SetGfxDriver%driver",bbSetGfxDriver );
+	rtSym( "%CountGfxDrivers",bbCountGfxDrivers );
+	rtSym( "$GfxDriverName%driver",bbGfxDriverName );
+	rtSym( "SetGfxDriver%driver",bbSetGfxDriver );
 
 	//gfx mode info
 	rtSym( "%CountGfxModes",bbCountGfxModes );
@@ -1103,14 +1111,14 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 
 	rtSym( "%GfxModeWidth%mode",bbGfxModeWidth );
 	rtSym( "%GfxModeHeight%mode",bbGfxModeHeight );
-	rtSym( "%GfxModeDepth%mode",bbGfxModeDepth );
+	//rtSym( "%GfxModeDepth%mode",bbGfxModeDepth );
 	rtSym( "%AvailVidMem",bbAvailVidMem );
 	rtSym( "%TotalVidMem",bbTotalVidMem );
 
 #ifdef PRO
 	rtSym( "%GfxDriver3D%driver",bbGfxDriver3D );
 	rtSym( "%CountGfxModes3D",bbCountGfxModes3D );
-	rtSym( "%GfxMode3DExists%width%height%depth",bbGfxMode3DExists );
+	rtSym( "%GfxMode3DExists%width%height%depth",bbGfxModeExists );
 	rtSym( "%GfxMode3D%mode",bbGfxMode3D );
 	rtSym( "%Windowed3D",bbWindowed3D );
 #endif
@@ -1199,6 +1207,7 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "GrabImage(BBImage)image%x%y%frame=0",bbGrabImage );
 	rtSym( "(BBBuffer)ImageBuffer(BBImage)image%frame=0",bbImageBuffer );
 	rtSym( "DrawImage(BBImage)image%x%y%frame=0",bbDrawImage );
+	rtSym( "DrawImageScaled(BBImage)image%x%y%w%h%frame=0",bbDrawImageScaled );
 	rtSym( "DrawBlock(BBImage)image%x%y%frame=0",bbDrawBlock );
 	rtSym( "TileImage(BBImage)image%x=0%y=0%frame=0",bbTileImage );
 	rtSym( "TileBlock(BBImage)image%x=0%y=0%frame=0",bbTileBlock );
@@ -1225,10 +1234,10 @@ void graphics_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "%ImageRectOverlap(BBImage)image%x%y%rect_x%rect_y%rect_width%rect_height",bbImageRectOverlap );
 	rtSym( "%ImageRectCollide(BBImage)image%x%y%frame%rect_x%rect_y%rect_width%rect_height",bbImageRectCollide );
 
-	rtSym( "Write$string",bbWrite );
-	rtSym( "Print$string=\"\"",bbPrint );
-	rtSym( "$Input$prompt=\"\"",bbInput );
-	rtSym( "Locate%x%y",bbLocate );
+	//rtSym( "Write$string",bbWrite );
+	//rtSym( "Print$string=\"\"",bbPrint );
+	//rtSym( "$Input$prompt=\"\"",bbInput );
+	//rtSym( "Locate%x%y",bbLocate );
 
 	rtSym( "ShowPointer",bbShowPointer );
 	rtSym( "HidePointer",bbHidePointer );

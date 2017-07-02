@@ -94,8 +94,8 @@
     <OutDir>.\blitz3d___Win32_Blitz3DRelease\</OutDir>
     <IntDir>.\blitz3d___Win32_Blitz3DRelease\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\irrlicht-shader-pipeline\include;..\..\FreeType\include;..\..\FreeType\include\freetype2;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;..\..\FreeType\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
+    <IncludePath>$(DXSDK_DIR)include;..\..\irrlicht-shader-pipeline\include;..\..\FreeType\include;..\..\FreeType\include\freetype2;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib;..\..\irrlicht-shader-pipeline\lib\Win32-visualstudio;..\..\FreeType\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\Debug\</OutDir>

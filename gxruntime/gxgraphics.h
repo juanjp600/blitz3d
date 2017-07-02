@@ -3,6 +3,7 @@
 
 #include <irrlicht.h>
 #include <set>
+#include <vector>
 
 class gxRuntime;
 class gxScene;
@@ -40,9 +41,16 @@ private:
 
 	gxGraphics(int inW, int inH, int inD, int inFlags);
 	~gxGraphics();
+
+	std::vector<irr::core::dimension2du> gfxModes;
+	void getGfxModes();
 public:
 	static gxGraphics* open(int inW, int inH, int inD, int inFlags);
 	void close();
+
+	int getGfxModeCount();
+	int getGfxModeWidth(int mode);
+	int getGfxModeHeight(int mode);
 
 	void cleanup();
 	void resize(int inW,int inH);

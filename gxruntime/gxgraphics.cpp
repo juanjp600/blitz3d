@@ -1,32 +1,9 @@
 #include "gxgraphics.h"
 #include "gxcanvas.h"
 #include "gxfont.h"
+#include "MainEventReceiver.h"
 
 #include <windows.h>
-
-class MainEventReceiver : public irr::IEventReceiver {
-private:
-	bool errorState;
-	std::string errorStr;
-public:
-	virtual bool OnEvent(const irr::SEvent& event) {
-		if (event.EventType == irr::EET_LOG_TEXT_EVENT) {
-			switch (event.LogEvent.Level) {
-				case irr::ELL_ERROR:
-					printf(errorStr.c_str()); printf("\n\n");
-					errorStr+=event.LogEvent.Text;
-					errorStr+="\n\n";
-					errorState = true;
-					break;
-				default:
-
-					break;
-			}
-		}
-	}
-	bool getErrorState() { return errorState; }
-	std::string getErrorStr() { return errorStr; }
-};
 
 const char* QUAD2D_SHADER_CODE =
 	"cbuffer cbParams : register(b0)\n\
@@ -112,8 +89,8 @@ void gxGraphics::resizeCanvas(gxCanvas* canvas,int inW, int inH) {
 	setDefaultMaterial();
 	irrDriver->draw2DRectangle(irr::video::SColor(255,255,0,255),irr::core::recti(0,0,inW,inH));
 	irrDriver->draw2DImage(canvas->getIrrTex(),irr::core::recti(0,0,inW,inH),irr::core::recti(0,0,canvas->getWidth(),canvas->getHeight()));
-	irrDriver->setRenderTarget(0,false,false);
-	irrDriver->endScene();
+	irrDriver->setRenderTarget(currRenderCanvas->getRenderTex(),false,false);
+	//irrDriver->endScene();
 	sceneOpen = false;
 }
 
@@ -188,12 +165,36 @@ gxGraphics* gxGraphics::open(int inW, int inH, int inD, int inFlags) {
 gxGraphics::gxGraphics(int inW, int inH, int inD, int inFlags) {
 	w = inW; h = inH; d = 32; flags = inFlags;
 
-	irrDevice = irr::createDevice(irr::video::EDT_DIRECT3D11,irr::core::dimension2d<irr::u32>(w,h),32,false);
+	MainEventReceiver* eventReceiver = new MainEventReceiver();
+	irrDevice = irr::createDevice(irr::video::EDT_DIRECT3D11,irr::core::dimension2d<irr::u32>(w,h),32,false,false,false,eventReceiver);
 	irrDriver = irrDevice->getVideoDriver();
 
 	running = true;
 
 	sceneOpen = false;
+
+	getGfxModes();
+}
+
+void gxGraphics::getGfxModes() {
+	irr::video::IVideoModeList* modeList = irrDevice->getVideoModeList();
+	for (int i=0; i<modeList->getVideoModeCount(); i++) {
+		if (modeList->getVideoModeDepth(i) != 32) continue;
+		gfxModes.push_back(modeList->getVideoModeResolution(i));
+	}
+	modeList->drop();
+}
+
+int gxGraphics::getGfxModeCount() {
+	return gfxModes.size();
+}
+
+int gxGraphics::getGfxModeWidth(int mode) {
+	return gfxModes[mode].Width;
+}
+
+int gxGraphics::getGfxModeHeight(int mode) {
+	return gfxModes[mode].Height;
 }
 
 void gxGraphics::cleanup() {

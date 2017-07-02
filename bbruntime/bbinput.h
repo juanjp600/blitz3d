@@ -16,7 +16,8 @@ extern std::vector<gxDevice*> gx_joysticks;
 int   bbKeyDown( int n );
 int   bbKeyHit( int n );
 int   bbGetKey();
-int   bbWaitKey();
+//int   bbWaitKey();
+BBStr * bbTextInput(BBStr * prev);
 void  bbFlushKeys();
 
 //mouse

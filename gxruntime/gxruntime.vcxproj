@@ -247,6 +247,7 @@
     <ClCompile Include="gxscene.cpp" />
     <ClCompile Include="gxsound.cpp" />
     <ClCompile Include="gxtimer.cpp" />
+    <ClCompile Include="MainEventReceiver.cpp" />
     <ClCompile Include="std.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Blitz2DRelease|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Blitz2DRelease|Win32'">std.h</PrecompiledHeaderFile>
@@ -278,6 +279,7 @@
     <ClInclude Include="gxsound.h" />
     <ClInclude Include="gxtimer.h" />
     <ClInclude Include="irrUString.h" />
+    <ClInclude Include="MainEventReceiver.h" />
     <ClInclude Include="std.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

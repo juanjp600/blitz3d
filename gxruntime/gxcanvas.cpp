@@ -193,7 +193,14 @@ void gxCanvas::line(int x, int y, int x2, int y2) {
 }
 void gxCanvas::rect(int x, int y, int w, int h, bool solid) {
 	graphics->setDefaultMaterial();
-	graphics->irrDriver->draw2DRectangle(color,irr::core::recti(x,y,x+w,y+h));
+	if (solid) {
+		graphics->irrDriver->draw2DRectangle(color,irr::core::recti(x,y,x+w,y+h));
+	} else {
+		graphics->irrDriver->draw2DLine(irr::core::vector2di(x,y),irr::core::vector2di(x+w,y),color);
+		graphics->irrDriver->draw2DLine(irr::core::vector2di(x,y),irr::core::vector2di(x,y+h),color);
+		graphics->irrDriver->draw2DLine(irr::core::vector2di(x+w,y),irr::core::vector2di(x+w,y+h),color);
+		graphics->irrDriver->draw2DLine(irr::core::vector2di(x,y+h),irr::core::vector2di(x+w,y+h),color);
+	}
 }
 void gxCanvas::oval(int x, int y, int w, int h, bool solid) {
 
@@ -202,15 +209,11 @@ void gxCanvas::text(int x, int y, const std::string &t) {
 	graphics->setDefaultMaterial();
 	font->render(this,color.getAlpha()<<24|color.getRed()<<16|color.getGreen()<<8|color.getBlue(),x,y,t);
 }
-void gxCanvas::blit(int x, int y, gxCanvas *src, int src_x, int src_y, int src_w, int src_h, bool solid) {
+void gxCanvas::blit(int x, int y, int w, int h, gxCanvas *src, int src_x, int src_y, int src_w, int src_h, bool solid) {
 	graphics->setDefaultMaterial();
-	int real_src_x = src_x*src->irrTex->getOriginalSize().Width/src->w;
-	int real_src_y = src_y*src->irrTex->getOriginalSize().Height/src->h;
-	int real_src_w = src_w*src->irrTex->getOriginalSize().Width/src->w;
-	int real_src_h = src_h*src->irrTex->getOriginalSize().Height/src->h;
-
-	graphics->irrDriver->draw2DImage(src->getIrrTex(),irr::core::recti(x,y,x+src_w,y+src_h),
-		irr::core::recti(real_src_x,real_src_y,real_src_x+real_src_w,real_src_y+real_src_h));
+	
+	graphics->irrDriver->draw2DImage(src->getIrrTex(),irr::core::recti(x,y,x+w,y+h),
+		irr::core::recti(src_x,src_y,src_x+src_w,src_y+src_h));
 }
 
 bool gxCanvas::collide(int x, int y, const gxCanvas *src, int src_x, int src_y, bool solid)const {
