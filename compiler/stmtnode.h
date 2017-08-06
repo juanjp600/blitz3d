@@ -149,6 +149,8 @@ struct ForEachNode : public StmtNode{
 
 struct ReturnNode : public StmtNode{
 	ExprNode *expr;
+	VarNode *sem_temp;
+	ExprStmtNode* trnode;
 	string returnLabel;
 	ReturnNode( ExprNode *e ):expr( e ){}
 	~ReturnNode(){ delete expr; }

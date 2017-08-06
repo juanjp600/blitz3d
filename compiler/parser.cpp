@@ -31,6 +31,17 @@ ProgNode *Parser::parse( const string &main ){
 
 	try{
 		stmts=parseStmtSeq( STMTS_PROG );
+
+		StmtNode* trnode;
+
+		trnode = d_new ExprStmtNode(d_new BlockTraceNode(incfile)); //open block trace
+		trnode->pos = toker->pos();
+		stmts->stmts.insert(stmts->stmts.begin(),trnode);
+
+		trnode = d_new ExprStmtNode(d_new BlockTraceNode());
+		trnode->pos = toker->pos();
+		stmts->push_back(trnode);
+
 		if( toker->curr()!=EOF ) exp( "end-of-file" );
 	}catch( Ex ){
 		delete stmts;delete datas;delete funcs;delete structs;delete structConsts;delete consts;
@@ -79,9 +90,31 @@ StmtSeqNode *Parser::parseStmtSeq( int scope ){
 
 void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 
+	int line = toker->pos()>>16;
+	
+	StmtNode* trnode;
+
+	/*trnode = d_new ExprStmtNode(d_new BlockTraceNode(incfile)); //open block trace
+	trnode->pos = toker->pos();
+	stmts->push_back(trnode);*/
+	
+	trnode = d_new ExprStmtNode(d_new LineTraceNode(line));
+	trnode->pos = toker->pos();
+	stmts->push_back(trnode);
+
 	for(;;){
-		while( toker->curr()==':' || (scope!=STMTS_LINE && toker->curr()=='\n') ) toker->next();
+		while( toker->curr()==':' || (scope!=STMTS_LINE && toker->curr()=='\n') ) {
+			toker->next();
+		}
 		StmtNode *result=0;
+
+		if (line < (toker->pos()>>16)) {
+			line = toker->pos()>>16;
+
+			trnode = d_new ExprStmtNode(d_new LineTraceNode(line)); //open new line trace
+			trnode->pos = toker->pos();
+			stmts->push_back(trnode);
+		}
 
 		int pos=toker->pos();
 
@@ -377,6 +410,7 @@ void Parser::parseStmtSeq( StmtSeqNode *stmts,int scope ){
 			break;
 		default:
 			return;
+			break;
 		}
 
 		if( result ){
@@ -489,6 +523,13 @@ DeclNode *Parser::parseFuncDecl(){
 	toker->next();
 	a_ptr<StmtSeqNode> stmts( parseStmtSeq( STMTS_BLOCK ) );
 	if( toker->curr()!=ENDFUNCTION ) exp( "'End Function'" );
+
+	StmtNode* trnode;
+
+	trnode = d_new ExprStmtNode(d_new BlockTraceNode(incfile)); //open block trace
+	trnode->pos = toker->pos();
+	stmts->stmts.insert(stmts->stmts.begin(),trnode);
+
 	StmtNode *ret=d_new ReturnNode(0);ret->pos=toker->pos();
 	stmts->push_back( ret );toker->next();
 	DeclNode *d=d_new FuncDeclNode( ident,tag,params.release(),stmts.release() );
@@ -501,7 +542,7 @@ DeclNode *Parser::parseStructDecl(){
 	string ident=parseIdent();
 	while( toker->curr()=='\n' ) toker->next();
 	a_ptr<DeclSeqNode> fields( d_new DeclSeqNode() );
-	while( toker->curr()==FIELD ){
+	while( toker->curr()==FIELD ) {
 		do{
 			string tempident;string temptag;
 			toker->next();
@@ -509,7 +550,7 @@ DeclNode *Parser::parseStructDecl(){
 		}while( toker->curr()==',' );
 		while( toker->curr()=='\n' ) toker->next();
 	}
-	if( toker->curr()!=ENDTYPE ) exp( "'Field' or 'End Type'" );
+	if (toker->curr()!=ENDTYPE) exp( "'Field' or 'End Type'" );
 	toker->next();
 	DeclNode *d=d_new StructDeclNode( ident,fields.release() );
 	d->pos=pos;d->file=incfile;

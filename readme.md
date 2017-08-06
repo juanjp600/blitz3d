@@ -1,13 +1,13 @@
-Blitz3D open source release!
+Blitz3D-600
 =======================
-**(MAVLess/FastExt killer/VS2015/OpenAL/whatever else)**
+**(~~MAVLess~~/Stacktrace/DX11/VS2015/OpenAL/whatever else)**
 
 You can grab the prebuilt free version of Blitz3d from http://www.blitzbasic.com.
 
 ## Steps to build:
-1) Install the DirectX 7 SDK into same dir as Blitz3D: the folder name should be 'dxsdk'. 
+1) Install some secret modified copy of irrlicht-shader-pipeline, I'll release it later
 
-2) Install freeimage241 into same dir as Blitz3D: http://monkeycoder.co.nz/downloads/freeimage241.zip
+2) Install freeimage241 into same dir as Blitz3D: http://monkeycoder.co.nz/downloads/freeimage241.zip (TODO: remove)
 
 ### NOTE:
 *(originally written by Ploppy)*

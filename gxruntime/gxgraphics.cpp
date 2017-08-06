@@ -182,7 +182,6 @@ void gxGraphics::getGfxModes() {
 		if (modeList->getVideoModeDepth(i) != 32) continue;
 		gfxModes.push_back(modeList->getVideoModeResolution(i));
 	}
-	modeList->drop();
 }
 
 int gxGraphics::getGfxModeCount() {
@@ -213,6 +212,7 @@ void gxGraphics::close() {
 
 	cleanup();
 
+	printf("CLOSING DEVICE\n");
 	irrDevice->closeDevice();
 	while (irrDevice->run()) {}
 	delete this;
@@ -285,6 +285,7 @@ gxCanvas *gxGraphics::verifyCanvas(gxCanvas *canvas) {
 	return canvas_set.count(canvas) ? canvas : 0;
 }
 void gxGraphics::freeCanvas(gxCanvas *canvas) {
+	printf("DELETING CANVAS\n");
 	delete canvas;
 	canvas_set.erase(canvas);
 }

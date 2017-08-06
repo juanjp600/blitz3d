@@ -46,17 +46,20 @@ static void killer(){
 #endif
 
 static void _cdecl seTranslator( unsigned int u,EXCEPTION_POINTERS* pExp ){
+
+	string panicStr = "Unknown runtime exception";
 	switch( u ){
 	case EXCEPTION_INT_DIVIDE_BY_ZERO:
-		bbruntime_panic( "Integer divide by zero" );
+		panicStr = "Integer divide by zero";
 	case EXCEPTION_ACCESS_VIOLATION:
-		bbruntime_panic( "Memory access violation" );
+		panicStr = "Memory access violation";
 	case EXCEPTION_ILLEGAL_INSTRUCTION:
-		bbruntime_panic( "Illegal instruction" );
+		panicStr = "Illegal instruction";
 	case EXCEPTION_STACK_OVERFLOW:
-		bbruntime_panic( "Stack overflow!" );
+		panicStr = "Stack overflow!";
 	}
-	bbruntime_panic( "Unknown runtime exception" );
+
+	bbruntime_panic( panicStr.c_str() );
 }
 
 int Runtime::version(){

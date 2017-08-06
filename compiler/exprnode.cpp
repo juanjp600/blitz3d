@@ -654,3 +654,51 @@ TNode *ObjectHandleNode::translate( Codegen *g ){
 	TNode *t=expr->translate( g );
 	return call( "__bbObjToHandle",t );
 }
+
+/////////////////////////
+//    Trace push/pop   //
+/////////////////////////
+
+std::vector<BlockTraceNode::memLabel> BlockTraceNode::labels;
+
+ExprNode *BlockTraceNode::semant( Environ *e ){
+	sem_type=Type::void_type;
+	return this;
+}
+
+TNode *BlockTraceNode::translate( Codegen *g ){
+	if (push) {
+		string lab;
+		bool found = false;
+		for (int i=file.size()-1; i>0; i--) {
+			if (file[i]=='\\' || file[i]=='/') {
+				file = file.substr(i+1); break;
+			}
+		}
+		for (int i=0; i<labels.size(); i++) {
+			if (labels[i].file == file) {
+				lab = labels[i].label;
+				found = true; break;
+			}
+		}
+		if (!found) {
+			lab=genLabel();
+			g->s_data( file,lab );
+			labels.push_back(memLabel(lab,file));
+		}
+		TNode* node = global(lab);
+		return call( "__bbPushBlockTrace",node );
+	} else {
+		return call( "__bbPopBlockTrace" );
+	}
+}
+
+ExprNode *LineTraceNode::semant( Environ *e ){
+	sem_type=Type::void_type;
+	return this;
+}
+
+TNode *LineTraceNode::translate( Codegen *g ){
+	return call( "__bbPushLineTrace",iconst(line+1) );
+}
+

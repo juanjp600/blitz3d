@@ -90,6 +90,43 @@ void  bbDebugLog( BBStr *t ){
 	delete t;
 }
 
+std::vector<BlockTrace> blockTraces;
+
+void _bbPushLineTrace(int line) {
+	if (blockTraces.size()==0) RTEX("blockTraces.size()==0");
+	blockTraces[blockTraces.size()-1].lineTrace = line;
+}
+
+void _bbPushBlockTrace(const char *s) {
+	try {
+		printf("BLOCKTRACE OPEN ");
+		printf(s);
+		printf("\n");
+		blockTraces.push_back(BlockTrace(string(s)));
+	} catch (std::exception e) {
+		printf(e.what()); throw e;
+	} catch (...) {
+		printf("idk blocktrace is broken\n");
+	}
+}
+
+void _bbPopBlockTrace() {
+	if (blockTraces.size()==0) RTEX("blockTraces.size()==0");
+	printf("BLOCKTRACE CLOSE ");
+	blockTraces[blockTraces.size()-1].file+=", line "+std::to_string(blockTraces[blockTraces.size()-1].lineTrace);
+	printf(blockTraces[blockTraces.size()-1].file.c_str());
+	printf("\n");
+	blockTraces.pop_back();
+}
+
+BBStr* bbGetLineTrace() {
+	string retVal = "";
+	for (int i=0; i<blockTraces.size(); i++) {
+		retVal = blockTraces[i].file+", line "+to_string(blockTraces[i].lineTrace)+"\n"+retVal;
+	}
+	return d_new BBStr(retVal);
+}
+
 void  _bbDebugStmt( int pos,const char *file ){
 	gx_runtime->debugStmt( pos,file );
 	if( !gx_runtime->idle() ) RTEX( 0 );
@@ -166,6 +203,10 @@ void bbruntime_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "DebugLog$text",bbDebugLog );
 	rtSym( "$ErrorLog",bbErrorLog );
 
+	rtSym( "$GetLineTrace",bbGetLineTrace );
+	rtSym( "_bbPushLineTrace",_bbPushLineTrace );
+	rtSym( "_bbPushBlockTrace",_bbPushBlockTrace );
+	rtSym( "_bbPopBlockTrace",_bbPopBlockTrace );
 	rtSym( "_bbDebugStmt",_bbDebugStmt );
 	rtSym( "_bbDebugEnter",_bbDebugEnter );
 	rtSym( "_bbDebugLeave",_bbDebugLeave );
@@ -231,18 +272,31 @@ bool bbruntime_create(){
 }
 
 bool bbruntime_destroy(){
+	printf("userlibs\n");
 	userlibs_destroy();
+	printf("blitz3d\n");
 	blitz3d_destroy();
+	printf("audio\n");
 	audio_destroy();
+	printf("input\n");
 	input_destroy();
+	printf("graphics\n");
 	graphics_destroy();
+	printf("bank\n");
 	bank_destroy();
+	printf("filesystem\n");
 	filesystem_destroy();
+	printf("sockets\n");
 	sockets_destroy();
+	printf("stream\n");
 	stream_destroy();
+	printf("string\n");
 	string_destroy();
+	printf("math\n");
 	math_destroy();
+	printf("basic\n");
 	basic_destroy();
+	printf("done\n");
 	return true;
 }
 
@@ -250,14 +304,30 @@ const char *bbruntime_run( gxRuntime *rt,void (*pc)(),bool dbg ){
 	debug=dbg;
 	gx_runtime=rt;
 
-	if( !bbruntime_create() ) return "Unable to start program";
 	const char *t=0;
 	try{
+		if( !bbruntime_create() ) return "Unable to start program";
 		if( !gx_runtime->idle() ) RTEX( 0 );
 		pc();
 		gx_runtime->debugInfo( "Program has ended" );
 	}catch( bbEx x ){
-		MessageBoxA(0,t,0,0);
+		string panicStr = x.err;
+		panicStr+="\n\nStack trace:\n";
+		try {
+			string tmp = "";
+			for (int i=0; i<blockTraces.size(); i++) {
+				tmp = "- "+blockTraces[i].file+", line "+to_string(blockTraces[i].lineTrace)+"\n"+tmp;
+			}
+			panicStr+=tmp;
+		} catch (exception e){
+			panicStr+="ERROR RETRIEVING FULL STACKTRACE: ";
+			panicStr+=e.what();
+			panicStr+="\n";
+		} catch (...) {
+			panicStr+="ERROR RETRIEVING FULL STACKTRACE\n";
+		}
+
+		MessageBoxA(0,panicStr.c_str(),0,0);
 		t=x.err;
 	}catch (exception e){
 		t=e.what();

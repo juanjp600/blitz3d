@@ -126,7 +126,7 @@ void Toker::nextline(){
 		return;
 	}
 
-	getline( in,line );line+='\n';
+	getline( in,line ); line+='\n';
 	chars_toked+=line.size();
 
 	for( int k=0;k<(int)line.size(); ){

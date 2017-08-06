@@ -12,6 +12,13 @@ To be statically linked with an appropriate gxruntime driver.
 
 #include "../gxruntime/gxruntime.h"
 
+struct BlockTrace {
+	string file;
+	int lineTrace;
+	BlockTrace(const string &f):file(f){}
+};
+extern std::vector<BlockTrace> blockTraces;
+
 void bbruntime_link( void (*rtSym)( const char *sym,void *pc ) );
 
 const char *bbruntime_run( gxRuntime *runtime,void (*pc)(),bool debug );
