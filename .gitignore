@@ -25,3 +25,8 @@ bblaunch/RCa00804
 bbruntime_dll/RCa00804
 blitzbasic/bin/debugger.dll
 .vs/
+*.pdb
+*.tlog
+*.lastbuildstate
+*.log
+*.obj
