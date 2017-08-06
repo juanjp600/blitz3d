@@ -88,6 +88,43 @@ void  bbDebugLog( BBStr *t ){
 	delete t;
 }
 
+std::vector<BlockTrace> blockTraces;
+
+void _bbPushLineTrace(int line) {
+	if (blockTraces.size()==0) RTEX("blockTraces.size()==0");
+	blockTraces[blockTraces.size()-1].lineTrace = line;
+}
+
+void _bbPushBlockTrace(const char *s) {
+	try {
+		printf("BLOCKTRACE OPEN ");
+		printf(s);
+		printf("\n");
+		blockTraces.push_back(BlockTrace(string(s)));
+	} catch (std::exception e) {
+		printf(e.what()); throw e;
+	} catch (...) {
+		printf("idk blocktrace is broken\n");
+	}
+}
+
+void _bbPopBlockTrace() {
+	if (blockTraces.size()==0) RTEX("blockTraces.size()==0");
+	printf("BLOCKTRACE CLOSE ");
+	blockTraces[blockTraces.size()-1].file+=", line "+std::to_string(blockTraces[blockTraces.size()-1].lineTrace);
+	printf(blockTraces[blockTraces.size()-1].file.c_str());
+	printf("\n");
+	blockTraces.pop_back();
+}
+
+BBStr* bbGetLineTrace() {
+	string retVal = "";
+	for (int i=0; i<blockTraces.size(); i++) {
+		retVal = blockTraces[i].file+", line "+to_string(blockTraces[i].lineTrace)+"\n"+retVal;
+	}
+	return d_new BBStr(retVal);
+}
+
 void  _bbDebugStmt( int pos,const char *file ){
 	gx_runtime->debugStmt( pos,file );
 	if( !gx_runtime->idle() ) RTEX( 0 );
@@ -164,6 +201,10 @@ void bbruntime_link( void (*rtSym)( const char *sym,void *pc ) ){
 	rtSym( "DebugLog$text",bbDebugLog );
 	rtSym( "$ErrorLog",bbErrorLog );
 
+	rtSym( "$GetLineTrace",bbGetLineTrace );
+	rtSym( "_bbPushLineTrace",_bbPushLineTrace );
+	rtSym( "_bbPushBlockTrace",_bbPushBlockTrace );
+	rtSym( "_bbPopBlockTrace",_bbPopBlockTrace );
 	rtSym( "_bbDebugStmt",_bbDebugStmt );
 	rtSym( "_bbDebugEnter",_bbDebugEnter );
 	rtSym( "_bbDebugLeave",_bbDebugLeave );
@@ -247,9 +288,9 @@ const char *bbruntime_run( gxRuntime *rt,void (*pc)(),bool dbg ){
 	debug=dbg;
 	gx_runtime=rt;
 
-	if( !bbruntime_create() ) return "Unable to start program";
 	const char *t=0;
 	try{
+		if( !bbruntime_create() ) return "Unable to start program";
 		if( !gx_runtime->idle() ) RTEX( 0 );
 		pc();
 		gx_runtime->debugInfo( "Program has ended" );

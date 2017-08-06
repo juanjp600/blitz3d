@@ -14,6 +14,13 @@
 
 #include "../debugger/debugger.h"
 
+struct BlockTrace {
+    std::string file;
+    int lineTrace;
+    BlockTrace(const std::string &f):file(f){}
+};
+extern std::vector<BlockTrace> blockTraces;
+
 class gxRuntime{
 	/***** INTERNAL INTERFACE *****/
 public:
