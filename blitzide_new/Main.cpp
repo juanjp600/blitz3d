@@ -100,8 +100,6 @@ Main::Main() {
 
 	std::cout<<"WINDOW CREATED\n";
 
-	Sleep(1000);
-
 	irr::SIrrlichtCreationParameters params;
 	params.DriverType = irr::video::EDT_DIRECT3D11;
 	params.WindowId = HWnd;
