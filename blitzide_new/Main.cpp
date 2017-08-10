@@ -246,18 +246,22 @@ bool Main::run() {
 	int fontHeight = font->getCharDimension(L'W').Height;
 
 	if (selectedFile>=0 && files.size()>0) {
-		for (int i=0;i<files[selectedFile]->text.size();i++) {
+		irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
+		std::vector<Line*>& text = files[selectedFile]->text;
+		for (int i=0;i<text.size();i++) {
 			int x = 0;
-			for (int j=0; j<files[selectedFile]->text[i]->parts.size(); j++) {
-				int w = font->getDimension(files[selectedFile]->text[i]->parts[j].getText()).Width;
-				font->draw(files[selectedFile]->text[i]->parts[j].getText().c_str(),
-					irr::core::recti(48+x,32-fontHeight+14+14*i,48+x+w,32-fontHeight+28+14*i),
-					files[selectedFile]->text[i]->parts[j].color,false,false);
+			for (int j=0; j<text[i]->parts.size(); j++) {
+				int w = font->getDimension(text[i]->parts[j].getText()).Width;
+				font->draw(text[i]->parts[j].getText().c_str(),
+					irr::core::recti(48+x,32-fontHeight+14+14*i-scrollPos.Y,48+x+w,32-fontHeight+28+14*i-scrollPos.Y),
+					text[i]->parts[j].color,false,false);
 				//driver->draw2DLine(irr::core::vector2di(48+x,32-fontHeight+10+14*i),irr::core::vector2di(48+x+w,32-fontHeight+18+14*i));
 				x+=w;
 			}
 			//font->draw(textTemp[i]->getText().c_str(),irr::core::recti(45+3,32-fontHeight+14+14*i,45+100,32-fontHeight+28+14*i),irr::video::SColor(255,200,200,200),false,false);
 		}
+		driver->draw2DRectangle(irr::video::SColor(255,0,255,0),
+			irr::core::recti(windowDims.Width-20,32,windowDims.Width,windowDims.Height-20));
 	}
 
 	driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
@@ -368,6 +372,7 @@ void Main::Line::formatText(std::set<std::wstring> keywords) {
 Main::File* Main::loadFile(std::wstring name) {
 	File* newFile = new File();
 	newFile->caretPos = irr::core::vector2di(0,0);
+	newFile->scrollPos = irr::core::vector2di(0,0);
 	newFile->changed = false;
 	newFile->name = name;
 

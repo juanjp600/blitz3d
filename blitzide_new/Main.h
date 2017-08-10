@@ -118,6 +118,7 @@ class Main {
 			std::vector<Line*> text;
 
 			irr::core::vector2di caretPos;
+			irr::core::vector2di scrollPos;
 		};
 
 		int selectedFile = 0;
