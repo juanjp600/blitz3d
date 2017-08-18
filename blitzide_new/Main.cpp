@@ -90,6 +90,10 @@ Main::Main() {
 	params.DriverType = irr::video::EDT_DIRECT3D11;
 	params.WindowId = HWnd;
 
+	eventReceiver = new MainEventReceiver();
+
+	params.EventReceiver = eventReceiver;
+
 	device = irr::createDeviceEx(params);
 
 	smgr = device->getSceneManager();
@@ -118,7 +122,7 @@ Main::Main() {
 	driver->setRenderTarget(0);
 	driver->endScene();
 
-	font = irr::gui::CGUITTFont::create(device,"cfg/blitz.fon",14);
+	font = irr::gui::CGUITTFont::create(device,"cfg/consola.ttf",14);
 
 	videodata = irr::video::SExposedVideoData(HWnd);
 
@@ -177,6 +181,7 @@ Main::Main() {
 	keywords.emplace(L"While");
 	keywords.emplace(L"Wend");
 	keywords.emplace(L"RuntimeError");
+	keywords.emplace(L"Global");
 
 	loadFile(L"Main.bb");
 }
@@ -236,32 +241,103 @@ bool Main::run() {
 	irr::video::SMaterial mat; mat.MaterialType = irr::video::EMT_SOLID;
 	
 	driver->beginScene(true,true,irr::video::SColor(255,0,0,0),videodata);
-	driver->setRenderTarget(rtt,true,true,irr::video::SColor(255,30,30,30));
+	driver->setRenderTarget(rtt,true,true,irr::video::SColor(255,255,0,255));
 	driver->setMaterial(mat);
-
-	driver->draw2DRectangle(irr::video::SColor(255,12,12,15),irr::core::recti(45,32,windowDims.Width-20,windowDims.Height-20));
-	driver->draw2DRectangle(irr::video::SColor(255,30,30,35),irr::core::recti(0,32,45,windowDims.Height-20));
-	driver->draw2DLine(irr::core::vector2di(36,32),irr::core::vector2di(36,windowDims.Height-20),irr::video::SColor(255,150,150,150));
 
 	int fontHeight = font->getCharDimension(L'W').Height;
 
-	if (selectedFile>=0 && files.size()>0) {
+	driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15), irr::core::recti(45, 32, windowDims.Width - 20, windowDims.Height - 20));
+
+	int lineBarWidth = 62;
+
+	driver->draw2DRectangle(irr::video::SColor(255, 30, 30, 35), irr::core::recti(0, 32, lineBarWidth-3, windowDims.Height - 20));
+	driver->draw2DLine(irr::core::vector2di(lineBarWidth-12, 32), irr::core::vector2di(lineBarWidth-12, windowDims.Height - 20), irr::video::SColor(255, 150, 150, 150));
+
+	if (selectedFile >= 0 && files.size()>0) {
 		irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
 		std::vector<Line*>& text = files[selectedFile]->text;
-		for (int i=0;i<text.size();i++) {
+
+		//scrollPos.Y += 1;
+
+		int renderStart = scrollPos.Y/14;
+		if (renderStart < 0) { renderStart = 0; }
+
+		int renderEnd = (windowDims.Height-52)/14 + renderStart + 2;
+		if (renderEnd > text.size()) { renderEnd = text.size(); }
+
+		for (int i = renderStart; i<renderEnd; i++) {
+			int lineNumW = font->getDimension(std::to_string(i+1).c_str()).Width;
+			font->draw(std::to_string(i+1).c_str(),
+				irr::core::recti(lineBarWidth-18-lineNumW, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
+				irr::video::SColor(255,200,200,255),false,true
+			);
 			int x = 0;
-			for (int j=0; j<text[i]->parts.size(); j++) {
+			for (int j = 0; j<text[i]->parts.size(); j++) {
 				int w = font->getDimension(text[i]->parts[j].getText()).Width;
 				font->draw(text[i]->parts[j].getText().c_str(),
-					irr::core::recti(48+x,32-fontHeight+14+14*i-scrollPos.Y,48+x+w,32-fontHeight+28+14*i-scrollPos.Y),
-					text[i]->parts[j].color,false,false);
+					irr::core::recti(lineBarWidth + x, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth + x + w, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
+					text[i]->parts[j].color, false, true);
+
+				/*driver->draw2DRectangle(text[i]->parts[j].color,
+					irr::core::recti(48 + x, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, 48 + x + w, 32 - fontHeight + 28 + 14 * i - scrollPos.Y));*/
+
 				//driver->draw2DLine(irr::core::vector2di(48+x,32-fontHeight+10+14*i),irr::core::vector2di(48+x+w,32-fontHeight+18+14*i));
-				x+=w;
+				x += w;
 			}
 			//font->draw(textTemp[i]->getText().c_str(),irr::core::recti(45+3,32-fontHeight+14+14*i,45+100,32-fontHeight+28+14*i),irr::video::SColor(255,200,200,200),false,false);
 		}
-		driver->draw2DRectangle(irr::video::SColor(255,0,255,0),
-			irr::core::recti(windowDims.Width-20,32,windowDims.Width,windowDims.Height-20));
+		driver->draw2DRectangle(irr::video::SColor(255, 0, 255, 0),
+			irr::core::recti(windowDims.Width - 20, 32, windowDims.Width, windowDims.Height - 20));
+
+		int realScrollBarHalfHeight = (windowDims.Height - 52)*(windowDims.Height - 52) / (text.size() * 14) / 2;
+		int scrollBarHalfHeight = realScrollBarHalfHeight;
+		if (scrollBarHalfHeight < 12) { scrollBarHalfHeight = 12; }
+
+		/*int scrollBarY = 32+scrollPos.Y*(windowDims.Height-52)/(text.size()*14);
+		int scrollBarY2 = 32+(scrollPos.Y+windowDims.Height-52)*(windowDims.Height - 52) / (text.size() * 14);*/
+
+		int startY = 32 + scrollBarHalfHeight;
+		int endY = windowDims.Height-20-scrollBarHalfHeight;
+
+		int maxScrollPos = (text.size()*14) - (windowDims.Height-54);
+
+		int scrollBarCenterY = ((startY*(maxScrollPos-scrollPos.Y))/maxScrollPos)+((endY*scrollPos.Y)/maxScrollPos);
+		
+		driver->draw2DRectangle(irr::video::SColor(255, 255, 0, 0),
+			irr::core::recti(windowDims.Width - 18, scrollBarCenterY - scrollBarHalfHeight, windowDims.Width-2, scrollBarCenterY+scrollBarHalfHeight));
+
+		bool mouseHit = eventReceiver->getMouseHit(0);
+
+		if (eventReceiver->getMouseDown(0)) {
+			int newScrollPos = (eventReceiver->getMousePos().Y-startY)*maxScrollPos/(endY-startY);
+
+			if (eventReceiver->getMousePos().X > windowDims.Width - 20) {
+				if (eventReceiver->getMousePos().Y > 32 && eventReceiver->getMousePos().Y < windowDims.Height - 20) {
+					if (mouseHit && isScrolling == SCROLL::NONE) {
+						if (eventReceiver->getMousePos().Y > scrollBarCenterY - scrollBarHalfHeight && eventReceiver->getMousePos().Y < scrollBarCenterY + scrollBarHalfHeight) {
+							scrollOffset = newScrollPos - scrollPos.Y;
+							isScrolling = SCROLL::VERTICAL;
+						}
+					}
+				}
+			}
+			if (isScrolling == SCROLL::VERTICAL) {
+				scrollPos.Y = newScrollPos - scrollOffset;
+				if (scrollPos.Y > (int)((text.size() * 14) - (windowDims.Height - 54))) {
+					scrollPos.Y = (text.size() * 14) - (windowDims.Height - 54);
+				}
+				if (scrollPos.Y < 0) {
+					scrollPos.Y = 0;
+				}
+			}
+		} else {
+			isScrolling = SCROLL::NONE;
+		}
+
+
+		/*driver->draw2DLine(irr::core::vector2di(windowDims.Width - 20, scrollBarY + 32),
+			irr::core::vector2di(windowDims.Width, scrollBarY + 32),
+			irr::video::SColor(255, 0, 0, 255));*/
 	}
 
 	driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
@@ -269,6 +345,9 @@ bool Main::run() {
 	flipQuad->render();
 	//driver->draw2DImage(rtt,irr::core::recti(0,0,windowDims.Width,windowDims.Height),irr::core::recti(0,0,windowDims.Width,windowDims.Height));
 	driver->endScene();
+
+	//std::cout << driver->getFPS() << "\n";
+
 	return device->run();
 }
 

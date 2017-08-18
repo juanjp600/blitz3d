@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <irrlicht.h>
 #include "CGUITTFont.h"
+#include "MainEventReceiver.h"
 
 #include <string>
 #include <vector>
@@ -18,6 +19,8 @@ class Main {
 		irr::scene::ISceneManager* smgr;
 		irr::video::IVideoDriver* driver;
 
+		MainEventReceiver* eventReceiver;
+
 		HINSTANCE hInstance;
 		HWND HWnd;
 
@@ -25,6 +28,7 @@ class Main {
 		irr::core::dimension2du windowDimsPOT;
 
 		irr::video::ITexture* rtt;
+		irr::video::ITexture* textBoxT;
 
 		irr::video::SExposedVideoData videodata;
 
@@ -120,6 +124,14 @@ class Main {
 			irr::core::vector2di caretPos;
 			irr::core::vector2di scrollPos;
 		};
+
+		enum class SCROLL {
+			NONE = 0,
+			HORIZONTAL,
+			VERTICAL
+		};
+		SCROLL isScrolling = SCROLL::NONE;
+		int scrollOffset = 0;
 
 		int selectedFile = 0;
 		
