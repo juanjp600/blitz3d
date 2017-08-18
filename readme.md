@@ -1,6 +1,6 @@
 Blitz3D-600
 =======================
-**(~~MAVLess~~/Stacktrace/DX11/VS2015/OpenAL/whatever else)**
+**(~~MAVLess~~/Stacktrace/DX11/VS2017/OpenAL/whatever else)**
 
 You can grab the prebuilt free version of Blitz3d from http://www.blitzbasic.com.
 
