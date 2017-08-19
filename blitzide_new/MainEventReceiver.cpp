@@ -155,8 +155,9 @@ irr::core::position2di MainEventReceiver::getMousePos() const {
     return MousePosition;
 }
 
-float MainEventReceiver::getMouseWheel() const {
-    return MouseWheel;
+float MainEventReceiver::getMouseWheel() {
+	float mw = MouseWheel; MouseWheel = 0.f;
+    return mw;
 }
 
 void MainEventReceiver::clearMouse() {

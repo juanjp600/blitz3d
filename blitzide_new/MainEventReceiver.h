@@ -54,7 +54,7 @@ class MainEventReceiver : public irr::IEventReceiver {
         virtual bool getInput(const Input& input) const;
         virtual irr::core::position2di getMousePos() const;
 
-        virtual float getMouseWheel() const;
+        virtual float getMouseWheel();
 
 		void clearMouse();
 		void clearKeys();

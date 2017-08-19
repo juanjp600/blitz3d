@@ -253,6 +253,11 @@ bool Main::run() {
 	driver->draw2DRectangle(irr::video::SColor(255, 30, 30, 35), irr::core::recti(0, 32, lineBarWidth-3, windowDims.Height - 20));
 	driver->draw2DLine(irr::core::vector2di(lineBarWidth-12, 32), irr::core::vector2di(lineBarWidth-12, windowDims.Height - 20), irr::video::SColor(255, 150, 150, 150));
 
+	irr::core::recti textBoxRect(lineBarWidth-3,32,windowDims.Width-20,windowDims.Height-20);
+	irr::core::recti lineNumRect(irr::core::recti(0, 32, lineBarWidth - 3, windowDims.Height - 20));
+
+	bool mouseHit = eventReceiver->getMouseHit(0);
+
 	if (selectedFile >= 0 && files.size()>0) {
 		irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
 		std::vector<Line*>& text = files[selectedFile]->text;
@@ -269,14 +274,14 @@ bool Main::run() {
 			int lineNumW = font->getDimension(std::to_string(i+1).c_str()).Width;
 			font->draw(std::to_string(i+1).c_str(),
 				irr::core::recti(lineBarWidth-18-lineNumW, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
-				irr::video::SColor(255,200,200,255),false,true
+				irr::video::SColor(255,200,200,255),false,true,&lineNumRect
 			);
 			int x = 0;
 			for (int j = 0; j<text[i]->parts.size(); j++) {
 				int w = font->getDimension(text[i]->parts[j].getText()).Width;
 				font->draw(text[i]->parts[j].getText().c_str(),
 					irr::core::recti(lineBarWidth + x, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth + x + w, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
-					text[i]->parts[j].color, false, true);
+					text[i]->parts[j].color, false, true,&textBoxRect);
 
 				/*driver->draw2DRectangle(text[i]->parts[j].color,
 					irr::core::recti(48 + x, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, 48 + x + w, 32 - fontHeight + 28 + 14 * i - scrollPos.Y));*/
@@ -286,33 +291,51 @@ bool Main::run() {
 			}
 			//font->draw(textTemp[i]->getText().c_str(),irr::core::recti(45+3,32-fontHeight+14+14*i,45+100,32-fontHeight+28+14*i),irr::video::SColor(255,200,200,200),false,false);
 		}
-		driver->draw2DRectangle(irr::video::SColor(255, 0, 255, 0),
+		driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
 			irr::core::recti(windowDims.Width - 20, 32, windowDims.Width, windowDims.Height - 20));
 
-		int realScrollBarHalfHeight = (windowDims.Height - 52)*(windowDims.Height - 52) / (text.size() * 14) / 2;
+		int realScrollBarHalfHeight = (windowDims.Height - 92)*(windowDims.Height - 92) / (text.size() * 14) / 2;
 		int scrollBarHalfHeight = realScrollBarHalfHeight;
 		if (scrollBarHalfHeight < 12) { scrollBarHalfHeight = 12; }
 
 		/*int scrollBarY = 32+scrollPos.Y*(windowDims.Height-52)/(text.size()*14);
 		int scrollBarY2 = 32+(scrollPos.Y+windowDims.Height-52)*(windowDims.Height - 52) / (text.size() * 14);*/
 
-		int startY = 32 + scrollBarHalfHeight;
-		int endY = windowDims.Height-20-scrollBarHalfHeight;
+		int startY = 52 + scrollBarHalfHeight;
+		int endY = windowDims.Height-40-scrollBarHalfHeight;
 
 		int maxScrollPos = (text.size()*14) - (windowDims.Height-54);
 
-		int scrollBarCenterY = ((startY*(maxScrollPos-scrollPos.Y))/maxScrollPos)+((endY*scrollPos.Y)/maxScrollPos);
+		int scrollBarCenterY = ((startY*(maxScrollPos-scrollPos.Y))+(endY*scrollPos.Y))/maxScrollPos;
 		
-		driver->draw2DRectangle(irr::video::SColor(255, 255, 0, 0),
-			irr::core::recti(windowDims.Width - 18, scrollBarCenterY - scrollBarHalfHeight, windowDims.Width-2, scrollBarCenterY+scrollBarHalfHeight));
+		driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
+			irr::core::recti(windowDims.Width - 18, scrollBarCenterY-scrollBarHalfHeight+2, windowDims.Width-2, scrollBarCenterY+scrollBarHalfHeight-2));
 
-		bool mouseHit = eventReceiver->getMouseHit(0);
+		wchar_t tempCStr[1];
+		tempCStr[0] = 0x25B2;
+		font->draw(irr::core::stringw(tempCStr), irr::core::recti(windowDims.Width-20, 32, windowDims.Width, 52),irr::video::SColor(255,155,155,155),true,true);
+		tempCStr[0] = 0x25BC;
+		font->draw(irr::core::stringw(tempCStr), irr::core::recti(windowDims.Width-20, windowDims.Height-40, windowDims.Width, windowDims.Height-20), irr::video::SColor(255, 155, 155, 155), true, true);
+
+		if (mouseHit) {
+			if (eventReceiver->getMousePos().X > windowDims.Width - 20) {
+				if (eventReceiver->getMousePos().Y > 32 && eventReceiver->getMousePos().Y < 52) {
+					scrollPos.Y -= 14;
+				}
+				if (eventReceiver->getMousePos().Y > windowDims.Height-40 && eventReceiver->getMousePos().Y < windowDims.Height-20) {
+					scrollPos.Y += 14;
+				}
+			}
+		}
+
+		float mouseWheel = eventReceiver->getMouseWheel();
+		scrollPos.Y -= mouseWheel*42;
 
 		if (eventReceiver->getMouseDown(0)) {
 			int newScrollPos = (eventReceiver->getMousePos().Y-startY)*maxScrollPos/(endY-startY);
 
 			if (eventReceiver->getMousePos().X > windowDims.Width - 20) {
-				if (eventReceiver->getMousePos().Y > 32 && eventReceiver->getMousePos().Y < windowDims.Height - 20) {
+				if (eventReceiver->getMousePos().Y > 52 && eventReceiver->getMousePos().Y < windowDims.Height - 40) {
 					if (mouseHit && isScrolling == SCROLL::NONE) {
 						if (eventReceiver->getMousePos().Y > scrollBarCenterY - scrollBarHalfHeight && eventReceiver->getMousePos().Y < scrollBarCenterY + scrollBarHalfHeight) {
 							scrollOffset = newScrollPos - scrollPos.Y;
@@ -323,15 +346,16 @@ bool Main::run() {
 			}
 			if (isScrolling == SCROLL::VERTICAL) {
 				scrollPos.Y = newScrollPos - scrollOffset;
-				if (scrollPos.Y > (int)((text.size() * 14) - (windowDims.Height - 54))) {
-					scrollPos.Y = (text.size() * 14) - (windowDims.Height - 54);
-				}
-				if (scrollPos.Y < 0) {
-					scrollPos.Y = 0;
-				}
 			}
 		} else {
 			isScrolling = SCROLL::NONE;
+		}
+
+		if (scrollPos.Y > (int)((text.size() * 14) - (windowDims.Height - 54))) {
+			scrollPos.Y = (text.size() * 14) - (windowDims.Height - 54);
+		}
+		if (scrollPos.Y < 0) {
+			scrollPos.Y = 0;
 		}
 
 
