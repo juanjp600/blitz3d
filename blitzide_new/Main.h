@@ -121,6 +121,9 @@ class Main {
 			bool changed;
 			std::vector<Line*> text;
 
+			int longestLine = 0;
+			void recalculateLongestLine();
+
 			irr::core::vector2di caretPos;
 			irr::core::vector2di scrollPos;
 		};
