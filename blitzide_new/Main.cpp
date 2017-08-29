@@ -170,18 +170,30 @@ Main::Main() {
 	flipMesh = mesh;
 	flipQuad = device->getSceneManager()->addMeshSceneNode(mesh);
 
-	//TODO: use symbol dump instead
-	keywords.emplace(L"If");
-	keywords.emplace(L"Then");
-	keywords.emplace(L"End");
-	keywords.emplace(L"EndIf");
-	keywords.emplace(L"For");
-	keywords.emplace(L"Each");
-	keywords.emplace(L"Next");
-	keywords.emplace(L"While");
-	keywords.emplace(L"Wend");
-	keywords.emplace(L"RuntimeError");
-	keywords.emplace(L"Global");
+	std::string keywordDump = execProc("blitzcc +k")+"\n";
+	
+	std::wstring keyword = L"";
+    
+    int pos=0; int n;
+    while( (n=keywordDump.find( '\n',pos ))!=std::string::npos ){
+        std::string t=keywordDump.substr( pos,n-pos-1 );
+        for( int q=0;(q=t.find('\r',q))!=std::string::npos; ) t=t.replace( q,1,"" );
+
+        std::string help=t;
+        int i=t.find(' ');
+        if( i!=std::string::npos ){
+            t=t.substr(0,i);if( !t.size() ){
+                std::cout<<"Error in keywords\n";
+                ExitProcess(0);
+            }
+            if( !isalnum(t[t.size()-1]) ) t=t.substr(0,t.size()-1);
+        }
+
+        std::wstring keyword = irr::core::stringw(t.c_str()).c_str();
+
+        keywords.keywords.emplace(keyword);
+        pos=n+1;
+    }
 
 	loadFile(L"Main.bb");
 }
@@ -248,7 +260,7 @@ bool Main::run() {
 
 	int lineBarWidth = 62;
 
-	irr::core::recti textBoxRect(lineBarWidth-3,32,windowDims.Width-20,windowDims.Height-40);
+	irr::core::recti textBoxRect(lineBarWidth-3,32,windowDims.Width,windowDims.Height-20);
 	irr::core::recti lineNumRect(irr::core::recti(0, 32, lineBarWidth - 3, textBoxRect.LowerRightCorner.Y));
 
 	driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15), irr::core::recti(45, 32, windowDims.Width - 20, textBoxRect.LowerRightCorner.Y));
@@ -262,7 +274,21 @@ bool Main::run() {
 		irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
 		std::vector<Line*>& text = files[selectedFile]->text;
 
-		//scrollPos.Y += 1;
+		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width;
+
+		textBoxRect.LowerRightCorner.X = windowDims.Width;
+		textBoxRect.LowerRightCorner.Y = windowDims.Height-20;
+
+		bool verticalScrollEnabled = text.size()*14+2 > textBoxRect.getHeight();
+		bool horizontalScrollEnabled = fileWidth > textBoxRect.getWidth();
+
+		if (horizontalScrollEnabled) {
+			textBoxRect.LowerRightCorner.X = windowDims.Width-20;
+		}
+
+		if (horizontalScrollEnabled) {
+			textBoxRect.LowerRightCorner.Y = windowDims.Height-40;
+		}
 
 		int renderStart = scrollPos.Y/14;
 		if (renderStart < 0) { renderStart = 0; }
@@ -285,10 +311,10 @@ bool Main::run() {
 				x += w;
 			}
 		}
-		
+
+		wchar_t tempCStr[1];
+
 		//vertical scroll bar
-		driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
-								irr::core::recti(windowDims.Width - 20, 32, windowDims.Width, textBoxRect.LowerRightCorner.Y));
 
 		int vRealScrollBarHalfHeight = (textBoxRect.getHeight())*(textBoxRect.getHeight()) / (text.size() * 14) / 2;
 		int vScrollBarHalfHeight = vRealScrollBarHalfHeight;
@@ -301,43 +327,48 @@ bool Main::run() {
 
 		int vScrollBarCenterY = ((vStartY*(maxVScrollPos-scrollPos.Y))+(vEndY*scrollPos.Y))/maxVScrollPos;
 
-		driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
-								irr::core::recti(windowDims.Width - 18, vScrollBarCenterY-vScrollBarHalfHeight+2, windowDims.Width-2, vScrollBarCenterY+vScrollBarHalfHeight-2));
+		if (verticalScrollEnabled) {
+			driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
+									irr::core::recti(textBoxRect.LowerRightCorner.X, 32, textBoxRect.LowerRightCorner.X+20, textBoxRect.LowerRightCorner.Y));
 
-		wchar_t tempCStr[1];
-		tempCStr[0] = 0x25B2;
-		font->draw(irr::core::stringw(tempCStr), irr::core::recti(windowDims.Width-20, 32, windowDims.Width, 52),irr::video::SColor(255,155,155,155),true,true);
-		tempCStr[0] = 0x25BC;
-		font->draw(irr::core::stringw(tempCStr), irr::core::recti(windowDims.Width-20, textBoxRect.LowerRightCorner.Y-20, windowDims.Width, textBoxRect.LowerRightCorner.Y), irr::video::SColor(255, 155, 155, 155), true, true);
+			driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
+									irr::core::recti(textBoxRect.LowerRightCorner.X+2, vScrollBarCenterY-vScrollBarHalfHeight+2,textBoxRect.LowerRightCorner.X+18, vScrollBarCenterY+vScrollBarHalfHeight-2));
+
+			tempCStr[0] = 0x25B2;
+			font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X, 32, textBoxRect.LowerRightCorner.X+20, 52),irr::video::SColor(255,155,155,155),true,true);
+			tempCStr[0] = 0x25BC;
+			font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y-20, textBoxRect.LowerRightCorner.X+20, textBoxRect.LowerRightCorner.Y), irr::video::SColor(255, 155, 155, 155), true, true);
+		}
 
 		//horizontal scroll bar
-		driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
-								irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, windowDims.Width-20, textBoxRect.LowerRightCorner.Y+20));
-
-		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width;
 
 		int hRealScrollBarHalfWidth = (textBoxRect.getWidth())*(textBoxRect.getWidth()) / (fileWidth) / 2;
 		int hScrollBarHalfWidth = hRealScrollBarHalfWidth;
 		if (hScrollBarHalfWidth < 12) { hScrollBarHalfWidth = 12; }
 
 		int hStartX = lineBarWidth+17+hScrollBarHalfWidth;
-		int hEndX = windowDims.Width-40-hScrollBarHalfWidth;
+		int hEndX = textBoxRect.LowerRightCorner.X-20-hScrollBarHalfWidth;
 
 		int maxHScrollPos = fileWidth - textBoxRect.getWidth() + 2;
 
 		int hScrollBarCenterX = ((hStartX*(maxHScrollPos-scrollPos.X))+(hEndX*scrollPos.X))/maxHScrollPos;
 
-		driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
-								irr::core::recti(hScrollBarCenterX-hScrollBarHalfWidth+2, textBoxRect.LowerRightCorner.Y+2, hScrollBarCenterX+hScrollBarHalfWidth-2, textBoxRect.LowerRightCorner.Y+18));
 
-		tempCStr[0] = 0x25C4;
-		font->draw(irr::core::stringw(tempCStr), irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, lineBarWidth+17, textBoxRect.LowerRightCorner.Y+20),irr::video::SColor(255,155,155,155),true,true);
-		tempCStr[0] = 0x25BA;
-		font->draw(irr::core::stringw(tempCStr), irr::core::recti(windowDims.Width-40, textBoxRect.LowerRightCorner.Y, windowDims.Width-20, textBoxRect.LowerRightCorner.Y+20), irr::video::SColor(255, 155, 155, 155), true, true);
+		if (horizontalScrollEnabled) {
+			driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
+									irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y+20));
 
+			driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
+									irr::core::recti(hScrollBarCenterX-hScrollBarHalfWidth+2, textBoxRect.LowerRightCorner.Y+2, hScrollBarCenterX+hScrollBarHalfWidth-2, textBoxRect.LowerRightCorner.Y+18));
+
+			tempCStr[0] = 0x25C4;
+			font->draw(irr::core::stringw(tempCStr), irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, lineBarWidth+17, textBoxRect.LowerRightCorner.Y+20),irr::video::SColor(255,155,155,155),true,true);
+			tempCStr[0] = 0x25BA;
+			font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X-20, textBoxRect.LowerRightCorner.Y, textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y+20), irr::video::SColor(255, 155, 155, 155), true, true);
+		}
 
 		if (mouseHit) {
-			if (eventReceiver->getMousePos().X > windowDims.Width - 20) {
+			if (verticalScrollEnabled && eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X) {
 				if (eventReceiver->getMousePos().Y > 32 && eventReceiver->getMousePos().Y < 52) {
 					scrollPos.Y -= 14;
 				}
@@ -346,11 +377,11 @@ bool Main::run() {
 				}
 			}
 
-			if (eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
+			if (horizontalScrollEnabled && eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
 				if (eventReceiver->getMousePos().X > lineBarWidth-3 && eventReceiver->getMousePos().X < lineBarWidth+17) {
 					scrollPos.X -= 70;
 				}
-				if (eventReceiver->getMousePos().X > windowDims.Width-40 && eventReceiver->getMousePos().X < windowDims.Width-20) {
+				if (eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X-20 && eventReceiver->getMousePos().X < textBoxRect.LowerRightCorner.X) {
 					scrollPos.X += 70;
 				}
 			}
@@ -364,7 +395,7 @@ bool Main::run() {
 
 			int newHScrollPos = (eventReceiver->getMousePos().X-hStartX)*maxHScrollPos/(hEndX-hStartX);
 
-			if (eventReceiver->getMousePos().X > windowDims.Width - 20) {
+			if (verticalScrollEnabled && eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X) {
 				if (eventReceiver->getMousePos().Y > 52 && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y-20) {
 					if (mouseHit) {
 						if (eventReceiver->getMousePos().Y > vScrollBarCenterY - vScrollBarHalfHeight && eventReceiver->getMousePos().Y < vScrollBarCenterY + vScrollBarHalfHeight) {
@@ -379,8 +410,8 @@ bool Main::run() {
 				}
 			}
 
-			if (eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
-				if (eventReceiver->getMousePos().X > lineBarWidth+17 && eventReceiver->getMousePos().X < windowDims.Width-20) {
+			if (horizontalScrollEnabled && eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
+				if (eventReceiver->getMousePos().X > lineBarWidth+17 && eventReceiver->getMousePos().X < textBoxRect.LowerRightCorner.X) {
 					if (mouseHit) {
 						if (eventReceiver->getMousePos().X > hScrollBarCenterX - hScrollBarHalfWidth && eventReceiver->getMousePos().X < hScrollBarCenterX + hScrollBarHalfWidth) {
 							if (isScrolling == SCROLL::NONE) {
@@ -457,7 +488,7 @@ void Main::Line::setText(std::wstring inText) {
 	parts.push_back(newPart);
 }
 
-void Main::Line::formatText(std::set<std::wstring> keywords) {
+void Main::Line::formatText(Main::Keywords& keywords) {
 	parts.clear();
 	std::wstring out;
 	int cf=0;
@@ -479,7 +510,7 @@ void Main::Line::formatText(std::set<std::wstring> keywords) {
 			cf=1;
 		}else if( isalpha( c ) ){		//ident?
 			for( ++k;k<is_sz && isid(text[k]);++k ){}
-			if( keywords.find( text.substr( from,k-from ) )==keywords.end() ) cf=0;
+			if( keywords.findKeyword(text.substr( from,k-from )) ) cf=0;
 			else cf=2;
 		}else if( c==L'$' ){
 			for( ++k;k<is_sz && isxdigit(text[k]);++k ){}
@@ -524,6 +555,25 @@ void Main::Line::formatText(std::set<std::wstring> keywords) {
 			}
 		}
 	}*/
+}
+
+bool Main::Keywords::findKeyword(std::wstring keyword) {
+    // This effectively fixes the really long load times for large files
+    // since certain keywords are far more common than others
+    for (int i=0;i<recentKeywords.size();i++) {
+        if (recentKeywords[i]==keyword) {
+            return true;
+        }
+    }
+
+    bool retVal = keywords.find( keyword )==keywords.end();
+    if (retVal) {
+        recentKeywords.push_back(keyword);
+        if (recentKeywords.size()>10) {
+            recentKeywords.erase(recentKeywords.begin());
+        }
+    }
+    return retVal;
 }
 
 void Main::File::recalculateLongestLine() {
@@ -576,4 +626,42 @@ Main::File* Main::loadFile(std::wstring name) {
 
 	files.push_back(newFile);
 	return newFile;
+}
+
+static std::string execProc( const std::string& proc ){
+	//TODO: figure out if this is the best way to get the keywords, it's probably not
+	HANDLE rd,wr;
+
+	SECURITY_ATTRIBUTES sa={sizeof(sa),0,true};
+
+	if( CreatePipe( &rd,&wr,&sa,0 ) ){
+		STARTUPINFOA si={sizeof(si)};
+		si.dwFlags=STARTF_USESTDHANDLES;
+		si.hStdOutput=si.hStdError=wr;
+		PROCESS_INFORMATION pi={0};
+		if( CreateProcessA( 0,(char*)proc.c_str(),0,0,true,DETACHED_PROCESS,0,0,&si,&pi ) ){
+			CloseHandle( pi.hProcess );
+			CloseHandle( pi.hThread );
+			CloseHandle( wr );
+
+			std::string t;
+			char *buf=new char[1024];
+			for(;;){
+				unsigned long sz;
+				int n=ReadFile( rd,buf,1024,&sz,0 );
+				if( !n && GetLastError()==ERROR_BROKEN_PIPE ) break;
+				if( !n ){ t="";break; }
+				if( !sz ) break;
+				t+=std::string( buf,sz );
+			}
+			delete[] buf;
+			CloseHandle(rd);
+			return t;
+		}
+		CloseHandle( rd );
+		CloseHandle( wr );
+	}
+	std::cout<< (proc+" failed").c_str() << "\n";
+	ExitProcess(0);
+	return "";
 }

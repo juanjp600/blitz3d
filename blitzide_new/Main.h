@@ -12,6 +12,8 @@
 
 extern LRESULT CALLBACK BBIDEWndProc(HWND, UINT, WPARAM, LPARAM);
 
+extern std::string execProc(const std::string& proc);
+
 class Main {
 	private:
 		irr::IrrlichtDevice* device;
@@ -93,6 +95,12 @@ class Main {
 
 		irr::gui::CGUITTFont* font;
 
+        struct Keywords {
+            bool findKeyword(std::wstring keyword);
+            std::set<std::wstring> keywords;
+            std::vector<std::wstring> recentKeywords;
+        } keywords;
+
 		struct Line {
 			struct Part {
 				static const irr::video::SColor colors[6];
@@ -112,7 +120,7 @@ class Main {
 			void setTextUTF8(std::string inText);
 			std::wstring getText();
 			void setText(std::wstring inText);
-			void formatText(std::set<std::wstring> keywords);
+			void formatText(Main::Keywords& keywords);
 			//void draw(irr::video::IVideoDriver* driver,irr::gui::CGUITTFont* font);
 		};
 		
@@ -139,7 +147,6 @@ class Main {
 		int selectedFile = 0;
 		
 		std::vector<File*> files;
-		std::set<std::wstring> keywords;
 
 		File* loadFile(std::wstring name);
 	public:
