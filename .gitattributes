@@ -1,2 +1,4 @@
 *.dsw	eol=crlf
 *.dsp	eol=crlf
+
+_release/help/* linguist-vendored
