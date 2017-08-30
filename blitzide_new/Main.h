@@ -132,6 +132,9 @@ class Main {
 			int longestLine = 0;
 			void recalculateLongestLine();
 
+            bool selecting = false;
+            irr::core::vector2di selectionStart;
+
 			irr::core::vector2di caretPos;
 			irr::core::vector2di scrollPos;
 		};
