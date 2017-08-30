@@ -41,17 +41,12 @@ static void fail( const char *p ){
 }
 
 static int desktopDepth(){
-	//HDC hdc=GetDC( GetDesktopWindow() );
-	return 32;//GetDeviceCaps( hdc,BITSPIXEL );
+	return 32;
 }
 
 int _stdcall WinMain( HINSTANCE inst,HINSTANCE prev,char *cmd,int show ){
-
-	if( getIEVersion()<4 ) fail( ie_err );
-
-	//Ugly hack to get application dir...
+    //Ugly hack to get application dir...
 	string t=getAppDir();
-	//_putenv( ("blitzpath="+t).c_str() );
 	
 	SetCurrentDirectory( t.c_str() );
 	t=t+"\\bin\\ide.exe "+cmd;

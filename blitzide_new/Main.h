@@ -132,7 +132,7 @@ class Main {
 			int longestLine = 0;
 			void recalculateLongestLine();
 
-            bool selecting = false;
+            int selecting = 0;
             irr::core::vector2di selectionStart;
 
 			irr::core::vector2di caretPos;

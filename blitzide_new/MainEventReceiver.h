@@ -43,7 +43,7 @@ class MainEventReceiver : public irr::IEventReceiver {
     public:
         virtual bool OnEvent(const irr::SEvent& event);
 
-        virtual irr::core::stringw getCharQueue(irr::core::stringw in=L"");
+        virtual irr::core::stringw getCharQueue(irr::core::stringw in=L"",bool includeBackspaces=false);
         virtual void clearCharQueue();
 
         virtual bool getKeyDown(irr::EKEY_CODE keyCode) const;

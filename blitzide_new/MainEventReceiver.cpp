@@ -52,7 +52,7 @@ bool MainEventReceiver::OnEvent(const irr::SEvent& event) {
         if (event.KeyInput.PressedDown) {
             //std::cout<<event.KeyInput.Key<<"\n";
             wchar_t newChar = event.KeyInput.Char;
-            if ((int)newChar>=32 || (int)newChar==8) {
+            if ((int)newChar>=32 || (int)newChar==8 || (int)newChar==10/*LF*/ || (int)newChar==13/*CR*/) {
                 charQueue+=newChar;
                 while (charQueue.size()>8) {
                     charQueue.erase(0);
@@ -173,13 +173,13 @@ void MainEventReceiver::clearKeys() {
 	memset(keyHit,0,sizeof(keyHit));
 }
 
-irr::core::stringw MainEventReceiver::getCharQueue(irr::core::stringw in) {
+irr::core::stringw MainEventReceiver::getCharQueue(irr::core::stringw in,bool includeBackspaces) {
     if (charQueue.size()==0) {
         return in;
     }
     irr::core::stringw retVal = in;
     for (int i=0;i<charQueue.size();i++) {
-        if ((int)charQueue[i]!=8) {
+        if ((int)charQueue[i]!=8 || includeBackspaces) {
             retVal+=charQueue[i];
         } else if (retVal.size()>0) {
             retVal.erase(retVal.size()-1);

@@ -285,8 +285,14 @@ bool Main::run() {
 		irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
         irr::core::vector2di& caretPos = files[selectedFile]->caretPos;
         irr::core::vector2di& selectionStart = files[selectedFile]->selectionStart;
-        bool& selecting = files[selectedFile]->selecting;
+        int& selecting = files[selectedFile]->selecting;
 		std::vector<Line*>& text = files[selectedFile]->text;
+
+        bool pasting = false;
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_V)) {
+            pasting = true;
+        }
+
 
 		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width;
 
@@ -315,23 +321,98 @@ bool Main::run() {
 		if (renderStart < 0) { renderStart = 0; }
 
 		int renderEnd = (windowDims.Height-52)/14 + renderStart + 2;
-		if (renderEnd > text.size()) { renderEnd = text.size(); }
-
+		
         std::wstring part1 = text[caretPos.Y]->getText().substr(0,min(caretPos.X,text[caretPos.Y]->getText().size()));
         std::wstring part2 = text[caretPos.Y]->getText().substr(min(caretPos.X,text[caretPos.Y]->getText().size()));
-
-        int part1size = part1.size();
-        part1 = eventReceiver->getCharQueue(part1.c_str()).c_str();
-        if (part1size!=part1.size()) {
-            caretPos.X = part1.size();
-            text[caretPos.Y]->setText(part1+part2);
-            text[caretPos.Y]->formatText(keywords);
-        }
 
         irr::core::vector2di startSelectRender;
         irr::core::vector2di endSelectRender;
 
-        if (selecting) {
+        int part1size = part1.size();
+
+        if (selecting!=2) {
+            std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
+
+            if (pasting) {
+                charQueue+=irr::core::stringw(device->getOSOperator()->getTextFromClipboard()).c_str(); //TODO: do proper utf-8 to wchar conversion
+            }
+
+            if (charQueue.size()>0) {
+                bool appending = true;
+                std::wstring appendStr = part1;
+                std::wstring remainStr = L"";
+                for (int i=0;i<charQueue.size();i++) {
+                    if (charQueue[i]!=8) {
+                        if ((charQueue[i]==13 || charQueue[i]==10) && appending) {
+                            appending = false;
+                        } else if (charQueue[i]=='\t') {
+                            if (appending) {
+                                appendStr+=L"    ";
+                            } else {
+                                remainStr+=L"    ";
+                            }
+                        } else {
+                            if (appending) {
+                                appendStr.push_back(charQueue[i]);
+                            } else {
+                                remainStr.push_back(charQueue[i]);
+                            }
+                        }
+                    } else if (!appending) {
+                        if (remainStr.size()>0) {
+                            remainStr.pop_back();
+                        } else {
+                            appending = true;
+                        }
+                    } else if (appendStr.size()>0) {
+                        appendStr.pop_back();
+                    } else {
+                        delete text[caretPos.Y]; text.erase(text.begin()+caretPos.Y);
+                        caretPos.Y--; caretPos.X = text[caretPos.Y]->getText().size();
+                        appendStr = text[caretPos.Y]->getText();
+                    }
+                }
+
+                part1 = appendStr;
+                if (appending) {
+                    caretPos.X = part1.size();
+                    text[caretPos.Y]->setText(part1+part2);
+                    text[caretPos.Y]->formatText(keywords);
+                } else {
+                    text[caretPos.Y]->setText(part1);
+                    text[caretPos.Y]->formatText(keywords);
+
+                    int lastLine = caretPos.Y+1;
+                    Line* newLine = new Line();
+                    std::wstring lineText = L"";
+                    for (int i=0;i<remainStr.size();i++) {
+                        if (remainStr[i]==13 || remainStr[i]==10) {
+                            if (i<remainStr.size()-1) {
+                                if (remainStr[i]==13 && remainStr[i+1]==10) {
+                                    i++;
+                                }
+                            }
+
+                            newLine->setText(lineText);
+                            newLine->formatText(keywords);
+                            text.insert(text.begin()+lastLine,newLine);
+                            newLine = new Line();
+                            lastLine++;
+                            lineText = L"";
+                        } else {
+                            lineText.push_back(remainStr[i]);
+                        }
+                    }
+                    newLine->setText(lineText+part2);
+                    newLine->formatText(keywords);
+                    text.insert(text.begin()+lastLine,newLine);
+
+                    caretPos.Y = lastLine;
+                    caretPos.X = lineText.size();
+                }
+                files[selectedFile]->recalculateLongestLine();
+            }
+        } else {
             if (caretPos.Y>selectionStart.Y) {
                 startSelectRender = selectionStart;
                 endSelectRender = caretPos;
@@ -341,14 +422,110 @@ bool Main::run() {
             } else if (caretPos.X>selectionStart.X) {
                 startSelectRender = selectionStart;
                 endSelectRender = caretPos;
-            } else if (caretPos.X<selectionStart.X) {
+            } else {
                 startSelectRender = caretPos;
                 endSelectRender = selectionStart;
             }
+
+            std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
+
+            if (pasting) {
+                charQueue+=irr::core::stringw(device->getOSOperator()->getTextFromClipboard()).c_str(); //TODO: do proper utf-8 to wchar conversion
+            }
+
+            if (charQueue.size()>0) {
+                bool appending = true;
+                std::wstring appendStr = L"";
+                std::wstring remainStr = L"";
+                for (int i=0;i<charQueue.size();i++) {
+                    if (charQueue[i]!=8) {
+                        if ((charQueue[i]==13 || charQueue[i]==10) && appending) {
+                            appending = false;
+                        } else if (charQueue[i]=='\t') {
+                            if (appending) {
+                                appendStr+=L"    ";
+                            } else {
+                                remainStr+=L"    ";
+                            }
+                        } else {
+                            if (appending) {
+                                appendStr.push_back(charQueue[i]);
+                            } else {
+                                remainStr.push_back(charQueue[i]);
+                            }
+                        }
+                    } else if (!appending) {
+                        if (remainStr.size()>0) {
+                            remainStr.pop_back();
+                        } else {
+                            appending = true;
+                        }
+                    } else if (appendStr.size()>0) {
+                        appendStr.pop_back();
+                    }
+                }
+
+                
+                std::wstring firstLinePart1 = text[startSelectRender.Y]->getText().substr(0,min(startSelectRender.X,text[startSelectRender.Y]->getText().size()))+appendStr;
+                std::wstring lastLinePart2 = text[endSelectRender.Y]->getText().substr(min(endSelectRender.X,text[endSelectRender.Y]->getText().size()));
+                   
+                if (startSelectRender.Y < endSelectRender.Y) {
+                    for (int i=endSelectRender.Y;i>startSelectRender.Y;i--) {
+                        delete text[i];
+                        text.erase(text.begin()+i);
+                    }
+                }
+
+                if (appending) {
+                    text[startSelectRender.Y]->setText(firstLinePart1+lastLinePart2);
+
+                    caretPos = startSelectRender;
+                    caretPos.X = firstLinePart1.size();
+                } else {
+                    text[startSelectRender.Y]->setText(firstLinePart1);
+                    int lastLine = startSelectRender.Y+1;
+                    Line* newLine = new Line();
+                    std::wstring lineText = L"";
+                    for (int i=0;i<remainStr.size();i++) {
+                        if (remainStr[i]==13 || remainStr[i]==10) {
+                            if (i<remainStr.size()-1) {
+                                if (remainStr[i]==13 && remainStr[i+1]==10) {
+                                    i++;
+                                }
+                            }
+
+                            newLine->setText(lineText);
+                            newLine->formatText(keywords);
+                            text.insert(text.begin()+lastLine,newLine);
+                            newLine = new Line();
+                            lastLine++;
+                            lineText = L"";
+                        } else {
+                            lineText.push_back(remainStr[i]);
+                        }
+                    }
+                    newLine->setText(lineText+lastLinePart2);
+                    newLine->formatText(keywords);
+                    text.insert(text.begin()+lastLine,newLine);
+
+                    caretPos.Y = lastLine;
+                    caretPos.X = lineText.size();
+                }
+                text[startSelectRender.Y]->formatText(keywords);
+                files[selectedFile]->recalculateLongestLine();
+
+                selectionStart = caretPos;
+                startSelectRender = caretPos;
+                endSelectRender = caretPos;
+
+                selecting = 0;
+            }
         }
 
+        if (renderEnd > text.size()) { renderEnd = text.size(); }
+
 		for (int i = renderStart; i<renderEnd; i++) {
-            if (selecting) {
+            if (selecting==2) {
                 if (i==endSelectRender.Y && i==startSelectRender.Y) {
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
                         irr::core::recti(
@@ -358,12 +535,12 @@ bool Main::run() {
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
                                             irr::core::recti(
                                             irr::core::vector2di(lineBarWidth - scrollPos.X,32 - fontHeight + 12 + 14 * i - scrollPos.Y),
-                                            irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText()).Width - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y)));
+                                            irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText()).Width + 8 - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y)));
                 } else if (i==startSelectRender.Y) {
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
                         irr::core::recti(
                             irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText().substr(0,startSelectRender.X)).Width - scrollPos.X,32 - fontHeight + 12 + 14 * i - scrollPos.Y),
-                            irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText()).Width - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y)));
+                            irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText()).Width + 8 - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y)));
                 } else if (i==endSelectRender.Y) {
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
                         irr::core::recti(
@@ -377,8 +554,8 @@ bool Main::run() {
             if (caretPos.Y == i && device->getTimer()->getTime()%1000<500) {
                 int caretX = font->getDimension(part1).Width;
                 driver->draw2DLine(irr::core::vector2di(lineBarWidth + caretX - scrollPos.X,32 - fontHeight + 12 + 14 * i - scrollPos.Y),
-                                   irr::core::vector2di(lineBarWidth + caretX - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y),
-                                   irr::video::SColor(255,255,255,255));
+                                    irr::core::vector2di(lineBarWidth + caretX - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y),
+                                    irr::video::SColor(255,255,255,255));
             }
 
 			font->draw(std::to_string(i+1).c_str(),
@@ -394,7 +571,7 @@ bool Main::run() {
 				x += w;
 			}
 		}
-
+        
 		wchar_t tempCStr[1];
 
 		//vertical scroll bar
@@ -483,13 +660,22 @@ bool Main::run() {
                 }
 
                 if (mouseHit) {
-                    selecting = false;
-                    selectionStart = caretPos;
-                } else if (selectionStart != caretPos) {
-                    selecting = true;
+                    if (eventReceiver->getKeyDown(irr::KEY_LSHIFT) || eventReceiver->getKeyDown(irr::KEY_RSHIFT)) {
+                        if (selecting == 0) {
+                            selectionStart = caretPos;
+                        }
+                        selecting = 2;
+                    } else {
+                        selecting = 1;
+                        selectionStart = caretPos;
+                    }
+                } else if (selecting==1 && selectionStart != caretPos) {
+                    selecting = 2;
                 }
             }
         }
+
+        irr::core::vector2di oldCaretPos = caretPos;
 
         if (eventReceiver->getKeyHit(irr::KEY_LEFT)) {
             if (caretPos.X>text[caretPos.Y]->getText().size()) {
@@ -506,10 +692,14 @@ bool Main::run() {
                 }
             }
 
-            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT)) {
-                selecting = false;
+            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT) && !eventReceiver->getKeyDown(irr::KEY_RSHIFT)) {
+                selecting = 0;
+            } else if (selecting!=2) {
+                selectionStart = oldCaretPos;
+                selecting = 2;
             }
         }
+
         if (eventReceiver->getKeyHit(irr::KEY_RIGHT)) {
             caretPos.X++;
             if (caretPos.X>text[caretPos.Y]->getText().size()) {
@@ -522,8 +712,11 @@ bool Main::run() {
                 }
             }
 
-            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT)) {
-                selecting = false;
+            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT) && !eventReceiver->getKeyDown(irr::KEY_RSHIFT)) {
+                selecting = 0;
+            } else if (selecting!=2) {
+                selectionStart = oldCaretPos;
+                selecting = 2;
             }
         }
         if (eventReceiver->getKeyHit(irr::KEY_UP)) {
@@ -532,8 +725,11 @@ bool Main::run() {
                 caretPos.Y = 0;
             }
 
-            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT)) {
-                selecting = false;
+            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT) && !eventReceiver->getKeyDown(irr::KEY_RSHIFT)) {
+                selecting = 0;
+            } else if (selecting!=2) {
+                selectionStart = oldCaretPos;
+                selecting = 2;
             }
         }
         if (eventReceiver->getKeyHit(irr::KEY_DOWN)) {
@@ -542,8 +738,11 @@ bool Main::run() {
                 caretPos.Y = text.size()-1;
             }
 
-            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT)) {
-                selecting = false;
+            if (!eventReceiver->getKeyDown(irr::KEY_LSHIFT) && !eventReceiver->getKeyDown(irr::KEY_RSHIFT)) {
+                selecting = 0;
+            } else if (selecting!=2) {
+                selectionStart = oldCaretPos;
+                selecting = 2;
             }
         }
 
@@ -620,7 +819,6 @@ bool Main::run() {
 		if (scrollPos.X < 0) {
 			scrollPos.X = 0;
 		}
-
 	}
 
 	driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
@@ -773,6 +971,7 @@ Main::File* Main::loadFile(std::wstring name) {
 	irr::io::IFileSystem* fs = device->getFileSystem();
 	irr::io::IReadFile* file = fs->createAndOpenFile(name.c_str());
 	int bytesRead = 0;
+
 	while ((bytesRead = file->read(buffer, 1024))>0) {
 		buffer[bytesRead] = 0;
 		data+=irr::core::stringw(buffer).c_str();
@@ -792,7 +991,7 @@ Main::File* Main::loadFile(std::wstring name) {
 		} else if (data[i]==L'\t') {
 			currLine += L"    ";
 		} else {
-			currLine += data[i];
+			currLine += data[i]; //TODO: do utf-8 to wchar conversion
 		}
 	}
 
