@@ -202,7 +202,7 @@ Main::Main() {
                 std::cout<<"Error in keywords\n";
                 ExitProcess(0);
             }
-            if( !isalnum(t[t.size()-1]) ) t=t.substr(0,t.size()-1);
+            if( !iswalnum(t[t.size()-1]) ) t=t.substr(0,t.size()-1);
         }
 
         std::wstring keyword = irr::core::stringw(t.c_str()).c_str();
@@ -295,6 +295,9 @@ bool Main::run() {
 
 
 		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width;
+        if (fileWidth<1) {
+            fileWidth = 1;
+        }
 
 		textBoxRect.LowerRightCorner.X = windowDims.Width;
 		textBoxRect.LowerRightCorner.Y = windowDims.Height-20;
@@ -334,7 +337,7 @@ bool Main::run() {
             std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
 
             if (pasting) {
-                charQueue+=irr::core::stringw(device->getOSOperator()->getTextFromClipboard()).c_str(); //TODO: do proper utf-8 to wchar conversion
+                charQueue+=getClipboardText();
             }
 
             if (charQueue.size()>0) {
@@ -366,7 +369,7 @@ bool Main::run() {
                         }
                     } else if (appendStr.size()>0) {
                         appendStr.pop_back();
-                    } else {
+                    } else if (text.size()>1) {
                         delete text[caretPos.Y]; text.erase(text.begin()+caretPos.Y);
                         caretPos.Y--; caretPos.X = text[caretPos.Y]->getText().size();
                         appendStr = text[caretPos.Y]->getText();
@@ -411,6 +414,8 @@ bool Main::run() {
                     caretPos.X = lineText.size();
                 }
                 files[selectedFile]->recalculateLongestLine();
+                selectionStart = caretPos;
+                selecting = 0;
             }
         } else {
             if (caretPos.Y>selectionStart.Y) {
@@ -430,7 +435,7 @@ bool Main::run() {
             std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
 
             if (pasting) {
-                charQueue+=irr::core::stringw(device->getOSOperator()->getTextFromClipboard()).c_str(); //TODO: do proper utf-8 to wchar conversion
+                charQueue+=getClipboardText();
             }
 
             if (charQueue.size()>0) {
@@ -465,10 +470,9 @@ bool Main::run() {
                     }
                 }
 
-                
                 std::wstring firstLinePart1 = text[startSelectRender.Y]->getText().substr(0,min(startSelectRender.X,text[startSelectRender.Y]->getText().size()))+appendStr;
                 std::wstring lastLinePart2 = text[endSelectRender.Y]->getText().substr(min(endSelectRender.X,text[endSelectRender.Y]->getText().size()));
-                   
+                
                 if (startSelectRender.Y < endSelectRender.Y) {
                     for (int i=endSelectRender.Y;i>startSelectRender.Y;i--) {
                         delete text[i];
@@ -565,6 +569,15 @@ bool Main::run() {
 			int x = 0;
 			for (int j = 0; j<text[i]->parts.size(); j++) {
 				int w = font->getDimension(text[i]->parts[j].getText()).Width;
+
+                if (j>0) {
+                    std::wstring prevPart = text[i]->parts[j-1].getText();
+                    std::wstring currPart = text[i]->parts[j].getText();
+                    if (prevPart.size()>0 && currPart.size()>0) {
+                        x+=font->getKerningWidth(prevPart[prevPart.size()-1],currPart[0]);
+                    }
+                }
+
 				font->draw(text[i]->parts[j].getText().c_str(),
 					irr::core::recti(lineBarWidth + x - scrollPos.X, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth + x + w - scrollPos.X, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
 					text[i]->parts[j].color, false, true,&textBoxRect);
@@ -647,9 +660,11 @@ bool Main::run() {
 			}
 		}
 
+        irr::core::vector2di oldCaretPos = caretPos;
+
         if (eventReceiver->getMouseDown(0) && isScrolling==SCROLL::NONE) {
             if (textBoxRect.isPointInside(eventReceiver->getMousePos())) {
-                caretPos.Y = max(0,min(text.size(),(eventReceiver->getMousePos().Y-textBoxRect.UpperLeftCorner.Y+scrollPos.Y)/14));
+                caretPos.Y = max(0,min(text.size()-1,(eventReceiver->getMousePos().Y-textBoxRect.UpperLeftCorner.Y+scrollPos.Y)/14));
 
                 if (text[caretPos.Y]->getText().size()>0) {
                     caretPos.X = max(0,min(text[caretPos.Y]->getText().size(),
@@ -662,7 +677,7 @@ bool Main::run() {
                 if (mouseHit) {
                     if (eventReceiver->getKeyDown(irr::KEY_LSHIFT) || eventReceiver->getKeyDown(irr::KEY_RSHIFT)) {
                         if (selecting == 0) {
-                            selectionStart = caretPos;
+                            selectionStart = oldCaretPos;
                         }
                         selecting = 2;
                     } else {
@@ -675,7 +690,7 @@ bool Main::run() {
             }
         }
 
-        irr::core::vector2di oldCaretPos = caretPos;
+        oldCaretPos = caretPos;
 
         if (eventReceiver->getKeyHit(irr::KEY_LEFT)) {
             if (caretPos.X>text[caretPos.Y]->getText().size()) {
@@ -836,11 +851,11 @@ std::wstring Main::Line::getText() {
 }
 
 static bool isfmt( int ch,int nxt ){
-	return ch==L';' || ch==L'\"' || isalpha(ch) || isdigit(ch) || (ch==L'$' && isxdigit(nxt));
+	return ch==L';' || ch==L'\"' || iswalpha(ch) || isdigit(ch) || (ch==L'$' && isxdigit(nxt));
 }
 
 static bool isid( int c ){
-	return isalnum(c)||c=='_';
+	return iswalnum(c)||c=='_';
 }
 
 const irr::video::SColor Main::Line::Part::colors[6] = {
@@ -852,11 +867,19 @@ const irr::video::SColor Main::Line::Part::colors[6] = {
 };
 
 void Main::Line::setText(std::wstring inText) {
-	text = inText;
-	parts.clear();
-	
-	Part newPart; newPart.text = inText; newPart.color = Part::colors[0];
-	parts.push_back(newPart);
+    text = inText;
+    parts.clear();
+
+    Part newPart; newPart.text = inText; newPart.color = Part::colors[0];
+    parts.push_back(newPart);
+}
+
+void Main::Line::setTextUTF8(std::string inText) {
+    text = utf8ToWChar(inText);
+    parts.clear();
+
+    Part newPart; newPart.text = text; newPart.color = Part::colors[0];
+    parts.push_back(newPart);
 }
 
 void Main::Line::formatText(Main::Keywords& keywords) {
@@ -879,7 +902,7 @@ void Main::Line::formatText(Main::Keywords& keywords) {
 			for( ++k;k<is_sz && text[k]!='\"';++k ){}
 			if( k<is_sz ) ++k;
 			cf=1;
-		}else if( isalpha( c ) ){		//ident?
+		}else if( iswalpha( c ) ){		//ident?
 			for( ++k;k<is_sz && isid(text[k]);++k ){}
 			if( keywords.findKeyword(text.substr( from,k-from )) ) cf=0;
 			else cf=2;
@@ -901,7 +924,7 @@ void Main::Line::formatText(Main::Keywords& keywords) {
 
 	/*if( text[0]=='F' && text.find( L"Function" )==0 ){
 		for( int k=8;k<(int)text.size();++k ){
-			if( isalpha( text[k] ) ){
+			if( iswalpha( text[k] ) ){
 				int start=k;
 				for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
 				//funcList.insert( textnum,text.substr( start,k-start ) );
@@ -910,7 +933,7 @@ void Main::Line::formatText(Main::Keywords& keywords) {
 		}
 	}else if( text[0]==L'T' && text.find( L"Type" )==0 ){
 		for( int k=4;k<(int)text.size();++k ){
-			if( isalpha( text[k] ) ){
+			if( iswalpha( text[k] ) ){
 				int start=k;
 				for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
 				//typeList.insert( textnum,text.substr( start,k-start ) );
@@ -919,7 +942,7 @@ void Main::Line::formatText(Main::Keywords& keywords) {
 		}
 	}else if( text[0]==L'.' ){
 		for( int k=1;k<(int)text.size();++k ){
-			if( isalpha( text[k] ) ){
+			if( iswalpha( text[k] ) ){
 				int start=k;
 				for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
 				//labsList.insert( textnum,text.substr( start,k-start ) );
@@ -949,6 +972,9 @@ bool Main::Keywords::findKeyword(std::wstring keyword) {
 }
 
 void Main::File::recalculateLongestLine() {
+    if (longestLine>=text.size()) {
+        longestLine = 0;
+    }
 	int length = text[longestLine]->getText().size();
 	for (int i=0;i<text.size();i++) {
 		if (text[i]->getText().size()>length) {
@@ -965,7 +991,7 @@ Main::File* Main::loadFile(std::wstring name) {
 	newFile->changed = false;
 	newFile->name = name;
 
-	std::wstring data = L"";
+	std::string data = "";
 	char buffer[1025];
 
 	irr::io::IFileSystem* fs = device->getFileSystem();
@@ -974,24 +1000,24 @@ Main::File* Main::loadFile(std::wstring name) {
 
 	while ((bytesRead = file->read(buffer, 1024))>0) {
 		buffer[bytesRead] = 0;
-		data+=irr::core::stringw(buffer).c_str();
+		data+=buffer;
 	}
 
-	std::wstring currLine = L"";
+	std::string currLine = "";
 	for (int i=0; i<data.size(); i++) {
 		if (data[i]==L'\r') {
 			//skip
 		} else if (data[i]==L'\n') {
 			Line* newLine = new Line();
-			newLine->setText(currLine);
+			newLine->setText(utf8ToWChar(currLine));
 			newLine->formatText(keywords); //TODO: format text when scrolling, not after loading
 			newFile->text.push_back(newLine);
 			//std::cout<<currLine.c_str()<<"\n";
-			currLine = L"";
+			currLine = "";
 		} else if (data[i]==L'\t') {
-			currLine += L"    ";
+			currLine += "    ";
 		} else {
-			currLine += data[i]; //TODO: do utf-8 to wchar conversion
+			currLine += data[i];
 		}
 	}
 
@@ -1037,4 +1063,71 @@ static std::string execProc( const std::string& proc ){
 	std::cout<< (proc+" failed").c_str() << "\n";
 	ExitProcess(0);
 	return "";
+}
+
+static std::wstring utf8ToWChar(std::string utf8Str) {
+    std::wstring retVal = L"";
+    for (int i=0;i<utf8Str.size();i++) {
+        if ((utf8Str[i]&0x80)==0) { //regular ASCII: just copy the char over
+            retVal.push_back((wchar_t)utf8Str[i]);
+        } else { //most significant bit is 1 => check for codepoint validity
+            char firstByte = utf8Str[i];
+            char sBits = 0x00;
+            int sBitCount = 0;
+            if ((firstByte&0xC0)==0xC0) { //two most significant bits are 1 => unicode confirmed
+                std::cout<<"UNICHAR\n";
+                int character = 0x00;
+
+                while ((firstByte&(1<<(7-sBitCount)))!=0) {
+                    sBits |= (1<<(7-sBitCount));
+                    sBitCount++;
+                    if (sBitCount>7) {
+                        std::cout<<"OOPS1\n";
+                        break; //all 1's???
+                    }
+                }
+
+                if (sBitCount<2 || sBitCount>7) {
+                    std::cout<<"OOPS2\n";
+                    continue;
+                }
+
+                character |= firstByte&((~sBits)&0xff);
+
+                bool goodChar = true;
+                for (int j=1;j<sBitCount;j++) {
+                    int nextChar = utf8Str[i+j];
+
+                    if ((nextChar&0x80)==0x80) { //next codepoint is good
+                        character = (character<<6)|(nextChar&0x3f);
+                    } else {
+                        std::cout<<"OOPS3 "<<(int)(nextChar&0x80)<<"\n";
+                        goodChar = false;
+                        break; //codepoint is bad, stop
+                    }
+                }
+                i+=sBitCount-1;
+
+                if (goodChar) {
+                    retVal.push_back((wchar_t)character);
+                } else {
+                    continue;
+                }
+            } else { continue; }
+        }
+    }
+    return retVal;
+}
+
+static std::wstring getClipboardText() {
+    if (!OpenClipboard(NULL))
+        return 0;
+
+    wchar_t * buffer = 0;
+
+    HANDLE hData = GetClipboardData( CF_UNICODETEXT );
+    buffer = (wchar_t*)GlobalLock( hData );
+    GlobalUnlock( hData );
+    CloseClipboard();
+    return buffer;
 }

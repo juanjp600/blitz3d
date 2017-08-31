@@ -13,6 +13,8 @@
 extern LRESULT CALLBACK BBIDEWndProc(HWND, UINT, WPARAM, LPARAM);
 
 extern std::string execProc(const std::string& proc);
+extern std::wstring utf8ToWChar(std::string utf8Str);
+extern std::wstring getClipboardText();
 
 class Main {
 	private:
