@@ -289,10 +289,14 @@ bool Main::run() {
 		std::vector<Line*>& text = files[selectedFile]->text;
 
         bool pasting = false;
+        bool copying = false;
         if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_V)) {
             pasting = true;
         }
-
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_C)) {
+            copying = true;
+            pasting = false;
+        }
 
 		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width;
         if (fileWidth<1) {
@@ -430,6 +434,22 @@ bool Main::run() {
             } else {
                 startSelectRender = caretPos;
                 endSelectRender = selectionStart;
+            }
+
+            if (copying) {
+                std::wstring textToCopy = L"";
+                if (startSelectRender.Y < endSelectRender.Y) {
+                    textToCopy = text[startSelectRender.Y]->getText().substr(min(startSelectRender.X,text[startSelectRender.Y]->getText().size()))+L"\n";
+                    for (int i=startSelectRender.Y+1;i<endSelectRender.Y;i++) {
+                        textToCopy += text[i]->getText()+L"\n";
+                    }
+                    textToCopy += text[endSelectRender.Y]->getText().substr(0,min(endSelectRender.X,text[endSelectRender.Y]->getText().size()));
+                } else {
+                    int start = min(startSelectRender.X,text[startSelectRender.Y]->getText().size());
+                    int end = min(endSelectRender.X,text[endSelectRender.Y]->getText().size());
+                    textToCopy = text[startSelectRender.Y]->getText().substr(start,end-start);
+                }
+                if (textToCopy.size()>0) { setClipboardText(textToCopy); }
             }
 
             std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
@@ -1130,4 +1150,20 @@ static std::wstring getClipboardText() {
     GlobalUnlock( hData );
     CloseClipboard();
     return buffer;
+}
+
+static void setClipboardText(std::wstring text) {
+    if (!OpenClipboard(NULL))
+        return;
+
+    std::cout<<"COPYING!\n";
+
+    wchar_t * buffer = 0;
+    size_t len = (text.size()+1)*sizeof(wchar_t);
+
+    HANDLE hMem = GlobalAlloc(GMEM_MOVEABLE,len);
+    memcpy(GlobalLock(hMem), text.data(), len);
+    GlobalUnlock(hMem);
+    SetClipboardData( CF_UNICODETEXT,hMem );
+    CloseClipboard();
 }
