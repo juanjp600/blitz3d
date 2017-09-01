@@ -307,6 +307,10 @@ bool Main::run() {
             pasting = false;
         }
         if (tempMem!=nullptr) {
+            for (int i=0;i<files[selectedFile]->redoMem.size();i++) {
+                delete files[selectedFile]->redoMem[i];
+            }
+            files[selectedFile]->redoMem.clear();
             if (tempMem->startPos.Y!=tempMem->endPos.Y || tempMem->startPos.X>tempMem->endPos.X || tempMem->text.size()>0) {
                 if (tempMem->startPos.Y>=tempMem->endPos.Y) {
                     if (tempMem->startPos.Y>tempMem->endPos.Y || tempMem->startPos.X>tempMem->endPos.X) {
@@ -316,9 +320,14 @@ bool Main::run() {
                     }
                 }
 
-                files[selectedFile]->undoMem.push_back(tempMem);
+                files[selectedFile]->pushToUndoMem(tempMem);
                 files[selectedFile]->tempMem = nullptr;
                 tempMem = nullptr;
+            }
+        }
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_Y)) {
+            if (files[selectedFile]->redoMem.size()>0) {
+                files[selectedFile]->redo(keywords);
             }
         }
         if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_Z)) {
@@ -331,13 +340,17 @@ bool Main::run() {
                     }
                 }
 
-                files[selectedFile]->undoMem.push_back(tempMem);
+                files[selectedFile]->pushToUndoMem(tempMem);
                 files[selectedFile]->tempMem = nullptr;
                 tempMem = nullptr;
             }
             if (files[selectedFile]->undoMem.size()>0) {
                 files[selectedFile]->undo(keywords);
             }
+        }
+
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_Z)) {
+            
         }
 
 		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width+200;
@@ -620,9 +633,7 @@ bool Main::run() {
                 selectionStart = caretPos;
                 endSelectRender = caretPos;
 
-                if (files[selectedFile]->undoMem.size()==0) {
-                    files[selectedFile]->undoMem.push_back(new Main::File::ActionMem());
-                }
+                files[selectedFile]->pushToUndoMem(new Main::File::ActionMem());
                 files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->startPos = startSelectRender;
                 files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->endPos = endSelectRender;
                 files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->text = oldStr;
@@ -773,9 +784,12 @@ bool Main::run() {
 
         irr::core::vector2di oldCaretPos = caretPos;
 
+        bool forcePushUndoMem = false;
+
         if (eventReceiver->getMouseDown(0) && isScrolling==SCROLL::NONE) {
             if (textBoxRect.isPointInside(eventReceiver->getMousePos()) || selecting>1) {
                 caretScroll = true;
+                forcePushUndoMem = true;
                 caretPos.Y = max(0,min(((int)text.size())-1,(eventReceiver->getMousePos().Y-textBoxRect.UpperLeftCorner.Y+scrollPos.Y)/14));
 
                 if (text[caretPos.Y]->getText().size()>0) {
@@ -806,6 +820,7 @@ bool Main::run() {
 
         if (eventReceiver->getKeyHit(irr::KEY_LEFT)) {
             caretScroll = true;
+            forcePushUndoMem = true;
             if (caretPos.X>text[caretPos.Y]->getText().size()) {
                 caretPos.X=text[caretPos.Y]->getText().size();
             }
@@ -830,6 +845,7 @@ bool Main::run() {
 
         if (eventReceiver->getKeyHit(irr::KEY_RIGHT)) {
             caretScroll = true;
+            forcePushUndoMem = true;
             caretPos.X++;
             if (caretPos.X>text[caretPos.Y]->getText().size()) {
                 caretPos.Y++;
@@ -850,6 +866,7 @@ bool Main::run() {
         }
         if (eventReceiver->getKeyHit(irr::KEY_UP)) {
             caretScroll = true;
+            forcePushUndoMem = true;
             caretPos.Y--;
             if (caretPos.Y<0) {
                 caretPos.Y = 0;
@@ -864,6 +881,7 @@ bool Main::run() {
         }
         if (eventReceiver->getKeyHit(irr::KEY_DOWN)) {
             caretScroll = true;
+            forcePushUndoMem = true;
             caretPos.Y++;
             if (caretPos.Y>text.size()-1) {
                 caretPos.Y = text.size()-1;
@@ -874,6 +892,22 @@ bool Main::run() {
             } else if (selecting<2) {
                 selectionStart = oldCaretPos;
                 selecting = 2;
+            }
+        }
+
+        if (forcePushUndoMem) {
+            if (tempMem!=nullptr) {
+                if (tempMem->startPos.Y>=tempMem->endPos.Y) {
+                    if (tempMem->startPos.Y>tempMem->endPos.Y || tempMem->startPos.X>tempMem->endPos.X) {
+                        irr::core::vector2di tempVec = tempMem->startPos;
+                        tempMem->startPos = tempMem->endPos;
+                        tempMem->endPos = tempVec;
+                    }
+                }
+
+                files[selectedFile]->pushToUndoMem(tempMem);
+                files[selectedFile]->tempMem = nullptr;
+                tempMem = nullptr;
             }
         }
 
@@ -1119,11 +1153,32 @@ void Main::File::recalculateLongestLine() {
 	}
 }
 
+void Main::File::pushToUndoMem(Main::File::ActionMem* mem) {
+    undoMem.push_back(mem);
+    for (int i=0;i<redoMem.size();i++) {
+        delete redoMem[i];
+    }
+    redoMem.clear();
+}
+
 void Main::File::undo(Main::Keywords& keywords) {
     if (undoMem.size()<=0) { return; }
     ActionMem* mem = undoMem[undoMem.size()-1];
     
     performAndReverse(mem,keywords);
+
+    redoMem.push_back(mem);
+    undoMem.pop_back();
+}
+
+void Main::File::redo(Main::Keywords& keywords) {
+    if (redoMem.size()<=0) { return; }
+    ActionMem* mem = redoMem[redoMem.size()-1];
+
+    performAndReverse(mem,keywords);
+
+    undoMem.push_back(mem);
+    redoMem.pop_back();
 }
 
 void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& keywords) {
@@ -1220,6 +1275,8 @@ void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& ke
 
     mem->text = reverseText;
     mem->endPos = reverseEndPos;
+
+    caretPos = mem->endPos;
 
     selecting = 0;
 

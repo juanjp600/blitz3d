@@ -148,6 +148,7 @@ class Main {
             };
             std::vector<ActionMem*> undoMem;
             std::vector<ActionMem*> redoMem;
+            void pushToUndoMem(ActionMem* mem);
 
             ActionMem* tempMem = nullptr;
 
