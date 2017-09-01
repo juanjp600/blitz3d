@@ -14,6 +14,7 @@ extern LRESULT CALLBACK BBIDEWndProc(HWND, UINT, WPARAM, LPARAM);
 
 extern std::string execProc(const std::string& proc);
 extern std::wstring utf8ToWChar(std::string utf8Str);
+extern std::string wCharToUtf8(std::wstring wCharStr);
 extern std::wstring getClipboardText();
 extern void setClipboardText(std::wstring text);
 
@@ -33,8 +34,9 @@ class Main {
 		irr::core::dimension2du windowDimsPOT;
 
 		irr::video::ITexture* rtt;
-		irr::video::ITexture* textBoxT;
-
+		
+        irr::video::ITexture* toolbarTex;
+        
 		irr::video::SExposedVideoData videodata;
 
 		irr::video::IShaderConstantSetCallBack* flipShaderCallback;
@@ -170,6 +172,7 @@ class Main {
 		std::vector<File*> files;
 
 		File* loadFile(std::wstring name);
+        void saveFile(File* f,std::wstring name);
 	public:
 		Main();
 

@@ -132,13 +132,22 @@ Main::Main() {
 
 	windowDimsPOT = potDims;
 	rtt = driver->addRenderTargetTexture(windowDimsPOT,"rt",irr::video::ECF_R8G8B8);
+    toolbarTex = driver->getTexture("toolbar.png");
+    if (!toolbarTex) {
+        std::cout<<"I LOST THE RUN TO RNG, DUDE!\n";
+    }
 
 	driver->beginScene();
 	driver->setRenderTarget(rtt);
 	driver->setRenderTarget(0);
 	driver->endScene();
 
-	font = irr::gui::CGUITTFont::create(device,"cfg/consola.ttf",14);
+    WCHAR winDir[MAX_PATH];
+    GetWindowsDirectory(winDir, MAX_PATH);
+
+    std::wstring fontPath = std::wstring(winDir)+L"\\Fonts\\consola.ttf";
+
+	font = irr::gui::CGUITTFont::create(device,fontPath.c_str(),14);
 
 	videodata = irr::video::SExposedVideoData(HWnd);
 
@@ -1015,6 +1024,38 @@ bool Main::run() {
 
     driver->draw2DLine(irr::core::vector2di(0,textBoxRect.UpperLeftCorner.Y),irr::core::vector2di(windowDims.Width,textBoxRect.UpperLeftCorner.Y),irr::video::SColor(255,70,70,70));
 
+    //save
+    irr::core::recti saveButtonRect(32*2,4,32*2+24,28);
+    if (saveButtonRect.isPointInside(eventReceiver->getMousePos())) {
+        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),saveButtonRect);
+        if (mouseHit) {
+            OPENFILENAME ofn;
+            wchar_t szFile[128];
+            for (int i=0;i<files[selectedFile]->name.size();i++) {
+                szFile[i] = files[selectedFile]->name[i];
+            }
+            szFile[files[selectedFile]->name.size()] = L'\0';
+            ZeroMemory( &ofn , sizeof( ofn));
+            ofn.lStructSize = sizeof ( ofn );
+            ofn.hwndOwner = NULL  ;
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = sizeof( szFile );
+            ofn.lpstrFilter = L"BlitzBasic Source Files (*.bb)\0*.bb\0All Files (*.*)\0*.*\0";
+            ofn.nFilterIndex =1;
+            ofn.lpstrFileTitle = NULL ;
+            ofn.nMaxFileTitle = 0 ;
+            ofn.lpstrInitialDir=NULL ;
+            ofn.Flags = OFN_PATHMUSTEXIST;
+            GetSaveFileName( &ofn );
+            saveFile(files[selectedFile],ofn.lpstrFile);
+            eventReceiver->clearKeys();
+            eventReceiver->clearMouse();
+        }
+    }
+    
+    driver->setMaterial(mat);
+    driver->draw2DImage(toolbarTex,irr::core::recti(32*2+4,8,32*2+20,24),irr::core::recti(32,0,48,16));
+
 	driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
 	driver->setMaterial(mat);
 	flipQuad->render();
@@ -1023,6 +1064,10 @@ bool Main::run() {
 	//std::cout << driver->getFPS() << "\n";
 
 	return device->run();
+}
+
+std::string Main::Line::getTextUTF8() {
+    return wCharToUtf8(text);
 }
 
 std::wstring Main::Line::getText() {
@@ -1293,6 +1338,18 @@ void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& ke
     std::wstring newStr;
 }
 
+void Main::saveFile(Main::File* f,std::wstring name) {
+    irr::io::IFileSystem* fs = device->getFileSystem();
+    irr::io::IWriteFile* file = fs->createAndWriteFile(name.c_str());
+
+    std::string buffer = "";
+    for (int i=0;i<f->text.size();i++) {
+        buffer+=f->text[i]->getTextUTF8()+"\n";
+    }
+    file->write(buffer.data(),buffer.size());
+    file->drop();
+}
+
 Main::File* Main::loadFile(std::wstring name) {
 	File* newFile = new File();
 	newFile->caretPos = irr::core::vector2di(0,0);
@@ -1311,6 +1368,8 @@ Main::File* Main::loadFile(std::wstring name) {
 		buffer[bytesRead] = 0;
 		data+=buffer;
 	}
+
+    file->drop();
 
 	std::string currLine = "";
 	for (int i=0; i<data.size(); i++) {
@@ -1372,6 +1431,50 @@ static std::string execProc( const std::string& proc ){
 	std::cout<< (proc+" failed").c_str() << "\n";
 	ExitProcess(0);
 	return "";
+}
+
+static std::string wCharToUtf8(std::wstring wCharStr) {
+    std::string retVal = "";
+    for (int i=0;i<wCharStr.size();i++) {
+        if (wCharStr[i]<128) { //regular ASCII: just copy the char over
+            retVal.push_back((char)wCharStr[i]);
+        } else { //unicode
+            int bitCount = 7;
+            int character = wCharStr[i];
+            while ((character>>bitCount)>0) {
+                bitCount++;
+            }
+            std::string codepoints = "";
+            char currChar = 0;
+            for (int j=0;j<bitCount;j++) {
+                currChar|=(character&(1<<j))>>((j/6)*6);
+                if (j%6==5 || j==bitCount-1) {
+                    codepoints.insert(codepoints.begin(),currChar);
+                    currChar = 0;
+                }
+            }
+
+            char header = 0;
+            for (int j=0;j<codepoints.size();j++) {
+                header|=1<<(7-j);
+            }
+            char headerSpaceCheck = header|(header>>1);
+
+            if ((codepoints[0]&headerSpaceCheck)==0) {
+                codepoints[0]|=header;
+            } else {
+                codepoints[0]|=0x80; codepoints[0]&=0xbf;
+                codepoints.insert(codepoints.begin(),header);
+            }
+
+            for (int j=1;j<codepoints.size();j++) {
+                codepoints[j]|=0x80; codepoints[j]&=0xbf;
+            }
+
+            retVal+=codepoints;
+        }
+    }
+    return retVal;
 }
 
 static std::wstring utf8ToWChar(std::string utf8Str) {
