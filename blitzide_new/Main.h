@@ -140,6 +140,20 @@ class Main {
 
 			irr::core::vector2di caretPos;
 			irr::core::vector2di scrollPos;
+
+            struct ActionMem {
+                irr::core::vector2di startPos;
+                irr::core::vector2di endPos;
+                std::wstring text;
+            };
+            std::vector<ActionMem*> undoMem;
+            std::vector<ActionMem*> redoMem;
+
+            ActionMem* tempMem = nullptr;
+
+            void performAndReverse(ActionMem* mem,Main::Keywords& keywords);
+            void undo(Main::Keywords& keywords);
+            void redo(Main::Keywords& keywords);
 		};
 
 		enum class SCROLL {

@@ -287,6 +287,13 @@ bool Main::run() {
         irr::core::vector2di& selectionStart = files[selectedFile]->selectionStart;
         int& selecting = files[selectedFile]->selecting;
 		std::vector<Line*>& text = files[selectedFile]->text;
+        
+        Main::File::ActionMem* tempMem = files[selectedFile]->tempMem;
+        /*if (tempMem!=nullptr) {
+            delete tempMem;
+            files[selectedFile]->tempMem = nullptr;
+            tempMem = nullptr;
+        }*/
 
         bool caretScroll = false;
 
@@ -298,6 +305,39 @@ bool Main::run() {
         if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_C)) {
             copying = true;
             pasting = false;
+        }
+        if (tempMem!=nullptr) {
+            if (tempMem->startPos.Y!=tempMem->endPos.Y || tempMem->startPos.X>tempMem->endPos.X || tempMem->text.size()>0) {
+                if (tempMem->startPos.Y>=tempMem->endPos.Y) {
+                    if (tempMem->startPos.Y>tempMem->endPos.Y || tempMem->startPos.X>tempMem->endPos.X) {
+                        irr::core::vector2di tempVec = tempMem->startPos;
+                        tempMem->startPos = tempMem->endPos;
+                        tempMem->endPos = tempVec;
+                    }
+                }
+
+                files[selectedFile]->undoMem.push_back(tempMem);
+                files[selectedFile]->tempMem = nullptr;
+                tempMem = nullptr;
+            }
+        }
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_Z)) {
+            if (tempMem!=nullptr) {
+                if (tempMem->startPos.Y>=tempMem->endPos.Y) {
+                    if (tempMem->startPos.Y>tempMem->endPos.Y || tempMem->startPos.X>tempMem->endPos.X) {
+                        irr::core::vector2di tempVec = tempMem->startPos;
+                        tempMem->startPos = tempMem->endPos;
+                        tempMem->endPos = tempVec;
+                    }
+                }
+
+                files[selectedFile]->undoMem.push_back(tempMem);
+                files[selectedFile]->tempMem = nullptr;
+                tempMem = nullptr;
+            }
+            if (files[selectedFile]->undoMem.size()>0) {
+                files[selectedFile]->undo(keywords);
+            }
         }
 
 		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width+200;
@@ -350,10 +390,20 @@ bool Main::run() {
             }
 
             if (charQueue.size()>0) {
+                caretPos.X = min(caretPos.X,text[caretPos.Y]->getText().size());
+                irr::core::vector2di oldCaretPos = caretPos;
+
+                if (tempMem==nullptr) {
+                    files[selectedFile]->tempMem = new Main::File::ActionMem();
+                    tempMem = files[selectedFile]->tempMem;
+                    tempMem->startPos = caretPos;
+                    tempMem->text = L"";
+                }
+
                 caretScroll = true;
 
                 bool appending = true;
-                std::wstring appendStr = part1;
+                std::wstring appendStr = L"";
                 std::wstring remainStr = L"";
                 for (int i=0;i<charQueue.size();i++) {
                     if (charQueue[i]!=8) {
@@ -380,20 +430,23 @@ bool Main::run() {
                         }
                     } else if (appendStr.size()>0) {
                         appendStr.pop_back();
+                    } else if (part1.size()>0) {
+                        tempMem->text = part1[part1.size()-1]+tempMem->text;
+                        part1.pop_back();
                     } else if (text.size()>1) {
+                        tempMem->text.push_back(L'\n');
                         delete text[caretPos.Y]; text.erase(text.begin()+caretPos.Y);
                         caretPos.Y--; caretPos.X = text[caretPos.Y]->getText().size();
-                        appendStr = text[caretPos.Y]->getText();
+                        part1 = text[caretPos.Y]->getText();
                     }
                 }
 
-                part1 = appendStr;
                 if (appending) {
-                    caretPos.X = part1.size();
-                    text[caretPos.Y]->setText(part1+part2);
+                    caretPos.X = part1.size()+appendStr.size();
+                    text[caretPos.Y]->setText(part1+appendStr+part2);
                     text[caretPos.Y]->formatText(keywords);
                 } else {
-                    text[caretPos.Y]->setText(part1);
+                    text[caretPos.Y]->setText(part1+appendStr);
                     text[caretPos.Y]->formatText(keywords);
 
                     int lastLine = caretPos.Y+1;
@@ -424,6 +477,12 @@ bool Main::run() {
                     caretPos.Y = lastLine;
                     caretPos.X = lineText.size();
                 }
+
+                tempMem->endPos = caretPos;
+                if (tempMem->text.size()>0) {
+                    tempMem->startPos = caretPos;
+                }
+
                 files[selectedFile]->recalculateLongestLine();
                 selectionStart = caretPos;
                 selecting = 0;
@@ -502,11 +561,22 @@ bool Main::run() {
                 std::wstring firstLinePart1 = text[startSelectRender.Y]->getText().substr(0,min(startSelectRender.X,text[startSelectRender.Y]->getText().size()))+appendStr;
                 std::wstring lastLinePart2 = text[endSelectRender.Y]->getText().substr(min(endSelectRender.X,text[endSelectRender.Y]->getText().size()));
                 
+                std::wstring oldStr = L"";
+
                 if (startSelectRender.Y < endSelectRender.Y) {
+                    oldStr = text[startSelectRender.Y]->getText().substr(min(startSelectRender.X,text[startSelectRender.Y]->getText().size()))+L"\n";
+                    for (int i=startSelectRender.Y+1;i<endSelectRender.Y;i++) {
+                        oldStr += text[i]->getText()+L"\n";
+                    }
+                    oldStr+=text[endSelectRender.Y]->getText().substr(0,min(endSelectRender.X,text[endSelectRender.Y]->getText().size()));
                     for (int i=endSelectRender.Y;i>startSelectRender.Y;i--) {
                         delete text[i];
                         text.erase(text.begin()+i);
                     }
+                } else {
+                    int startPos = min(startSelectRender.X,text[startSelectRender.Y]->getText().size());
+                    int endPos = min(endSelectRender.X,text[endSelectRender.Y]->getText().size());
+                    oldStr = text[startSelectRender.Y]->getText().substr(startPos,endPos-startPos);
                 }
 
                 if (appending) {
@@ -548,9 +618,17 @@ bool Main::run() {
                 files[selectedFile]->recalculateLongestLine();
 
                 selectionStart = caretPos;
-                startSelectRender = caretPos;
                 endSelectRender = caretPos;
 
+                if (files[selectedFile]->undoMem.size()==0) {
+                    files[selectedFile]->undoMem.push_back(new Main::File::ActionMem());
+                }
+                files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->startPos = startSelectRender;
+                files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->endPos = endSelectRender;
+                files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->text = oldStr;
+
+                startSelectRender = caretPos;
+                
                 selecting = 0;
             }
         }
@@ -1039,6 +1117,113 @@ void Main::File::recalculateLongestLine() {
 			longestLine = i;
 		}
 	}
+}
+
+void Main::File::undo(Main::Keywords& keywords) {
+    if (undoMem.size()<=0) { return; }
+    ActionMem* mem = undoMem[undoMem.size()-1];
+    
+    performAndReverse(mem,keywords);
+}
+
+void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& keywords) {
+    std::wstring charQueue = mem->text;
+    
+    std::wstring reverseText = L"";
+    irr::core::vector2di reverseEndPos;
+
+    bool appending = true;
+    std::wstring appendStr = L"";
+    std::wstring remainStr = L"";
+    for (int i=0;i<charQueue.size();i++) {
+        if (charQueue[i]!=8) {
+            if ((charQueue[i]==13 || charQueue[i]==10) && appending) {
+                appending = false;
+            } else if (charQueue[i]=='\t') {
+                if (appending) {
+                    appendStr+=L"    ";
+                } else {
+                    remainStr+=L"    ";
+                }
+            } else {
+                if (appending) {
+                    appendStr.push_back(charQueue[i]);
+                } else {
+                    remainStr.push_back(charQueue[i]);
+                }
+            }
+        } else if (!appending) {
+            if (remainStr.size()>0) {
+                remainStr.pop_back();
+            } else {
+                appending = true;
+            }
+        } else if (appendStr.size()>0) {
+            appendStr.pop_back();
+        }
+    }
+
+    std::wstring firstLinePart1 = text[mem->startPos.Y]->getText().substr(0,min(mem->startPos.X,text[mem->startPos.Y]->getText().size()))+appendStr;
+    std::wstring lastLinePart2 = text[mem->endPos.Y]->getText().substr(min(mem->endPos.X,text[mem->endPos.Y]->getText().size()));
+
+    if (mem->startPos.Y < mem->endPos.Y) {
+        reverseText = text[mem->startPos.Y]->getText().substr(min(mem->startPos.X,text[mem->startPos.Y]->getText().size()))+L"\n";
+        for (int i=mem->startPos.Y+1;i<mem->endPos.Y;i++) {
+            reverseText += text[i]->getText()+L"\n";
+        }
+        reverseText += text[mem->endPos.Y]->getText().substr(0,min(mem->endPos.X,text[mem->endPos.Y]->getText().size()));
+        for (int i=mem->endPos.Y;i>mem->startPos.Y;i--) {
+            delete text[i];
+            text.erase(text.begin()+i);
+        }
+    } else {
+        int startPos = min(mem->startPos.X,text[mem->startPos.Y]->getText().size());
+        int endPos = min(mem->endPos.X,text[mem->endPos.Y]->getText().size());
+        reverseText = text[mem->startPos.Y]->getText().substr(startPos,endPos-startPos);
+    }
+
+    if (appending) {
+        text[mem->startPos.Y]->setText(firstLinePart1+lastLinePart2);
+        reverseEndPos.Y = mem->startPos.Y;
+        reverseEndPos.X = firstLinePart1.size();
+    } else {
+        text[mem->startPos.Y]->setText(firstLinePart1);
+        int lastLine = mem->startPos.Y+1;
+        Line* newLine = new Line();
+        std::wstring lineText = L"";
+        for (int i=0;i<remainStr.size();i++) {
+            if (remainStr[i]==13 || remainStr[i]==10) {
+                if (i<remainStr.size()-1) {
+                    if (remainStr[i]==13 && remainStr[i+1]==10) {
+                        i++;
+                    }
+                }
+
+                newLine->setText(lineText);
+                newLine->formatText(keywords);
+                text.insert(text.begin()+lastLine,newLine);
+                newLine = new Line();
+                lastLine++;
+                lineText = L"";
+            } else {
+                lineText.push_back(remainStr[i]);
+            }
+        }
+        newLine->setText(lineText+lastLinePart2);
+        reverseEndPos.Y = lastLine;
+        reverseEndPos.X = lineText.size();
+        newLine->formatText(keywords);
+        text.insert(text.begin()+lastLine,newLine);
+    }
+    text[mem->startPos.Y]->formatText(keywords);
+    recalculateLongestLine();
+
+    mem->text = reverseText;
+    mem->endPos = reverseEndPos;
+
+    selecting = 0;
+
+    std::wstring newStr;
 }
 
 Main::File* Main::loadFile(std::wstring name) {
