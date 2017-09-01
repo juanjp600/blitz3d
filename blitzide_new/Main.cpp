@@ -299,11 +299,17 @@ bool Main::run() {
 
         bool pasting = false;
         bool copying = false;
+        bool cutting = false;
         if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_V)) {
             pasting = true;
         }
         if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_C)) {
             copying = true;
+            pasting = false;
+        }
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_X)) {
+            copying = true;
+            cutting = true;
             pasting = false;
         }
         if (tempMem!=nullptr) {
@@ -534,7 +540,11 @@ bool Main::run() {
             std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
 
             if (pasting) {
-                charQueue+=getClipboardText();
+                charQueue=getClipboardText();
+            }
+            if (cutting) {
+                charQueue.clear();
+                charQueue.push_back(8);
             }
 
             if (charQueue.size()>0) {
