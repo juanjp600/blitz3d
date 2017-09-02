@@ -99,6 +99,7 @@ class Main {
 		};
 
 		irr::gui::CGUITTFont* font;
+        irr::gui::CGUITTFont* smallFont;
 
         struct Keywords {
             bool findKeyword(std::wstring keyword);
@@ -131,6 +132,7 @@ class Main {
 		
 		struct File {
 			std::wstring name;
+            std::wstring path;
 			bool changed;
 			std::vector<Line*> text;
 
@@ -172,7 +174,7 @@ class Main {
 		std::vector<File*> files;
 
 		File* loadFile(std::wstring name);
-        void saveFile(File* f,std::wstring name);
+        void saveFile(File* f,std::wstring absoluteFilename);
 	public:
 		Main();
 

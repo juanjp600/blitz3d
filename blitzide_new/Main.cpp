@@ -132,11 +132,9 @@ Main::Main() {
 
 	windowDimsPOT = potDims;
 	rtt = driver->addRenderTargetTexture(windowDimsPOT,"rt",irr::video::ECF_R8G8B8);
-    toolbarTex = driver->getTexture("toolbar.png");
-    if (!toolbarTex) {
-        std::cout<<"I LOST THE RUN TO RNG, DUDE!\n";
-    }
-
+    driver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_NO_ALPHA_CHANNEL,false);
+    toolbarTex = driver->getTexture("cfg/toolbar.png");
+    
 	driver->beginScene();
 	driver->setRenderTarget(rtt);
 	driver->setRenderTarget(0);
@@ -147,7 +145,8 @@ Main::Main() {
 
     std::wstring fontPath = std::wstring(winDir)+L"\\Fonts\\consola.ttf";
 
-	font = irr::gui::CGUITTFont::create(device,fontPath.c_str(),14);
+    font = irr::gui::CGUITTFont::create(device,fontPath.c_str(),14);
+    smallFont = irr::gui::CGUITTFont::create(device,fontPath.c_str(),10);
 
 	videodata = irr::video::SExposedVideoData(HWnd);
 
@@ -1024,8 +1023,43 @@ bool Main::run() {
 
     driver->draw2DLine(irr::core::vector2di(0,textBoxRect.UpperLeftCorner.Y),irr::core::vector2di(windowDims.Width,textBoxRect.UpperLeftCorner.Y),irr::video::SColor(255,70,70,70));
 
+    mat.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+    driver->setMaterial(mat);
+    //load
+    irr::core::recti loadButtonRect(34,4,58,28);
+    if (loadButtonRect.isPointInside(eventReceiver->getMousePos())) {
+        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),loadButtonRect);
+        if (mouseHit) {
+            OPENFILENAME ofn;
+            wchar_t szFile[128];
+            for (int i=0;i<files[selectedFile]->name.size();i++) {
+                szFile[i] = files[selectedFile]->name[i];
+            }
+            szFile[files[selectedFile]->name.size()] = L'\0';
+            ZeroMemory( &ofn , sizeof( ofn));
+            ofn.lStructSize = sizeof ( ofn );
+            ofn.hwndOwner = NULL  ;
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = sizeof( szFile );
+            ofn.lpstrFilter = L"BlitzBasic Source Files (*.bb)\0*.bb\0All Files (*.*)\0*.*\0";
+            ofn.lpstrInitialDir = NULL;
+            ofn.nFilterIndex =1;
+            ofn.lpstrFileTitle = NULL ;
+            ofn.nMaxFileTitle = 0 ;
+            ofn.Flags = OFN_PATHMUSTEXIST;
+            if (GetOpenFileName( &ofn )) {
+                loadFile(ofn.lpstrFile);
+                selectedFile = files.size()-1;
+            }
+            eventReceiver->clearKeys();
+            eventReceiver->clearMouse();
+            mouseHit = false;
+        }
+    }
+    driver->draw2DImage(toolbarTex,irr::core::recti(38,8,54,24),irr::core::recti(16,0,32,16),nullptr,nullptr,true);
+
     //save
-    irr::core::recti saveButtonRect(32*2,4,32*2+24,28);
+    irr::core::recti saveButtonRect(64,4,88,28);
     if (saveButtonRect.isPointInside(eventReceiver->getMousePos())) {
         driver->draw2DRectangle(irr::video::SColor(255,60,60,60),saveButtonRect);
         if (mouseHit) {
@@ -1041,22 +1075,46 @@ bool Main::run() {
             ofn.lpstrFile = szFile;
             ofn.nMaxFile = sizeof( szFile );
             ofn.lpstrFilter = L"BlitzBasic Source Files (*.bb)\0*.bb\0All Files (*.*)\0*.*\0";
+            ofn.lpstrInitialDir = NULL;
             ofn.nFilterIndex =1;
-            ofn.lpstrFileTitle = NULL ;
+            ofn.lpstrFileTitle = NULL;
             ofn.nMaxFileTitle = 0 ;
-            ofn.lpstrInitialDir=NULL ;
             ofn.Flags = OFN_PATHMUSTEXIST;
-            GetSaveFileName( &ofn );
-            saveFile(files[selectedFile],ofn.lpstrFile);
+            if (GetSaveFileName( &ofn )) {
+                saveFile(files[selectedFile],ofn.lpstrFile);
+            }
             eventReceiver->clearKeys();
             eventReceiver->clearMouse();
+            mouseHit = false;
         }
     }
-    
-    driver->setMaterial(mat);
-    driver->draw2DImage(toolbarTex,irr::core::recti(32*2+4,8,32*2+20,24),irr::core::recti(32,0,48,16));
+    driver->draw2DImage(toolbarTex,irr::core::recti(68,8,84,24),irr::core::recti(32,0,48,16),nullptr,nullptr,true);
+
+
+    int x = 400;
+    for (int i=0;i<files.size();i++) {
+        int y = 12;
+        irr::video::SColor tabColor(255,50,50,50);
+        if (i==selectedFile) {
+            tabColor = irr::video::SColor(255,50,80,100);
+            y-=4;
+        }
+        irr::core::recti tabRect(x-4,y-4,x+55,32);
+        if (tabRect.isPointInside(eventReceiver->getMousePos())) {
+            if (i!=selectedFile) {
+                tabColor = irr::video::SColor(255,70,70,70);
+            }
+            if (mouseHit) {
+                selectedFile = i;
+            }
+        }
+        driver->draw2DRectangle(tabColor,tabRect);
+        smallFont->draw(files[i]->name.c_str(),irr::core::recti(x+4,y,x+50,28),irr::video::SColor(255,255,255,255),false,true,&tabRect);
+        x+=65;
+    }
 
 	driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
+    mat.MaterialType = irr::video::EMT_SOLID;
 	driver->setMaterial(mat);
 	flipQuad->render();
 	driver->endScene();
@@ -1334,13 +1392,22 @@ void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& ke
     caretPos = mem->endPos;
 
     selecting = 0;
-
-    std::wstring newStr;
 }
 
-void Main::saveFile(Main::File* f,std::wstring name) {
+void Main::saveFile(Main::File* f,std::wstring absoluteFilename) {
     irr::io::IFileSystem* fs = device->getFileSystem();
-    irr::io::IWriteFile* file = fs->createAndWriteFile(name.c_str());
+    irr::io::IWriteFile* file = fs->createAndWriteFile(absoluteFilename.c_str());
+
+    std::wstring name = L"File.bb";
+    std::wstring path = irr::core::stringw(fs->getWorkingDirectory()+L"/").c_str();
+    for (int i=absoluteFilename.size();i>=0;i--) {
+        if (absoluteFilename[i]=='/' || absoluteFilename[i]=='\\') {
+            path = absoluteFilename.substr(0,i+1);
+            name = absoluteFilename.substr(i+1);
+            break;
+        }
+    }
+    f->name = name; f->path = path;
 
     std::string buffer = "";
     for (int i=0;i<f->text.size();i++) {
@@ -1351,17 +1418,28 @@ void Main::saveFile(Main::File* f,std::wstring name) {
 }
 
 Main::File* Main::loadFile(std::wstring name) {
+    irr::io::IFileSystem* fs = device->getFileSystem();
+
+    std::wstring path = irr::core::stringw(fs->getWorkingDirectory()+L"/").c_str();
+    for (int i=name.size();i>=0;i--) {
+        if (name[i]=='/' || name[i]=='\\') {
+            path = name.substr(0,i+1);
+            name = name.substr(i+1);
+            break;
+        }
+    }
+
 	File* newFile = new File();
 	newFile->caretPos = irr::core::vector2di(0,0);
 	newFile->scrollPos = irr::core::vector2di(0,0);
 	newFile->changed = false;
 	newFile->name = name;
+    newFile->path = path;
 
 	std::string data = "";
 	char buffer[1025];
 
-	irr::io::IFileSystem* fs = device->getFileSystem();
-	irr::io::IReadFile* file = fs->createAndOpenFile(name.c_str());
+	irr::io::IReadFile* file = fs->createAndOpenFile((path+name).c_str());
 	int bytesRead = 0;
 
 	while ((bytesRead = file->read(buffer, 1024))>0) {
@@ -1376,10 +1454,10 @@ Main::File* Main::loadFile(std::wstring name) {
 		if (data[i]==L'\r') {
 			//skip
 		} else if (data[i]==L'\n') {
-			Line* newLine = new Line();
-			newLine->setText(utf8ToWChar(currLine));
-			newLine->formatText(keywords); //TODO: format text when scrolling, not after loading
-			newFile->text.push_back(newLine);
+            Line* newLine = new Line();
+            newLine->setText(utf8ToWChar(currLine));
+            newLine->formatText(keywords); //TODO: format text when scrolling, not after loading
+            newFile->text.push_back(newLine);
 			//std::cout<<currLine.c_str()<<"\n";
 			currLine = "";
 		} else if (data[i]==L'\t') {
@@ -1388,6 +1466,12 @@ Main::File* Main::loadFile(std::wstring name) {
 			currLine += data[i];
 		}
 	}
+    if (currLine.size()>0 || newFile->text.size()==0) {
+        Line* newLine = new Line();
+        newLine->setText(utf8ToWChar(currLine));
+        newLine->formatText(keywords); //TODO: format text when scrolling, not after loading
+        newFile->text.push_back(newLine);
+    }
 
 	newFile->recalculateLongestLine();
 
