@@ -18,7 +18,20 @@ extern std::string wCharToUtf8(std::wstring wCharStr);
 extern std::wstring getClipboardText();
 extern void setClipboardText(std::wstring text);
 
+struct Line;
+struct File;
+
 class Main {
+    public:
+        Main();
+
+        bool run();
+
+        struct Keywords {
+            bool findKeyword(std::wstring keyword);
+            std::set<std::wstring> keywords;
+            std::vector<std::wstring> recentKeywords;
+        };
 	private:
 		irr::IrrlichtDevice* device;
 
@@ -101,65 +114,7 @@ class Main {
 		irr::gui::CGUITTFont* font;
         irr::gui::CGUITTFont* smallFont;
 
-        struct Keywords {
-            bool findKeyword(std::wstring keyword);
-            std::set<std::wstring> keywords;
-            std::vector<std::wstring> recentKeywords;
-        } keywords;
-
-		struct Line {
-			struct Part {
-				static const irr::video::SColor colors[6];
-
-				irr::video::SColor color;
-				std::wstring text;
-
-				virtual std::wstring getText() { return text; }
-			};
-
-			std::wstring text;
-
-			bool isFormatted = false;
-			std::vector<Part> parts;
-
-			std::string getTextUTF8();
-			void setTextUTF8(std::string inText);
-			std::wstring getText();
-			void setText(std::wstring inText);
-			void formatText(Main::Keywords& keywords);
-			//void draw(irr::video::IVideoDriver* driver,irr::gui::CGUITTFont* font);
-		};
-		
-		struct File {
-			std::wstring name;
-            std::wstring path;
-			bool changed;
-			std::vector<Line*> text;
-
-			int longestLine = 0;
-			void recalculateLongestLine();
-
-            int selecting = 0;
-            irr::core::vector2di selectionStart;
-
-			irr::core::vector2di caretPos;
-			irr::core::vector2di scrollPos;
-
-            struct ActionMem {
-                irr::core::vector2di startPos;
-                irr::core::vector2di endPos;
-                std::wstring text;
-            };
-            std::vector<ActionMem*> undoMem;
-            std::vector<ActionMem*> redoMem;
-            void pushToUndoMem(ActionMem* mem);
-
-            ActionMem* tempMem = nullptr;
-
-            void performAndReverse(ActionMem* mem,Main::Keywords& keywords);
-            void undo(Main::Keywords& keywords);
-            void redo(Main::Keywords& keywords);
-		};
+        Keywords keywords;
 
 		enum class SCROLL {
 			NONE = 0,
@@ -175,10 +130,66 @@ class Main {
 
 		File* loadFile(std::wstring name);
         void saveFile(File* f,std::wstring absoluteFilename);
-	public:
-		Main();
+};
 
-		bool run();
+struct File {
+    std::wstring name;
+    std::wstring path;
+    bool changed = false;
+    std::vector<Line*> text;
+
+    int longestLine = 0;
+    void recalculateLongestLine();
+
+    int selecting = 0;
+    irr::core::vector2di selectionStart;
+
+    irr::core::vector2di caretPos;
+    irr::core::vector2di scrollPos;
+
+    struct ActionMem {
+        irr::core::vector2di startPos;
+        irr::core::vector2di endPos;
+        std::wstring text;
+    };
+    std::vector<ActionMem*> undoMem;
+    std::vector<ActionMem*> redoMem;
+    void pushToUndoMem(ActionMem* mem);
+
+    ActionMem* tempMem = nullptr;
+
+    void performAndReverse(ActionMem* mem,Main::Keywords& keywords);
+    void undo(Main::Keywords& keywords);
+    void redo(Main::Keywords& keywords);
+};
+
+struct Line {
+    public:
+        struct Part {
+            static const irr::video::SColor colors[6];
+
+            irr::video::SColor color;
+            std::wstring text;
+
+            virtual std::wstring getText() { return text; }
+        };
+
+        File* file;
+
+        std::wstring text;
+
+        bool isFormatted = false;
+        std::vector<Part> parts;
+
+        std::string getTextUTF8();
+        void setTextUTF8(std::string inText);
+        std::wstring getText();
+        void setText(std::wstring inText);
+        void formatText(Main::Keywords& keywords);
+        //void draw(irr::video::IVideoDriver* driver,irr::gui::CGUITTFont* font);
+        Line(File* f){file=f;}
+    private:
+        Line(){}
 };
 
 #endif //BBIDE_MAIN_H

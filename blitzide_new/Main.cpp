@@ -218,8 +218,6 @@ Main::Main() {
         keywords.keywords.emplace(keyword);
         pos=n+1;
     }
-
-	loadFile(L"Main.bb");
 }
 
 bool Main::run() {
@@ -296,7 +294,7 @@ bool Main::run() {
         int& selecting = files[selectedFile]->selecting;
 		std::vector<Line*>& text = files[selectedFile]->text;
         
-        Main::File::ActionMem* tempMem = files[selectedFile]->tempMem;
+        File::ActionMem* tempMem = files[selectedFile]->tempMem;
         /*if (tempMem!=nullptr) {
             delete tempMem;
             files[selectedFile]->tempMem = nullptr;
@@ -421,7 +419,7 @@ bool Main::run() {
                 irr::core::vector2di oldCaretPos = caretPos;
 
                 if (tempMem==nullptr) {
-                    files[selectedFile]->tempMem = new Main::File::ActionMem();
+                    files[selectedFile]->tempMem = new File::ActionMem();
                     tempMem = files[selectedFile]->tempMem;
                     tempMem->startPos = caretPos;
                     tempMem->text = L"";
@@ -477,7 +475,7 @@ bool Main::run() {
                     text[caretPos.Y]->formatText(keywords);
 
                     int lastLine = caretPos.Y+1;
-                    Line* newLine = new Line();
+                    Line* newLine = new Line(files[selectedFile]);
                     std::wstring lineText = L"";
                     for (int i=0;i<remainStr.size();i++) {
                         if (remainStr[i]==13 || remainStr[i]==10) {
@@ -490,7 +488,7 @@ bool Main::run() {
                             newLine->setText(lineText);
                             newLine->formatText(keywords);
                             text.insert(text.begin()+lastLine,newLine);
-                            newLine = new Line();
+                            newLine = new Line(files[selectedFile]);
                             lastLine++;
                             lineText = L"";
                         } else {
@@ -618,7 +616,7 @@ bool Main::run() {
                 } else {
                     text[startSelectRender.Y]->setText(firstLinePart1);
                     int lastLine = startSelectRender.Y+1;
-                    Line* newLine = new Line();
+                    Line* newLine = new Line(files[selectedFile]);
                     std::wstring lineText = L"";
                     for (int i=0;i<remainStr.size();i++) {
                         if (remainStr[i]==13 || remainStr[i]==10) {
@@ -631,7 +629,7 @@ bool Main::run() {
                             newLine->setText(lineText);
                             newLine->formatText(keywords);
                             text.insert(text.begin()+lastLine,newLine);
-                            newLine = new Line();
+                            newLine = new Line(files[selectedFile]);
                             lastLine++;
                             lineText = L"";
                         } else {
@@ -651,7 +649,7 @@ bool Main::run() {
                 selectionStart = caretPos;
                 endSelectRender = caretPos;
 
-                files[selectedFile]->pushToUndoMem(new Main::File::ActionMem());
+                files[selectedFile]->pushToUndoMem(new File::ActionMem());
                 files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->startPos = startSelectRender;
                 files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->endPos = endSelectRender;
                 files[selectedFile]->undoMem[files[selectedFile]->undoMem.size()-1]->text = oldStr;
@@ -729,7 +727,8 @@ bool Main::run() {
 
 		//vertical scroll bar
 
-		int vRealScrollBarHalfHeight = (textBoxRect.getHeight())*(textBoxRect.getHeight()) / (text.size() * 14) / 2;
+        int vScrollSpace = textBoxRect.getHeight()-20;
+		int vRealScrollBarHalfHeight = vScrollSpace*vScrollSpace / (text.size() * 14) / 2;
 		int vScrollBarHalfHeight = vRealScrollBarHalfHeight;
 		if (vScrollBarHalfHeight < 12) { vScrollBarHalfHeight = 12; }
 
@@ -755,7 +754,8 @@ bool Main::run() {
 
 		//horizontal scroll bar
 
-		int hRealScrollBarHalfWidth = (textBoxRect.getWidth())*(textBoxRect.getWidth()) / (fileWidth) / 2;
+        int hScrollSpace = textBoxRect.getWidth()-20;
+		int hRealScrollBarHalfWidth = hScrollSpace*hScrollSpace / (fileWidth) / 2;
 		int hScrollBarHalfWidth = hRealScrollBarHalfWidth;
 		if (hScrollBarHalfWidth < 12) { hScrollBarHalfWidth = 12; }
 
@@ -1020,8 +1020,9 @@ bool Main::run() {
 			scrollPos.X = 0;
 		}
 	}
-
-    driver->draw2DLine(irr::core::vector2di(0,textBoxRect.UpperLeftCorner.Y),irr::core::vector2di(windowDims.Width,textBoxRect.UpperLeftCorner.Y),irr::video::SColor(255,70,70,70));
+    
+    driver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti(-2,-2,-1,-1));
+    driver->draw2DLine(irr::core::vector2di(0,32),irr::core::vector2di(windowDims.Width,32),irr::video::SColor(255,70,70,70));
 
     mat.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
     driver->setMaterial(mat);
@@ -1032,10 +1033,7 @@ bool Main::run() {
         if (mouseHit) {
             OPENFILENAME ofn;
             wchar_t szFile[128];
-            for (int i=0;i<files[selectedFile]->name.size();i++) {
-                szFile[i] = files[selectedFile]->name[i];
-            }
-            szFile[files[selectedFile]->name.size()] = L'\0';
+            szFile[0] = L'\0';
             ZeroMemory( &ofn , sizeof( ofn));
             ofn.lStructSize = sizeof ( ofn );
             ofn.hwndOwner = NULL  ;
@@ -1062,7 +1060,7 @@ bool Main::run() {
     irr::core::recti saveButtonRect(64,4,88,28);
     if (saveButtonRect.isPointInside(eventReceiver->getMousePos())) {
         driver->draw2DRectangle(irr::video::SColor(255,60,60,60),saveButtonRect);
-        if (mouseHit) {
+        if (mouseHit && selectedFile>=0 && selectedFile<files.size()) {
             OPENFILENAME ofn;
             wchar_t szFile[128];
             for (int i=0;i<files[selectedFile]->name.size();i++) {
@@ -1090,7 +1088,6 @@ bool Main::run() {
     }
     driver->draw2DImage(toolbarTex,irr::core::recti(68,8,84,24),irr::core::recti(32,0,48,16),nullptr,nullptr,true);
 
-
     int x = 400;
     for (int i=0;i<files.size();i++) {
         int y = 12;
@@ -1100,7 +1097,43 @@ bool Main::run() {
             y-=4;
         }
         irr::core::recti tabRect(x-4,y-4,x+55,32);
-        if (tabRect.isPointInside(eventReceiver->getMousePos())) {
+        irr::core::recti closeRect(x+46,y-4,x+55,y+5);
+        if (closeRect.isPointInside(eventReceiver->getMousePos())) {
+            if (mouseHit) {
+                bool confirmClose = !files[i]->changed;
+                if (!confirmClose) {
+                    std::wstring msgStr = L"Would you like to save changes to \""+files[i]->name+L"\" before closing?";
+                    int msgState = MessageBoxW(
+                        HWnd,
+                        msgStr.c_str(),
+                        L"Confirm",
+                        MB_YESNOCANCEL
+                    );
+
+                    if (msgState==IDYES) {
+                        confirmClose = true;
+                        saveFile(files[i],files[i]->path+files[i]->name);
+                    } else if (msgState==IDNO) {
+                        confirmClose = true;
+                    } else {
+                        confirmClose = false;
+                    }
+                }
+                if (confirmClose) {
+                    for (int j=0;j<files[i]->text.size();j++) {
+                        delete files[i]->text[j];
+                    }
+                    for (int j=0;j<files[i]->undoMem.size();j++) {
+                        delete files[i]->undoMem[j];
+                    }
+                    for (int j=0;j<files[i]->redoMem.size();j++) {
+                        delete files[i]->redoMem[j];
+                    }
+                    delete files[i];
+                    files.erase(files.begin()+i);
+                }
+            }
+        } else if (tabRect.isPointInside(eventReceiver->getMousePos())) {
             if (i!=selectedFile) {
                 tabColor = irr::video::SColor(255,70,70,70);
             }
@@ -1109,7 +1142,17 @@ bool Main::run() {
             }
         }
         driver->draw2DRectangle(tabColor,tabRect);
-        smallFont->draw(files[i]->name.c_str(),irr::core::recti(x+4,y,x+50,28),irr::video::SColor(255,255,255,255),false,true,&tabRect);
+        std::wstring name = files[i]->name;
+        if (files[i]->changed) {
+            name = L"*"+name;
+        }
+
+        smallFont->draw(name.c_str(),irr::core::recti(x+4,y,x+50,28),irr::video::SColor(255,255,255,255),false,true,&tabRect);
+
+        if (closeRect.isPointInside(eventReceiver->getMousePos())) {
+            driver->draw2DRectangle(irr::video::SColor(255,255,70,70),closeRect);
+        }
+        driver->draw2DImage(toolbarTex,irr::core::recti(x+47,y-3,x+54,y+4),irr::core::recti(80,0,87,7),nullptr,nullptr,true);
         x+=65;
     }
 
@@ -1124,11 +1167,11 @@ bool Main::run() {
 	return device->run();
 }
 
-std::string Main::Line::getTextUTF8() {
+std::string Line::getTextUTF8() {
     return wCharToUtf8(text);
 }
 
-std::wstring Main::Line::getText() {
+std::wstring Line::getText() {
 	return text;
 }
 
@@ -1140,7 +1183,7 @@ static bool isid( int c ){
 	return iswalnum(c)||c=='_';
 }
 
-const irr::video::SColor Main::Line::Part::colors[6] = {
+const irr::video::SColor Line::Part::colors[6] = {
 	irr::video::SColor(255,200,200,200),
 	irr::video::SColor(255,255,200,100),
 	irr::video::SColor(255,102,187,238),
@@ -1148,7 +1191,9 @@ const irr::video::SColor Main::Line::Part::colors[6] = {
 	irr::video::SColor(255,200,255,200)
 };
 
-void Main::Line::setText(std::wstring inText) {
+void Line::setText(std::wstring inText) {
+    file->changed = true;
+
     text = inText;
     parts.clear();
 
@@ -1156,7 +1201,7 @@ void Main::Line::setText(std::wstring inText) {
     parts.push_back(newPart);
 }
 
-void Main::Line::setTextUTF8(std::string inText) {
+void Line::setTextUTF8(std::string inText) {
     text = utf8ToWChar(inText);
     parts.clear();
 
@@ -1164,7 +1209,7 @@ void Main::Line::setTextUTF8(std::string inText) {
     parts.push_back(newPart);
 }
 
-void Main::Line::formatText(Main::Keywords& keywords) {
+void Line::formatText(Main::Keywords& keywords) {
 	parts.clear();
 	std::wstring out;
 	int cf=0;
@@ -1253,7 +1298,7 @@ bool Main::Keywords::findKeyword(std::wstring keyword) {
     return retVal;
 }
 
-void Main::File::recalculateLongestLine() {
+void File::recalculateLongestLine() {
     if (longestLine>=text.size()) {
         longestLine = 0;
     }
@@ -1266,7 +1311,7 @@ void Main::File::recalculateLongestLine() {
 	}
 }
 
-void Main::File::pushToUndoMem(Main::File::ActionMem* mem) {
+void File::pushToUndoMem(File::ActionMem* mem) {
     undoMem.push_back(mem);
     for (int i=0;i<redoMem.size();i++) {
         delete redoMem[i];
@@ -1274,7 +1319,7 @@ void Main::File::pushToUndoMem(Main::File::ActionMem* mem) {
     redoMem.clear();
 }
 
-void Main::File::undo(Main::Keywords& keywords) {
+void File::undo(Main::Keywords& keywords) {
     if (undoMem.size()<=0) { return; }
     ActionMem* mem = undoMem[undoMem.size()-1];
     
@@ -1284,7 +1329,7 @@ void Main::File::undo(Main::Keywords& keywords) {
     undoMem.pop_back();
 }
 
-void Main::File::redo(Main::Keywords& keywords) {
+void File::redo(Main::Keywords& keywords) {
     if (redoMem.size()<=0) { return; }
     ActionMem* mem = redoMem[redoMem.size()-1];
 
@@ -1294,7 +1339,7 @@ void Main::File::redo(Main::Keywords& keywords) {
     redoMem.pop_back();
 }
 
-void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& keywords) {
+void File::performAndReverse(File::ActionMem* mem,Main::Keywords& keywords) {
     std::wstring charQueue = mem->text;
     
     std::wstring reverseText = L"";
@@ -1357,7 +1402,7 @@ void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& ke
     } else {
         text[mem->startPos.Y]->setText(firstLinePart1);
         int lastLine = mem->startPos.Y+1;
-        Line* newLine = new Line();
+        Line* newLine = new Line(this);
         std::wstring lineText = L"";
         for (int i=0;i<remainStr.size();i++) {
             if (remainStr[i]==13 || remainStr[i]==10) {
@@ -1370,7 +1415,7 @@ void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& ke
                 newLine->setText(lineText);
                 newLine->formatText(keywords);
                 text.insert(text.begin()+lastLine,newLine);
-                newLine = new Line();
+                newLine = new Line(this);
                 lastLine++;
                 lineText = L"";
             } else {
@@ -1394,7 +1439,7 @@ void Main::File::performAndReverse(Main::File::ActionMem* mem,Main::Keywords& ke
     selecting = 0;
 }
 
-void Main::saveFile(Main::File* f,std::wstring absoluteFilename) {
+void Main::saveFile(File* f,std::wstring absoluteFilename) {
     irr::io::IFileSystem* fs = device->getFileSystem();
     irr::io::IWriteFile* file = fs->createAndWriteFile(absoluteFilename.c_str());
 
@@ -1415,9 +1460,11 @@ void Main::saveFile(Main::File* f,std::wstring absoluteFilename) {
     }
     file->write(buffer.data(),buffer.size());
     file->drop();
+
+    f->changed = false;
 }
 
-Main::File* Main::loadFile(std::wstring name) {
+File* Main::loadFile(std::wstring name) {
     irr::io::IFileSystem* fs = device->getFileSystem();
 
     std::wstring path = irr::core::stringw(fs->getWorkingDirectory()+L"/").c_str();
@@ -1451,23 +1498,26 @@ Main::File* Main::loadFile(std::wstring name) {
 
 	std::string currLine = "";
 	for (int i=0; i<data.size(); i++) {
-		if (data[i]==L'\r') {
+		if (data[i]=='\r') {
 			//skip
-		} else if (data[i]==L'\n') {
-            Line* newLine = new Line();
+		} else if (data[i]=='\n') {
+            Line* newLine = new Line(newFile);
             newLine->setText(utf8ToWChar(currLine));
             newLine->formatText(keywords); //TODO: format text when scrolling, not after loading
             newFile->text.push_back(newLine);
 			//std::cout<<currLine.c_str()<<"\n";
 			currLine = "";
-		} else if (data[i]==L'\t') {
-			currLine += "    ";
+		} else if (data[i]=='\t') {
+            int tabSize = 4-(currLine.size()%4);
+            for (int i=0;i<tabSize;i++) {
+                currLine+=" ";
+            }
 		} else {
 			currLine += data[i];
 		}
 	}
     if (currLine.size()>0 || newFile->text.size()==0) {
-        Line* newLine = new Line();
+        Line* newLine = new Line(newFile);
         newLine->setText(utf8ToWChar(currLine));
         newLine->formatText(keywords); //TODO: format text when scrolling, not after loading
         newFile->text.push_back(newLine);
@@ -1475,6 +1525,7 @@ Main::File* Main::loadFile(std::wstring name) {
 
 	newFile->recalculateLongestLine();
 
+    newFile->changed = false;
 	files.push_back(newFile);
 	return newFile;
 }
