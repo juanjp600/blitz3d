@@ -1,6 +1,7 @@
 #include "Main.h"
 
 #include <iostream>
+#include <fstream>
 
 int main() {
 	Main* main = new Main();
@@ -1026,14 +1027,95 @@ bool Main::run() {
 
     mat.MaterialType = irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL;
     driver->setMaterial(mat);
+    //new
+    bool doNewFile = false;
+    irr::core::recti newButtonRect(2,4,25,27);
+    if (eventReceiver->getKeyHit(irr::KEY_KEY_N) && (eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_LCONTROL))) {
+        doNewFile = true;
+    }
+    if (newButtonRect.isPointInside(eventReceiver->getMousePos())) {
+        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),newButtonRect);
+        if (mouseHit) {
+            doNewFile = true;
+        }
+    }
+    if (doNewFile) {
+        File* newFile = new File();
+        newFile->path = L"";
+        int num = 0;
+        for (int i=0;i<files.size();i++) {
+            if (files[i]->name.size()>=3 && files[i]->path.size()==0) {
+                if (files[i]->name.substr(0,3)==L"New") {
+                    num++;
+                }
+            }
+        }
+        newFile->name = L"New"+std::to_wstring(num)+L".bb";
+        Line* newLine = new Line(newFile);
+        newLine->setText(L"");
+        newFile->text.push_back(newLine);
+        files.push_back(newFile);
+        selectedFile = files.size()-1;
+    }
+    driver->draw2DImage(toolbarTex,irr::core::recti(6,8,22,24),irr::core::recti(0,0,16,16),nullptr,nullptr,true);
+
     //load
-    irr::core::recti loadButtonRect(34,4,58,28);
+    bool doLoadFile = false;
+    irr::core::recti loadButtonRect(26,4,49,27);
+    if (eventReceiver->getKeyHit(irr::KEY_KEY_O) && (eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_LCONTROL))) {
+        doLoadFile = true;
+    }
     if (loadButtonRect.isPointInside(eventReceiver->getMousePos())) {
         driver->draw2DRectangle(irr::video::SColor(255,60,60,60),loadButtonRect);
         if (mouseHit) {
+            doLoadFile = true;
+        }
+    }
+    if (doLoadFile) {
+        OPENFILENAME ofn;
+        wchar_t szFile[128];
+        szFile[0] = L'\0';
+        ZeroMemory( &ofn , sizeof( ofn));
+        ofn.lStructSize = sizeof ( ofn );
+        ofn.hwndOwner = NULL  ;
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof( szFile );
+        ofn.lpstrFilter = L"BlitzBasic Source Files (*.bb)\0*.bb\0All Files (*.*)\0*.*\0";
+        ofn.lpstrInitialDir = NULL;
+        ofn.nFilterIndex =1;
+        ofn.lpstrFileTitle = NULL ;
+        ofn.nMaxFileTitle = 0 ;
+        ofn.Flags = OFN_PATHMUSTEXIST;
+        if (GetOpenFileName( &ofn )) {
+            loadFile(ofn.lpstrFile);
+            selectedFile = files.size()-1;
+        }
+        eventReceiver->clearKeys();
+        eventReceiver->clearMouse();
+        mouseHit = false;
+    }
+    driver->draw2DImage(toolbarTex,irr::core::recti(30,8,46,24),irr::core::recti(16,0,32,16),nullptr,nullptr,true);
+
+    //save
+    bool doSaveFile = false;
+    irr::core::recti saveButtonRect(50,4,73,27);
+    if (eventReceiver->getKeyHit(irr::KEY_KEY_S) && (eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_LCONTROL))) {
+        doSaveFile = true;
+    }
+    if (saveButtonRect.isPointInside(eventReceiver->getMousePos())) {
+        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),saveButtonRect);
+        if (mouseHit && selectedFile>=0 && selectedFile<files.size()) {
+            doSaveFile = true;
+        }
+    }
+    if (doSaveFile) {
+        if (files[selectedFile]->path.size()==0) {
             OPENFILENAME ofn;
             wchar_t szFile[128];
-            szFile[0] = L'\0';
+            for (int i=0;i<files[selectedFile]->name.size();i++) {
+                szFile[i] = files[selectedFile]->name[i];
+            }
+            szFile[files[selectedFile]->name.size()] = L'\0';
             ZeroMemory( &ofn , sizeof( ofn));
             ofn.lStructSize = sizeof ( ofn );
             ofn.hwndOwner = NULL  ;
@@ -1042,24 +1124,25 @@ bool Main::run() {
             ofn.lpstrFilter = L"BlitzBasic Source Files (*.bb)\0*.bb\0All Files (*.*)\0*.*\0";
             ofn.lpstrInitialDir = NULL;
             ofn.nFilterIndex =1;
-            ofn.lpstrFileTitle = NULL ;
+            ofn.lpstrFileTitle = NULL;
             ofn.nMaxFileTitle = 0 ;
             ofn.Flags = OFN_PATHMUSTEXIST;
-            if (GetOpenFileName( &ofn )) {
-                loadFile(ofn.lpstrFile);
-                selectedFile = files.size()-1;
+            if (GetSaveFileName( &ofn )) {
+                saveFile(files[selectedFile],ofn.lpstrFile);
             }
-            eventReceiver->clearKeys();
-            eventReceiver->clearMouse();
-            mouseHit = false;
+        } else {
+            saveFile(files[selectedFile],files[selectedFile]->path+files[selectedFile]->name);
         }
+        eventReceiver->clearKeys();
+        eventReceiver->clearMouse();
+        mouseHit = false;
     }
-    driver->draw2DImage(toolbarTex,irr::core::recti(38,8,54,24),irr::core::recti(16,0,32,16),nullptr,nullptr,true);
+    driver->draw2DImage(toolbarTex,irr::core::recti(54,8,70,24),irr::core::recti(32,0,48,16),nullptr,nullptr,true);
 
-    //save
-    irr::core::recti saveButtonRect(64,4,88,28);
-    if (saveButtonRect.isPointInside(eventReceiver->getMousePos())) {
-        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),saveButtonRect);
+    //save as
+    irr::core::recti saveAsButtonRect(74,4,97,27);
+    if (saveAsButtonRect.isPointInside(eventReceiver->getMousePos())) {
+        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),saveAsButtonRect);
         if (mouseHit && selectedFile>=0 && selectedFile<files.size()) {
             OPENFILENAME ofn;
             wchar_t szFile[128];
@@ -1086,7 +1169,7 @@ bool Main::run() {
             mouseHit = false;
         }
     }
-    driver->draw2DImage(toolbarTex,irr::core::recti(68,8,84,24),irr::core::recti(32,0,48,16),nullptr,nullptr,true);
+    driver->draw2DImage(toolbarTex,irr::core::recti(78,8,94,24),irr::core::recti(48,0,64,16),nullptr,nullptr,true);
 
     int x = 400;
     for (int i=0;i<files.size();i++) {
@@ -1441,7 +1524,9 @@ void File::performAndReverse(File::ActionMem* mem,Main::Keywords& keywords) {
 
 void Main::saveFile(File* f,std::wstring absoluteFilename) {
     irr::io::IFileSystem* fs = device->getFileSystem();
-    irr::io::IWriteFile* file = fs->createAndWriteFile(absoluteFilename.c_str());
+
+    std::ofstream file;
+    file.open(absoluteFilename.c_str(),std::ofstream::out|std::ofstream::binary);
 
     std::wstring name = L"File.bb";
     std::wstring path = irr::core::stringw(fs->getWorkingDirectory()+L"/").c_str();
@@ -1458,21 +1543,27 @@ void Main::saveFile(File* f,std::wstring absoluteFilename) {
     for (int i=0;i<f->text.size();i++) {
         buffer+=f->text[i]->getTextUTF8()+"\n";
     }
-    file->write(buffer.data(),buffer.size());
-    file->drop();
+    file.write(buffer.data(),buffer.size());
+    file.close();
 
     f->changed = false;
 }
 
 File* Main::loadFile(std::wstring name) {
     irr::io::IFileSystem* fs = device->getFileSystem();
-
+    
     std::wstring path = irr::core::stringw(fs->getWorkingDirectory()+L"/").c_str();
     for (int i=name.size();i>=0;i--) {
         if (name[i]=='/' || name[i]=='\\') {
             path = name.substr(0,i+1);
             name = name.substr(i+1);
             break;
+        }
+    }
+
+    for (int i=0;i<files.size();i++) {
+        if (path==files[i]->path && name==files[i]->name) {
+            return files[i];
         }
     }
 
@@ -1486,15 +1577,17 @@ File* Main::loadFile(std::wstring name) {
 	std::string data = "";
 	char buffer[1025];
 
-	irr::io::IReadFile* file = fs->createAndOpenFile((path+name).c_str());
-	int bytesRead = 0;
-
-	while ((bytesRead = file->read(buffer, 1024))>0) {
+	std::ifstream file;
+    file.open((path+name).c_str(),std::ifstream::in|std::ifstream::binary);
+	
+	while (!file.eof()) {
+        file.read(buffer, 1024);
+        int bytesRead = file.gcount();
 		buffer[bytesRead] = 0;
 		data+=buffer;
 	}
 
-    file->drop();
+    file.close();
 
 	std::string currLine = "";
 	for (int i=0; i<data.size(); i++) {
