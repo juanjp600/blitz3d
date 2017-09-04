@@ -125,7 +125,14 @@ class Main {
 		int scrollOffset = 0;
 
 		int selectedFile = 0;
-		
+		enum class FOCUS {
+            NONE = 0,
+            FILE = 1,
+            FIND = 2,
+            REPLACE = 3
+        };
+        FOCUS focus = FOCUS::NONE;
+
 		std::vector<File*> files;
 
 		File* loadFile(std::wstring name);
