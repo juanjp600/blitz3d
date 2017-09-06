@@ -133,6 +133,10 @@ class Main {
         };
         FOCUS focus = FOCUS::NONE;
 
+        int searchBoxOpen = 0;
+        std::wstring findStr;
+        std::wstring replaceStr;
+
 		std::vector<File*> files;
 
 		File* loadFile(std::wstring name);
@@ -144,6 +148,21 @@ struct File {
     std::wstring path;
     bool changed = false;
     std::vector<Line*> text;
+
+    struct BlockData {
+        Line* start; //which line the block starts on
+        Line* end; //which line the block ends on (inclusive)
+        bool collapsed = false;
+
+        struct Pair {
+            Pair(std::wstring a,std::wstring b){start=a;end=b;}
+            std::wstring start; //which substring indicates the start of a block
+            std::wstring end; //which substring indicates the end of the block started by start
+        };
+        static std::vector<Pair> pairs;
+    };
+    std::vector<BlockData> blocks;
+    bool createBlock(int start,BlockData& bd);
 
     int longestLine = 0;
     void recalculateLongestLine();
@@ -162,6 +181,10 @@ struct File {
     std::vector<ActionMem*> undoMem;
     std::vector<ActionMem*> redoMem;
     void pushToUndoMem(ActionMem* mem);
+
+    void insertLine(int i,std::wstring lineText,Main::Keywords& keywords);
+    void removeLine(int i);
+    void setLineText(int i,std::wstring text,Main::Keywords& keywords);
 
     ActionMem* tempMem = nullptr;
 

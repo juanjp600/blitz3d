@@ -52,7 +52,7 @@ bool MainEventReceiver::OnEvent(const irr::SEvent& event) {
         if (event.KeyInput.PressedDown) {
             //std::cout<<event.KeyInput.Key<<"\n";
             wchar_t newChar = event.KeyInput.Char;
-            if ((int)newChar>=32 || (int)newChar==8 || (int)newChar==10/*LF*/ || (int)newChar==13/*CR*/) {
+            if ((int)newChar>=32 || (int)newChar==8 || (int)newChar==10/*LF*/ || (int)newChar==13/*CR*/ || (int)newChar==9/*TAB*/) {
                 charQueue+=newChar;
                 while (charQueue.size()>8) {
                     charQueue.erase(0);
