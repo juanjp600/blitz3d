@@ -319,13 +319,16 @@ bool Main::run() {
         if (focus == FOCUS::NONE) {
             eventReceiver->getCharQueue(); //clear the character queue so it doesn't pop up anywhere when focused
         }
+        if (focus != FOCUS::FIND && focus != FOCUS::REPLACE) {
+            eventReceiver->getKeyHit(irr::KEY_RETURN);
+        }
 
         bool caretScroll = false;
 
         bool pasting = false;
         bool copying = false;
         bool cutting = false;
-        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && eventReceiver->getKeyHit(irr::KEY_KEY_F)) {
+        if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && (eventReceiver->getKeyHit(irr::KEY_KEY_F) || eventReceiver->getKeyHit(irr::KEY_KEY_H))) {
             if (searchBoxOpen!=1) {
                 searchBoxOpen = 1;
                 focus = FOCUS::FIND;
@@ -436,6 +439,21 @@ bool Main::run() {
 
         int part1size = part1.size();
 
+        if (selecting == 2) {
+            if (caretPos.Y>selectionStart.Y) {
+                startSelectRender = selectionStart;
+                endSelectRender = caretPos;
+            } else if (caretPos.Y<selectionStart.Y) {
+                startSelectRender = caretPos;
+                endSelectRender = selectionStart;
+            } else if (caretPos.X>selectionStart.X) {
+                startSelectRender = selectionStart;
+                endSelectRender = caretPos;
+            } else {
+                startSelectRender = caretPos;
+                endSelectRender = selectionStart;
+            }
+        }
         if (focus == FOCUS::FILE) {
             if (selecting<2) {
                 std::wstring charQueue = eventReceiver->getCharQueue(L"",true).c_str();
@@ -543,20 +561,6 @@ bool Main::run() {
                     selecting = 0;
                 }
             } else {
-                if (caretPos.Y>selectionStart.Y) {
-                    startSelectRender = selectionStart;
-                    endSelectRender = caretPos;
-                } else if (caretPos.Y<selectionStart.Y) {
-                    startSelectRender = caretPos;
-                    endSelectRender = selectionStart;
-                } else if (caretPos.X>selectionStart.X) {
-                    startSelectRender = selectionStart;
-                    endSelectRender = caretPos;
-                } else {
-                    startSelectRender = caretPos;
-                    endSelectRender = selectionStart;
-                }
-
                 if (copying) {
                     std::wstring textToCopy = L"";
                     if (startSelectRender.Y < endSelectRender.Y) {
@@ -701,6 +705,7 @@ bool Main::run() {
                             irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText().substr(0,endSelectRender.X)).Width - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y)),
                         &textBoxRect);
                 } else if (i>startSelectRender.Y && i<endSelectRender.Y) {
+                    std::cout<<"AAAA\n";
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
                                             irr::core::recti(
                                             irr::core::vector2di(lineBarWidth - scrollPos.X,32 - fontHeight + 12 + 14 * i - scrollPos.Y),
@@ -1055,7 +1060,11 @@ bool Main::run() {
 	}
     
     if (searchBoxOpen>0) {
-        driver->draw2DRectangle(irr::video::SColor(255,60,60,60),irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,80));
+        if (searchBoxOpen==1) {
+            driver->draw2DRectangle(irr::video::SColor(255,60,60,60),irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,80));
+        } else {
+            driver->draw2DRectangle(irr::video::SColor(255,60,60,60),irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,110));
+        }
         irr::core::recti findRect(windowDims.Width-330,36,windowDims.Width-70,52);
         irr::core::recti replaceRect(windowDims.Width-330,60,windowDims.Width-70,76);
         if (focus == FOCUS::FIND) {
@@ -1066,16 +1075,25 @@ bool Main::run() {
                     irr::core::vector2di(findRect.UpperLeftCorner.X+font->getDimension(findStr.c_str()).Width,findRect.getCenter().Y+7),
                     irr::video::SColor(255,255,255,255));
             }
+            if (eventReceiver->getKeyHit(irr::KEY_RETURN)) {
+                if (files[selectedFile]->find(findStr,files[selectedFile]->caretPos)) {
+                    files[selectedFile]->selecting = 2;
+                    files[selectedFile]->selectionStart.Y = files[selectedFile]->caretPos.Y;
+                    files[selectedFile]->selectionStart.X = files[selectedFile]->caretPos.X-findStr.size();
+                }
+            }
         } else {
             driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),findRect);
         }
         int findTextPos = findRect.getWidth()-font->getDimension(findStr.c_str()).Width;
         if (findTextPos>0) { findTextPos = 0; }
         font->draw(findStr.c_str(),irr::core::recti(findRect.UpperLeftCorner.X+findTextPos,findRect.UpperLeftCorner.Y,findRect.LowerRightCorner.X+findTextPos,findRect.LowerRightCorner.Y),irr::video::SColor(255,200,200,255),false,true,&findRect);
-        if (focus == FOCUS::REPLACE) {
-            driver->draw2DRectangle(irr::video::SColor(255, 25, 25, 31),replaceRect);
-        } else {
-            driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),replaceRect);
+        if (searchBoxOpen==2) {
+            if (focus == FOCUS::REPLACE) {
+                driver->draw2DRectangle(irr::video::SColor(255, 25, 25, 31),replaceRect);
+            } else {
+                driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),replaceRect);
+            }
         }
     }
 
@@ -1640,6 +1658,30 @@ bool File::createBlock(int start,BlockData& bd) {
 
 void File::removeLine(int i) {
     delete text[i]; text.erase(text.begin()+i);
+}
+
+bool File::find(std::wstring str,irr::core::vector2di& pos) {
+    irr::core::vector2di startPos = pos;
+    for (int i=0;i<text.size()+1;i++) {
+        int index = (startPos.Y+i)%text.size();
+        int posAdd = 0;
+        std::wstring currLine = text[index]->getText();
+        if (index==startPos.Y) {
+            if (i==0) {
+                currLine = currLine.substr(startPos.X);
+                posAdd = startPos.X;
+            } else {
+                currLine = currLine.substr(0,startPos.X);
+            }
+        }
+
+        if (currLine.find(str)!=std::wstring::npos) {
+            pos.Y = index;
+            pos.X = posAdd+currLine.find(str)+str.size();
+            return true;
+        }
+    }
+    return false;
 }
 
 void Main::saveFile(File* f,std::wstring absoluteFilename) {

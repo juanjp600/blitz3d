@@ -184,7 +184,9 @@ struct File {
 
     void insertLine(int i,std::wstring lineText,Main::Keywords& keywords);
     void removeLine(int i);
-    void setLineText(int i,std::wstring text,Main::Keywords& keywords);
+    //void setLineText(int i,std::wstring text,Main::Keywords& keywords);
+
+    bool find(std::wstring str, irr::core::vector2di& pos);
 
     ActionMem* tempMem = nullptr;
 

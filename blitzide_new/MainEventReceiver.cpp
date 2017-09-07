@@ -173,15 +173,15 @@ void MainEventReceiver::clearKeys() {
 	memset(keyHit,0,sizeof(keyHit));
 }
 
-irr::core::stringw MainEventReceiver::getCharQueue(irr::core::stringw in,bool includeBackspaces) {
+irr::core::stringw MainEventReceiver::getCharQueue(irr::core::stringw in,bool includeSpecialChars) {
     if (charQueue.size()==0) {
         return in;
     }
     irr::core::stringw retVal = in;
     for (int i=0;i<charQueue.size();i++) {
-        if ((int)charQueue[i]!=8 || includeBackspaces) {
+        if (((int)charQueue[i]!=8 && (int)charQueue[i]!=10 && (int)charQueue[i]!=13 && (int)charQueue[i]!=9) || includeSpecialChars) {
             retVal+=charQueue[i];
-        } else if (retVal.size()>0) {
+        } else if ((int)charQueue[i]==8 && retVal.size()>0) {
             retVal.erase(retVal.size()-1);
         }
     }
