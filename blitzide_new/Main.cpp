@@ -705,7 +705,6 @@ bool Main::run() {
                             irr::core::vector2di(lineBarWidth + font->getDimension(text[i]->getText().substr(0,endSelectRender.X)).Width - scrollPos.X,32 - fontHeight + 26 + 14 * i - scrollPos.Y)),
                         &textBoxRect);
                 } else if (i>startSelectRender.Y && i<endSelectRender.Y) {
-                    std::cout<<"AAAA\n";
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
                                             irr::core::recti(
                                             irr::core::vector2di(lineBarWidth - scrollPos.X,32 - fontHeight + 12 + 14 * i - scrollPos.Y),
