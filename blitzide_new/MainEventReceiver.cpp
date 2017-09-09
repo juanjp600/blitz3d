@@ -39,15 +39,15 @@ bool Input::operator<(const Input& other) const {
 MainEventReceiver::MainEventReceiver() {
         memset(keyDown, false, sizeof(keyDown));
         memset(mouseDown, false, sizeof(mouseDown));
-		memset(keyHit,0,sizeof(keyHit));
-		memset(mouseHit,0,sizeof(mouseHit));
+        memset(keyHit,0,sizeof(keyHit));
+        memset(mouseHit,0,sizeof(mouseHit));
         MousePosition = irr::core::position2di(0,0);
         errorStr = ""; errorState = false;
 }
 
 bool MainEventReceiver::OnEvent(const irr::SEvent& event) {
     if (event.EventType == irr::EET_KEY_INPUT_EVENT) {
-		if (!keyDown[event.KeyInput.Key]) { keyHit[event.KeyInput.Key]++; lastKeyHit = event.KeyInput.Key; }
+        if (!keyDown[event.KeyInput.Key]) { keyHit[event.KeyInput.Key]++; lastKeyHit = event.KeyInput.Key; }
         keyDown[event.KeyInput.Key] = event.KeyInput.PressedDown;
         if (event.KeyInput.PressedDown) {
             //std::cout<<event.KeyInput.Key<<"\n";
@@ -63,12 +63,12 @@ bool MainEventReceiver::OnEvent(const irr::SEvent& event) {
     } else if (event.EventType == irr::EET_MOUSE_INPUT_EVENT) {
         switch(event.MouseInput.Event) {
         case irr::EMIE_LMOUSE_PRESSED_DOWN:
-			if (!mouseDown[0]) { mouseHit[0]++; }
+            if (!mouseDown[0]) { mouseHit[0]++; }
             mouseDown[0] = true;
             break;
 
         case irr::EMIE_RMOUSE_PRESSED_DOWN:
-			if (!mouseDown[1]) { mouseHit[1]++; }
+            if (!mouseDown[1]) { mouseHit[1]++; }
             mouseDown[1] = true;
             break;
 
@@ -81,7 +81,7 @@ bool MainEventReceiver::OnEvent(const irr::SEvent& event) {
             break;
 
         case irr::EMIE_MMOUSE_PRESSED_DOWN:
-			if (!mouseDown[2]) { mouseHit[2]++; }
+            if (!mouseDown[2]) { mouseHit[2]++; }
             mouseDown[2] = true;
             break;
 
@@ -123,18 +123,18 @@ bool MainEventReceiver::getKeyDown(irr::EKEY_CODE keyCode) const {
     return keyDown[keyCode];
 }
 int MainEventReceiver::getKeyHit(irr::EKEY_CODE keyCode) {
-	int kh = keyHit[keyCode]; keyHit[keyCode]=0;
+    int kh = keyHit[keyCode]; keyHit[keyCode]=0;
     return kh;
 }
 irr::EKEY_CODE MainEventReceiver::getLastKeyHit() {
-	irr::EKEY_CODE kh = lastKeyHit; lastKeyHit = irr::KEY_KEY_CODES_COUNT;
-	return kh;
+    irr::EKEY_CODE kh = lastKeyHit; lastKeyHit = irr::KEY_KEY_CODES_COUNT;
+    return kh;
 }
 bool MainEventReceiver::getMouseDown(unsigned char keyCode) const {
     return mouseDown[keyCode];
 }
 int MainEventReceiver::getMouseHit(unsigned char keyCode) {
-	int mh = mouseHit[keyCode]; mouseHit[keyCode]=0;
+    int mh = mouseHit[keyCode]; mouseHit[keyCode]=0;
     return mh;
 }
 bool MainEventReceiver::getInput(const Input& input) const {
@@ -156,21 +156,21 @@ irr::core::position2di MainEventReceiver::getMousePos() const {
 }
 
 float MainEventReceiver::getMouseWheel() {
-	float mw = MouseWheel; MouseWheel = 0.f;
+    float mw = MouseWheel; MouseWheel = 0.f;
     return mw;
 }
 
 void MainEventReceiver::clearMouse() {
-	memset(mouseDown,false,sizeof(mouseDown));
-	memset(mouseHit,0,sizeof(mouseHit));
+    memset(mouseDown,false,sizeof(mouseDown));
+    memset(mouseHit,0,sizeof(mouseHit));
     MouseWheel = 0.f;
 }
 
 void MainEventReceiver::clearKeys() {
-	lastKeyHit = irr::KEY_KEY_CODES_COUNT;
-	charQueue = "";
-	memset(keyDown,false,sizeof(keyDown));
-	memset(keyHit,0,sizeof(keyHit));
+    lastKeyHit = irr::KEY_KEY_CODES_COUNT;
+    charQueue = "";
+    memset(keyDown,false,sizeof(keyDown));
+    memset(keyHit,0,sizeof(keyHit));
 }
 
 irr::core::stringw MainEventReceiver::getCharQueue(irr::core::stringw in,bool includeSpecialChars) {

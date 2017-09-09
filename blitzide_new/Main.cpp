@@ -4,9 +4,9 @@
 #include <fstream>
 
 int main() {
-	Main* main = new Main();
-	while (main->run()) {}
-	return 0;
+    Main* main = new Main();
+    while (main->run()) {}
+    return 0;
 }
 
 static bool running = false;
@@ -19,134 +19,134 @@ static HCURSOR textCursor;
 std::vector<File::BlockData::Pair> File::BlockData::pairs;
 
 LRESULT CALLBACK BBIDEWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	switch (uMsg) {
+    switch (uMsg) {
         case WM_CLOSE:
             requestClose = true;
             return 0;
         break;
-		case WM_DESTROY:
-			running = false;
-			return 0;
-		break;
+        case WM_DESTROY:
+            running = false;
+            return 0;
+        break;
         case WM_SETCURSOR:
             SetCursor(cursor);
         break;
-	}
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 Main::Main() {
-	running = true;
+    running = true;
 
-	hInstance = GetModuleHandle(0);
+    hInstance = GetModuleHandle(0);
 
     defaultCursor = LoadCursor(NULL,IDC_ARROW);
     textCursor = LoadCursor(NULL,IDC_IBEAM);
     cursor = defaultCursor;
 
-	LONG_PTR style = WS_POPUP | WS_THICKFRAME | WS_SYSMENU | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
-	const wchar_t* className = L"BBIDE";
+    LONG_PTR style = WS_POPUP | WS_THICKFRAME | WS_SYSMENU | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
+    const wchar_t* className = L"BBIDE";
 
-	// Register Class
-	WNDCLASSEX wcex;
-	wcex.cbSize			= sizeof(WNDCLASSEX);
-	wcex.style			= 0;//CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= BBIDEWndProc;
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= NULL;
-	wcex.hCursor		= defaultCursor;
-	wcex.hbrBackground	= RGB(0,0,0);//(HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= 0;
-	wcex.lpszClassName	= className;
-	wcex.hIconSm		= 0;
+    // Register Class
+    WNDCLASSEX wcex;
+    wcex.cbSize            = sizeof(WNDCLASSEX);
+    wcex.style            = 0;//CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = BBIDEWndProc;
+    wcex.cbClsExtra        = 0;
+    wcex.cbWndExtra        = 0;
+    wcex.hInstance        = hInstance;
+    wcex.hIcon            = NULL;
+    wcex.hCursor        = defaultCursor;
+    wcex.hbrBackground    = RGB(0,0,0);//(HBRUSH)(COLOR_WINDOW+1);
+    wcex.lpszMenuName    = 0;
+    wcex.lpszClassName    = className;
+    wcex.hIconSm        = 0;
 
-	if (!RegisterClassEx(&wcex)) {
-		std::cout<<"Failed to register window class\n";
-	}
+    if (!RegisterClassEx(&wcex)) {
+        std::cout<<"Failed to register window class\n";
+    }
 
-	RECT clientSize;
-	clientSize.top = 0;
-	clientSize.left = 0;
-	clientSize.right = 1280;
-	clientSize.bottom = 720;
+    RECT clientSize;
+    clientSize.top = 0;
+    clientSize.left = 0;
+    clientSize.right = 1280;
+    clientSize.bottom = 720;
 
-	AdjustWindowRect(&clientSize, style, FALSE);
+    AdjustWindowRect(&clientSize, style, FALSE);
 
-	const irr::s32 realWidth = clientSize.right - clientSize.left;
-	const irr::s32 realHeight = clientSize.bottom - clientSize.top;
+    const irr::s32 realWidth = clientSize.right - clientSize.left;
+    const irr::s32 realHeight = clientSize.bottom - clientSize.top;
 
-	const irr::s32 windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
-	const irr::s32 windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+    const irr::s32 windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+    const irr::s32 windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 
-	HWnd = CreateWindowEx(
-		0,
-		className,
-		L"Blitz3D-600",
-		style,
-		windowLeft,
-		windowTop,
-		realWidth,
-		realHeight,
-		NULL,
-		NULL,
-		hInstance,
-		NULL);
+    HWnd = CreateWindowEx(
+        0,
+        className,
+        L"Blitz3D-600",
+        style,
+        windowLeft,
+        windowTop,
+        realWidth,
+        realHeight,
+        NULL,
+        NULL,
+        hInstance,
+        NULL);
 
     SetClassLong(HWnd,
         GCL_HCURSOR,
         (LONG) cursor);
     
-	if (HWnd == NULL) {
-		std::cout<<"Failed to create window\n";
-		std::cout<<GetLastError()<<"\n";
-	}
+    if (HWnd == NULL) {
+        std::cout<<"Failed to create window\n";
+        std::cout<<GetLastError()<<"\n";
+    }
 
-	ShowWindow(HWnd,SW_SHOW);
-	UpdateWindow(HWnd);
+    ShowWindow(HWnd,SW_SHOW);
+    UpdateWindow(HWnd);
 
-	MoveWindow(HWnd, windowLeft, windowTop, realWidth, realHeight, TRUE);
+    MoveWindow(HWnd, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
-	std::cout<<"WINDOW CREATED\n";
+    std::cout<<"WINDOW CREATED\n";
 
-	irr::SIrrlichtCreationParameters params;
-	params.DriverType = irr::video::EDT_DIRECT3D11;
-	params.WindowId = HWnd;
+    irr::SIrrlichtCreationParameters params;
+    params.DriverType = irr::video::EDT_DIRECT3D11;
+    params.WindowId = HWnd;
 
-	eventReceiver = new MainEventReceiver();
+    eventReceiver = new MainEventReceiver();
 
-	params.EventReceiver = eventReceiver;
+    params.EventReceiver = eventReceiver;
 
-	device = irr::createDeviceEx(params);
+    device = irr::createDeviceEx(params);
 
-	smgr = device->getSceneManager();
-	driver = device->getVideoDriver();
+    smgr = device->getSceneManager();
+    driver = device->getVideoDriver();
 
-	windowDims.Width = 1280;
-	windowDims.Height = 720;
+    windowDims.Width = 1280;
+    windowDims.Height = 720;
 
-	driver->OnResize(windowDims);
+    driver->OnResize(windowDims);
 
-	irr::core::dimension2du potDims(128,128);
-	while (potDims.Width < windowDims.Width) {
-		potDims.Width <<= 1;
-	}
-	while (potDims.Height < windowDims.Height) {
-		potDims.Height <<= 1;
-	}
+    irr::core::dimension2du potDims(128,128);
+    while (potDims.Width < windowDims.Width) {
+        potDims.Width <<= 1;
+    }
+    while (potDims.Height < windowDims.Height) {
+        potDims.Height <<= 1;
+    }
 
-	std::cout<<"CHANGING TEXTURE "<<potDims.Width<<" "<<potDims.Height<<"\n";
+    std::cout<<"CHANGING TEXTURE "<<potDims.Width<<" "<<potDims.Height<<"\n";
 
-	windowDimsPOT = potDims;
-	rtt = driver->addRenderTargetTexture(windowDimsPOT,"rt",irr::video::ECF_R8G8B8);
+    windowDimsPOT = potDims;
+    rtt = driver->addRenderTargetTexture(windowDimsPOT,"rt",irr::video::ECF_R8G8B8);
     driver->setTextureCreationFlag(irr::video::E_TEXTURE_CREATION_FLAG::ETCF_NO_ALPHA_CHANNEL,false);
     toolbarTex = driver->getTexture("cfg/toolbar.png");
     
-	driver->beginScene();
-	driver->setRenderTarget(rtt);
-	driver->setRenderTarget(0);
-	driver->endScene();
+    driver->beginScene();
+    driver->setRenderTarget(rtt);
+    driver->setRenderTarget(0);
+    driver->endScene();
 
     WCHAR winDir[MAX_PATH];
     GetWindowsDirectory(winDir, MAX_PATH);
@@ -156,55 +156,55 @@ Main::Main() {
     font = irr::gui::CGUITTFont::create(device,fontPath.c_str(),14);
     smallFont = irr::gui::CGUITTFont::create(device,fontPath.c_str(),10);
 
-	videodata = irr::video::SExposedVideoData(HWnd);
+    videodata = irr::video::SExposedVideoData(HWnd);
 
-	flipShaderCallback = new FlipShaderCallback();
+    flipShaderCallback = new FlipShaderCallback();
 
-	quad2dMaterialType = (irr::video::E_MATERIAL_TYPE)driver->getGPUProgrammingServices()->addHighLevelShaderMaterial(
-		QUAD2D_SHADER_CODE,"vertexMain",irr::video::EVST_VS_4_0,
-		QUAD2D_SHADER_CODE,"pixelMain",irr::video::EPST_PS_4_0,flipShaderCallback);
+    quad2dMaterialType = (irr::video::E_MATERIAL_TYPE)driver->getGPUProgrammingServices()->addHighLevelShaderMaterial(
+        QUAD2D_SHADER_CODE,"vertexMain",irr::video::EVST_VS_4_0,
+        QUAD2D_SHADER_CODE,"pixelMain",irr::video::EPST_PS_4_0,flipShaderCallback);
 
-	irr::video::IVertexDescriptor* vDesc = driver->getVertexDescriptor(0);
+    irr::video::IVertexDescriptor* vDesc = driver->getVertexDescriptor(0);
 
-	irr::scene::SMesh* mesh = new irr::scene::SMesh();
-	irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(vDesc);
+    irr::scene::SMesh* mesh = new irr::scene::SMesh();
+    irr::scene::CMeshBuffer<irr::video::S3DVertex>* buf = new irr::scene::CMeshBuffer<irr::video::S3DVertex>(vDesc);
 
-	irr::video::S3DVertex verts[4];
-	verts[0]=irr::video::S3DVertex(irr::core::vector3df(-1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top left
-	verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top right
-	verts[2]=irr::video::S3DVertex(irr::core::vector3df(-1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,0.f)); //bottom left
-	verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,0.f)); //bottom right
+    irr::video::S3DVertex verts[4];
+    verts[0]=irr::video::S3DVertex(irr::core::vector3df(-1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top left
+    verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top right
+    verts[2]=irr::video::S3DVertex(irr::core::vector3df(-1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,0.f)); //bottom left
+    verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,0.f)); //bottom right
 
-	irr::scene::CVertexBuffer<irr::video::S3DVertex>* vertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
-	irr::scene::CIndexBuffer* indexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
+    irr::scene::CVertexBuffer<irr::video::S3DVertex>* vertexBuffer = new irr::scene::CVertexBuffer<irr::video::S3DVertex>();
+    irr::scene::CIndexBuffer* indexBuffer = new irr::scene::CIndexBuffer(irr::video::EIT_16BIT);
 
-	for (unsigned int j = 0; j<4; ++j) {
-		vertexBuffer->addVertex(verts[j]);
-	}
+    for (unsigned int j = 0; j<4; ++j) {
+        vertexBuffer->addVertex(verts[j]);
+    }
 
-	indexBuffer->addIndex(1);
-	indexBuffer->addIndex(0);
-	indexBuffer->addIndex(2);
-	indexBuffer->addIndex(2);
-	indexBuffer->addIndex(3);
-	indexBuffer->addIndex(1);
+    indexBuffer->addIndex(1);
+    indexBuffer->addIndex(0);
+    indexBuffer->addIndex(2);
+    indexBuffer->addIndex(2);
+    indexBuffer->addIndex(3);
+    indexBuffer->addIndex(1);
 
-	buf->setVertexBuffer(vertexBuffer, 0);
-	buf->setIndexBuffer(indexBuffer);
+    buf->setVertexBuffer(vertexBuffer, 0);
+    buf->setIndexBuffer(indexBuffer);
 
-	buf->getMaterial().MaterialType = quad2dMaterialType;
-	buf->getMaterial().BackfaceCulling = true;
-	buf->getMaterial().setTexture(0,rtt);
+    buf->getMaterial().MaterialType = quad2dMaterialType;
+    buf->getMaterial().BackfaceCulling = true;
+    buf->getMaterial().setTexture(0,rtt);
 
-	mesh->addMeshBuffer(buf);
-	buf->drop();
+    mesh->addMeshBuffer(buf);
+    buf->drop();
 
-	flipMesh = mesh;
-	flipQuad = device->getSceneManager()->addMeshSceneNode(mesh);
+    flipMesh = mesh;
+    flipQuad = device->getSceneManager()->addMeshSceneNode(mesh);
 
-	std::string keywordDump = execProc("blitzcc +k")+"\n";
-	
-	std::wstring keyword = L"";
+    std::string keywordDump = execProc("blitzcc +k")+"\n";
+    
+    std::wstring keyword = L"";
     
     int pos=0; int n;
     while( (n=keywordDump.find( '\n',pos ))!=std::string::npos ){
@@ -236,78 +236,78 @@ Main::Main() {
 }
 
 bool Main::run() {
-	if (!running) {
-		device->closeDevice();
-	}
+    if (!running) {
+        device->closeDevice();
+    }
 
-	if (GetActiveWindow() == HWnd) {
-		RECT wRect; GetClientRect(HWnd,&wRect);
-		
-		irr::core::dimension2du tDims;
-		tDims.Width = wRect.right-wRect.left;
-		tDims.Height = wRect.bottom-wRect.top;
+    if (GetActiveWindow() == HWnd) {
+        RECT wRect; GetClientRect(HWnd,&wRect);
+        
+        irr::core::dimension2du tDims;
+        tDims.Width = wRect.right-wRect.left;
+        tDims.Height = wRect.bottom-wRect.top;
 
-		if (tDims != windowDims) {
-			driver->removeTexture(rtt);
+        if (tDims != windowDims) {
+            driver->removeTexture(rtt);
 
-			driver->OnResize(tDims);
+            driver->OnResize(tDims);
 
-			windowDims = tDims;
+            windowDims = tDims;
 
-			irr::core::dimension2du potDims(128,128);
-			while (potDims.Width < windowDims.Width) {
-				potDims.Width <<= 1;
-			}
-			while (potDims.Height < windowDims.Height) {
-				potDims.Height <<= 1;
-			}
+            irr::core::dimension2du potDims(128,128);
+            while (potDims.Width < windowDims.Width) {
+                potDims.Width <<= 1;
+            }
+            while (potDims.Height < windowDims.Height) {
+                potDims.Height <<= 1;
+            }
 
-			std::cout<<"CHANGING TEXTURE "<<potDims.Width<<" "<<potDims.Height<<"\n";
+            std::cout<<"CHANGING TEXTURE "<<potDims.Width<<" "<<potDims.Height<<"\n";
 
-			windowDimsPOT = potDims;
-			rtt = driver->addRenderTargetTexture(windowDimsPOT,"rt",irr::video::ECF_R8G8B8);
+            windowDimsPOT = potDims;
+            rtt = driver->addRenderTargetTexture(windowDimsPOT,"rt",irr::video::ECF_R8G8B8);
 
-			driver->beginScene();
-			driver->setRenderTarget(rtt);
-			driver->setRenderTarget(0);
-			driver->endScene();
+            driver->beginScene();
+            driver->setRenderTarget(rtt);
+            driver->setRenderTarget(0);
+            driver->endScene();
 
-			irr::video::S3DVertex verts[4];
-			verts[0]=irr::video::S3DVertex(irr::core::vector3df(-1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top left
-			verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top right
-			verts[2]=irr::video::S3DVertex(irr::core::vector3df(-1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,0.f)); //bottom left
-			verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,0.f)); //bottom right
-			flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(0,&verts[0]);
-			flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(1,&verts[1]);
-			flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(2,&verts[2]);
-			flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(3,&verts[3]);
+            irr::video::S3DVertex verts[4];
+            verts[0]=irr::video::S3DVertex(irr::core::vector3df(-1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top left
+            verts[1]=irr::video::S3DVertex(irr::core::vector3df(1.f,-1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,(float)windowDims.Height/(float)windowDimsPOT.Height)); //top right
+            verts[2]=irr::video::S3DVertex(irr::core::vector3df(-1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df(0.f,0.f)); //bottom left
+            verts[3]=irr::video::S3DVertex(irr::core::vector3df(1.f,1.f,0.f),irr::core::vector3df(0.f,0.f,1.f),irr::video::SColor(255,255,255,255),irr::core::vector2df((float)windowDims.Width/(float)windowDimsPOT.Width,0.f)); //bottom right
+            flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(0,&verts[0]);
+            flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(1,&verts[1]);
+            flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(2,&verts[2]);
+            flipQuad->getMesh()->getMeshBuffer(0)->getVertexBuffer(0)->setVertex(3,&verts[3]);
 
-			flipQuad->getMesh()->getMeshBuffer(0)->getMaterial().setTexture(0,rtt);
-			flipQuad->setMaterialTexture(0,rtt);
-		}
-	}
+            flipQuad->getMesh()->getMeshBuffer(0)->getMaterial().setTexture(0,rtt);
+            flipQuad->setMaterialTexture(0,rtt);
+        }
+    }
 
-	irr::video::SMaterial mat; mat.MaterialType = irr::video::EMT_SOLID;
-	
-	driver->beginScene(true,true,irr::video::SColor(255,0,0,0),videodata);
-	driver->setRenderTarget(rtt,true,true,irr::video::SColor(255,0,0,0));
-	driver->setMaterial(mat);
+    irr::video::SMaterial mat; mat.MaterialType = irr::video::EMT_SOLID;
+    
+    driver->beginScene(true,true,irr::video::SColor(255,0,0,0),videodata);
+    driver->setRenderTarget(rtt,true,true,irr::video::SColor(255,0,0,0));
+    driver->setMaterial(mat);
 
-	int fontHeight = font->getCharDimension(L'W').Height;
+    int fontHeight = font->getCharDimension(L'W').Height;
 
-	int lineBarWidth = 62;
+    int lineBarWidth = 62;
 
-	irr::core::recti textBoxRect(lineBarWidth-3,32,windowDims.Width,windowDims.Height-20);
-	irr::core::recti lineNumRect(irr::core::recti(0, 32, lineBarWidth - 3, textBoxRect.LowerRightCorner.Y));
+    irr::core::recti textBoxRect(lineBarWidth-3,32,windowDims.Width,windowDims.Height-20);
+    irr::core::recti lineNumRect(irr::core::recti(0, 32, lineBarWidth - 3, textBoxRect.LowerRightCorner.Y));
 
-	bool mouseHit = eventReceiver->getMouseHit(0);
+    bool mouseHit = eventReceiver->getMouseHit(0);
 
-	if (selectedFile >= 0 && selectedFile<files.size() && files.size()>0) {
-		irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
+    if (selectedFile >= 0 && selectedFile<files.size() && files.size()>0) {
+        irr::core::vector2di& scrollPos = files[selectedFile]->scrollPos;
         irr::core::vector2di& caretPos = files[selectedFile]->caretPos;
         irr::core::vector2di& selectionStart = files[selectedFile]->selectionStart;
         int& selecting = files[selectedFile]->selecting;
-		std::vector<Line*>& text = files[selectedFile]->text;
+        std::vector<Line*>& text = files[selectedFile]->text;
         
         File::ActionMem* tempMem = files[selectedFile]->tempMem;
         /*if (tempMem!=nullptr) {
@@ -329,9 +329,10 @@ bool Main::run() {
         bool copying = false;
         bool cutting = false;
         if ((eventReceiver->getKeyDown(irr::KEY_LCONTROL) || eventReceiver->getKeyDown(irr::KEY_RCONTROL)) && (eventReceiver->getKeyHit(irr::KEY_KEY_F) || eventReceiver->getKeyHit(irr::KEY_KEY_H))) {
-            if (searchBoxOpen!=1) {
+            if (searchBoxOpen!=1 || focus!=FOCUS::FIND) {
                 searchBoxOpen = 1;
                 focus = FOCUS::FIND;
+                secondaryCaretPos = findStr.size();
             } else {
                 searchBoxOpen = 0;
                 focus = FOCUS::NONE;
@@ -395,24 +396,24 @@ bool Main::run() {
             }
         }
 
-		int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width+200;
+        int fileWidth = font->getDimension(files[selectedFile]->text[files[selectedFile]->longestLine]->getText()).Width+200;
         if (fileWidth<1) {
             fileWidth = 1;
         }
 
-		textBoxRect.LowerRightCorner.X = windowDims.Width;
-		textBoxRect.LowerRightCorner.Y = windowDims.Height-20;
+        textBoxRect.LowerRightCorner.X = windowDims.Width;
+        textBoxRect.LowerRightCorner.Y = windowDims.Height-20;
 
-		bool verticalScrollEnabled = text.size()*14+2 > textBoxRect.getHeight();
-		bool horizontalScrollEnabled = fileWidth > textBoxRect.getWidth();
+        bool verticalScrollEnabled = text.size()*14+2 > textBoxRect.getHeight();
+        bool horizontalScrollEnabled = fileWidth > textBoxRect.getWidth();
 
-		if (verticalScrollEnabled) {
-			textBoxRect.LowerRightCorner.X = windowDims.Width-20;
-		}
+        if (verticalScrollEnabled) {
+            textBoxRect.LowerRightCorner.X = windowDims.Width-20;
+        }
 
-		if (horizontalScrollEnabled) {
-			textBoxRect.LowerRightCorner.Y = windowDims.Height-40;
-		}
+        if (horizontalScrollEnabled) {
+            textBoxRect.LowerRightCorner.Y = windowDims.Height-40;
+        }
 
         lineNumRect.LowerRightCorner.Y = textBoxRect.LowerRightCorner.Y;
 
@@ -696,7 +697,7 @@ bool Main::run() {
 
         if (renderEnd > text.size()) { renderEnd = text.size(); }
 
-		for (int i = renderStart; i<renderEnd; i++) {
+        for (int i = renderStart; i<renderEnd; i++) {
             if (selecting>=2) {
                 if (i==endSelectRender.Y && i==startSelectRender.Y) {
                     driver->draw2DRectangle(irr::video::SColor(255,40,80,120),
@@ -725,7 +726,7 @@ bool Main::run() {
                 }
             }
 
-			int lineNumW = font->getDimension(std::to_string(i+1).c_str()).Width;
+            int lineNumW = font->getDimension(std::to_string(i+1).c_str()).Width;
 
             if (focus == FOCUS::FILE && caretPos.Y == i && device->getTimer()->getTime()%1000<500) {
                 driver->draw2DLine(irr::core::vector2di(lineBarWidth + caretX - scrollPos.X,32 - fontHeight + 12 + 14 * i - scrollPos.Y),
@@ -733,13 +734,13 @@ bool Main::run() {
                     irr::video::SColor(255,255,255,255));
             }
 
-			font->draw(std::to_string(i+1).c_str(),
-				irr::core::recti(lineBarWidth-18-lineNumW, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
-				irr::video::SColor(255,200,200,255),false,true,&lineNumRect
-			);
-			int x = 0;
-			for (int j = 0; j<text[i]->parts.size(); j++) {
-				int w = font->getDimension(text[i]->parts[j].getText()).Width;
+            font->draw(std::to_string(i+1).c_str(),
+                irr::core::recti(lineBarWidth-18-lineNumW, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
+                irr::video::SColor(255,200,200,255),false,true,&lineNumRect
+            );
+            int x = 0;
+            for (int j = 0; j<text[i]->parts.size(); j++) {
+                int w = font->getDimension(text[i]->parts[j].getText()).Width;
 
                 if (j>0) {
                     std::wstring prevPart = text[i]->parts[j-1].getText();
@@ -749,97 +750,160 @@ bool Main::run() {
                     }
                 }
 
-				font->draw(text[i]->parts[j].getText().c_str(),
-					irr::core::recti(lineBarWidth + x - scrollPos.X, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth + x + w - scrollPos.X, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
-					text[i]->parts[j].color, false, true,&textBoxRect);
-				x += w;
-			}
-		}
+                font->draw(text[i]->parts[j].getText().c_str(),
+                    irr::core::recti(lineBarWidth + x - scrollPos.X, 32 - fontHeight + 14 + 14 * i - scrollPos.Y, lineBarWidth + x + w - scrollPos.X, 32 - fontHeight + 28 + 14 * i - scrollPos.Y),
+                    text[i]->parts[j].color, false, true,&textBoxRect);
+                x += w;
+            }
+        }
+
+        irr::core::recti searchBoxRect(-5,-5,-4,-4);
+        irr::core::recti findRect(-5,-5,-4,-4);
+        irr::core::recti replaceRect(-5,-5,-4,-4);
+
+        if (searchBoxOpen>0) {
+            if (searchBoxOpen==1) {
+                searchBoxRect = irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,80);
+            } else {
+                searchBoxRect = irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,110);
+            }
+            driver->draw2DRectangle(irr::video::SColor(255,60,60,60),searchBoxRect);
+            findRect = irr::core::recti(windowDims.Width-330,36,windowDims.Width-70,52);
+            replaceRect = irr::core::recti(windowDims.Width-330,60,windowDims.Width-70,76);
+            if (mouseHit) {
+                if (findRect.isPointInside(eventReceiver->getMousePos())) {
+                    focus = FOCUS::FIND;
+                }
+            }
+            if (focus == FOCUS::FIND) {
+                if (eventReceiver->getKeyHit(irr::KEY_LEFT)) {
+                    secondaryCaretPos--;
+                    if (secondaryCaretPos<0) { secondaryCaretPos = 0; }
+                }
+                if (eventReceiver->getKeyHit(irr::KEY_RIGHT)) {
+                    secondaryCaretPos++;
+                    if (secondaryCaretPos>findStr.size()) { secondaryCaretPos = findStr.size(); }
+                }
+                driver->draw2DRectangle(irr::video::SColor(255, 25, 25, 31),findRect);
+                std::wstring firstPart = findStr.substr(0,secondaryCaretPos);
+                std::wstring secondPart = findStr.substr(secondaryCaretPos);
+                firstPart = eventReceiver->getCharQueue(firstPart.c_str()).c_str();
+                secondaryCaretPos = firstPart.size();
+                findStr=firstPart+secondPart;
+                if (device->getTimer()->getTime()%1000<500) {
+                    driver->draw2DLine(irr::core::vector2di(findRect.UpperLeftCorner.X+font->getDimension(firstPart.c_str()).Width,findRect.getCenter().Y-7),
+                        irr::core::vector2di(findRect.UpperLeftCorner.X+font->getDimension(firstPart.c_str()).Width,findRect.getCenter().Y+7),
+                        irr::video::SColor(255,255,255,255));
+                }
+                if (eventReceiver->getKeyHit(irr::KEY_RETURN)) {
+                    if (files[selectedFile]->find(findStr,files[selectedFile]->caretPos)) {
+                        selecting = 2;
+                        selectionStart.Y = files[selectedFile]->caretPos.Y;
+                        selectionStart.X = files[selectedFile]->caretPos.X-findStr.size();
+                        caretScroll = true;
+                    }
+                }
+            } else {
+                driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),findRect);
+            }
+            int findTextPos = findRect.getWidth()-font->getDimension(findStr.c_str()).Width;
+            if (findTextPos>0) { findTextPos = 0; }
+            font->draw(findStr.c_str(),irr::core::recti(findRect.UpperLeftCorner.X+findTextPos,findRect.UpperLeftCorner.Y,findRect.LowerRightCorner.X+findTextPos,findRect.LowerRightCorner.Y),irr::video::SColor(255,200,200,255),false,true,&findRect);
+            if (searchBoxOpen==2) {
+                if (focus == FOCUS::REPLACE) {
+                    driver->draw2DRectangle(irr::video::SColor(255, 25, 25, 31),replaceRect);
+                } else {
+                    driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),replaceRect);
+                }
+            }
+        }
         
-		wchar_t tempCStr[2];
+        bool mouseOnFileText = textBoxRect.isPointInside(eventReceiver->getMousePos()) && !searchBoxRect.isPointInside(eventReceiver->getMousePos());
+        
+        wchar_t tempCStr[2];
         tempCStr[1]=0;
 
-		//vertical scroll bar
+        //vertical scroll bar
 
         int vScrollSpace = textBoxRect.getHeight()-20;
-		int vRealScrollBarHalfHeight = vScrollSpace*vScrollSpace / (text.size() * 14) / 2;
-		int vScrollBarHalfHeight = vRealScrollBarHalfHeight;
-		if (vScrollBarHalfHeight < 12) { vScrollBarHalfHeight = 12; }
+        int vRealScrollBarHalfHeight = vScrollSpace*vScrollSpace / (text.size() * 14) / 2;
+        int vScrollBarHalfHeight = vRealScrollBarHalfHeight;
+        if (vScrollBarHalfHeight < 12) { vScrollBarHalfHeight = 12; }
 
-		int vStartY = 52 + vScrollBarHalfHeight;
-		int vEndY = textBoxRect.LowerRightCorner.Y-20-vScrollBarHalfHeight;
+        int vStartY = 52 + vScrollBarHalfHeight;
+        int vEndY = textBoxRect.LowerRightCorner.Y-20-vScrollBarHalfHeight;
 
-		int maxVScrollPos = (text.size() * 14) - (textBoxRect.getHeight()) + 2;
+        int maxVScrollPos = (text.size() * 14) - (textBoxRect.getHeight()) + 2;
 
-		int vScrollBarCenterY = ((vStartY*(maxVScrollPos-scrollPos.Y))+(vEndY*scrollPos.Y))/maxVScrollPos;
+        int vScrollBarCenterY = ((vStartY*(maxVScrollPos-scrollPos.Y))+(vEndY*scrollPos.Y))/maxVScrollPos;
 
-		if (verticalScrollEnabled) {
-			driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
-									irr::core::recti(textBoxRect.LowerRightCorner.X, 32, textBoxRect.LowerRightCorner.X+20, textBoxRect.LowerRightCorner.Y));
+        if (verticalScrollEnabled) {
+            driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
+                                    irr::core::recti(textBoxRect.LowerRightCorner.X, 32, textBoxRect.LowerRightCorner.X+20, textBoxRect.LowerRightCorner.Y));
 
-			driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
-									irr::core::recti(textBoxRect.LowerRightCorner.X+2, vScrollBarCenterY-vScrollBarHalfHeight+2,textBoxRect.LowerRightCorner.X+18, vScrollBarCenterY+vScrollBarHalfHeight-2));
+            driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
+                                    irr::core::recti(textBoxRect.LowerRightCorner.X+2, vScrollBarCenterY-vScrollBarHalfHeight+2,textBoxRect.LowerRightCorner.X+18, vScrollBarCenterY+vScrollBarHalfHeight-2));
 
-			tempCStr[0] = 0x25B2;
-			font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X, 32, textBoxRect.LowerRightCorner.X+20, 52),irr::video::SColor(255,155,155,155),true,true);
-			tempCStr[0] = 0x25BC;
-			font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y-20, textBoxRect.LowerRightCorner.X+20, textBoxRect.LowerRightCorner.Y), irr::video::SColor(255, 155, 155, 155), true, true);
-		}
+            tempCStr[0] = 0x25B2;
+            font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X, 32, textBoxRect.LowerRightCorner.X+20, 52),irr::video::SColor(255,155,155,155),true,true);
+            tempCStr[0] = 0x25BC;
+            font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y-20, textBoxRect.LowerRightCorner.X+20, textBoxRect.LowerRightCorner.Y), irr::video::SColor(255, 155, 155, 155), true, true);
+        }
 
-		//horizontal scroll bar
+        //horizontal scroll bar
 
         int hScrollSpace = textBoxRect.getWidth()-20;
-		int hRealScrollBarHalfWidth = hScrollSpace*hScrollSpace / (fileWidth) / 2;
-		int hScrollBarHalfWidth = hRealScrollBarHalfWidth;
-		if (hScrollBarHalfWidth < 12) { hScrollBarHalfWidth = 12; }
+        int hRealScrollBarHalfWidth = hScrollSpace*hScrollSpace / (fileWidth) / 2;
+        int hScrollBarHalfWidth = hRealScrollBarHalfWidth;
+        if (hScrollBarHalfWidth < 12) { hScrollBarHalfWidth = 12; }
 
-		int hStartX = lineBarWidth+17+hScrollBarHalfWidth;
-		int hEndX = textBoxRect.LowerRightCorner.X-20-hScrollBarHalfWidth;
+        int hStartX = lineBarWidth+17+hScrollBarHalfWidth;
+        int hEndX = textBoxRect.LowerRightCorner.X-20-hScrollBarHalfWidth;
 
-		int maxHScrollPos = fileWidth - textBoxRect.getWidth() + 2;
+        int maxHScrollPos = fileWidth - textBoxRect.getWidth() + 2;
 
-		int hScrollBarCenterX = ((hStartX*(maxHScrollPos-scrollPos.X))+(hEndX*scrollPos.X))/maxHScrollPos;
+        int hScrollBarCenterX = ((hStartX*(maxHScrollPos-scrollPos.X))+(hEndX*scrollPos.X))/maxHScrollPos;
 
 
-		if (horizontalScrollEnabled) {
-			driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
-									irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y+20));
+        if (horizontalScrollEnabled) {
+            driver->draw2DRectangle(irr::video::SColor(255, 60, 60, 60),
+                                    irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y+20));
 
-			driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
-									irr::core::recti(hScrollBarCenterX-hScrollBarHalfWidth+2, textBoxRect.LowerRightCorner.Y+2, hScrollBarCenterX+hScrollBarHalfWidth-2, textBoxRect.LowerRightCorner.Y+18));
+            driver->draw2DRectangle(irr::video::SColor(255, 105, 105, 105),
+                                    irr::core::recti(hScrollBarCenterX-hScrollBarHalfWidth+2, textBoxRect.LowerRightCorner.Y+2, hScrollBarCenterX+hScrollBarHalfWidth-2, textBoxRect.LowerRightCorner.Y+18));
 
-			tempCStr[0] = 0x25C4;
-			font->draw(irr::core::stringw(tempCStr), irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, lineBarWidth+17, textBoxRect.LowerRightCorner.Y+20),irr::video::SColor(255,155,155,155),true,true);
-			tempCStr[0] = 0x25BA;
-			font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X-20, textBoxRect.LowerRightCorner.Y, textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y+20), irr::video::SColor(255, 155, 155, 155), true, true);
-		}
+            tempCStr[0] = 0x25C4;
+            font->draw(irr::core::stringw(tempCStr), irr::core::recti(lineBarWidth-3, textBoxRect.LowerRightCorner.Y, lineBarWidth+17, textBoxRect.LowerRightCorner.Y+20),irr::video::SColor(255,155,155,155),true,true);
+            tempCStr[0] = 0x25BA;
+            font->draw(irr::core::stringw(tempCStr), irr::core::recti(textBoxRect.LowerRightCorner.X-20, textBoxRect.LowerRightCorner.Y, textBoxRect.LowerRightCorner.X, textBoxRect.LowerRightCorner.Y+20), irr::video::SColor(255, 155, 155, 155), true, true);
+        }
 
-		if (mouseHit) {
-			if (verticalScrollEnabled && eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X) {
-				if (eventReceiver->getMousePos().Y > 32 && eventReceiver->getMousePos().Y < 52) {
-					scrollPos.Y -= 14;
-				}
-				if (eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y-20 && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y) {
-					scrollPos.Y += 14;
-				}
-			}
+        if (mouseHit) {
+            if (verticalScrollEnabled && eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X) {
+                if (eventReceiver->getMousePos().Y > 32 && eventReceiver->getMousePos().Y < 52) {
+                    scrollPos.Y -= 14;
+                }
+                if (eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y-20 && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y) {
+                    scrollPos.Y += 14;
+                }
+            }
 
-			if (horizontalScrollEnabled && eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
-				if (eventReceiver->getMousePos().X > lineBarWidth-3 && eventReceiver->getMousePos().X < lineBarWidth+17) {
-					scrollPos.X -= 70;
-				}
-				if (eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X-20 && eventReceiver->getMousePos().X < textBoxRect.LowerRightCorner.X) {
-					scrollPos.X += 70;
-				}
-			}
-		}
+            if (horizontalScrollEnabled && eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
+                if (eventReceiver->getMousePos().X > lineBarWidth-3 && eventReceiver->getMousePos().X < lineBarWidth+17) {
+                    scrollPos.X -= 70;
+                }
+                if (eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X-20 && eventReceiver->getMousePos().X < textBoxRect.LowerRightCorner.X) {
+                    scrollPos.X += 70;
+                }
+            }
+        }
 
         irr::core::vector2di oldCaretPos = caretPos;
 
         bool forcePushUndoMem = false;
 
         if (eventReceiver->getMouseDown(0) && isScrolling==SCROLL::NONE) {
-            if (textBoxRect.isPointInside(eventReceiver->getMousePos()) || selecting>1) {
+            if (mouseOnFileText || selecting>1) {
                 focus = FOCUS::FILE;
                 caretScroll = true;
                 forcePushUndoMem = true;
@@ -984,7 +1048,7 @@ bool Main::run() {
         }
 
         HCURSOR oldCursor = cursor;
-        if (textBoxRect.isPointInside(eventReceiver->getMousePos())) {
+        if (mouseOnFileText || findRect.isPointInside(eventReceiver->getMousePos())) {
             cursor = textCursor;
         } else {
             cursor = defaultCursor;
@@ -996,106 +1060,68 @@ bool Main::run() {
                 (LONG) cursor);
         }
 
-		float mouseWheel = eventReceiver->getMouseWheel();
-		scrollPos.Y -= mouseWheel*42;
+        float mouseWheel = eventReceiver->getMouseWheel();
+        scrollPos.Y -= mouseWheel*42;
 
-		if (eventReceiver->getMouseDown(0)) {
-			int newVScrollPos = (eventReceiver->getMousePos().Y-vStartY)*maxVScrollPos/(vEndY-vStartY);
+        if (eventReceiver->getMouseDown(0)) {
+            int newVScrollPos = (eventReceiver->getMousePos().Y-vStartY)*maxVScrollPos/(vEndY-vStartY);
 
-			int newHScrollPos = (eventReceiver->getMousePos().X-hStartX)*maxHScrollPos/(hEndX-hStartX);
+            int newHScrollPos = (eventReceiver->getMousePos().X-hStartX)*maxHScrollPos/(hEndX-hStartX);
 
-			if (verticalScrollEnabled && eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X) {
-				if (eventReceiver->getMousePos().Y > 52 && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y-20) {
-					if (mouseHit) {
-						if (eventReceiver->getMousePos().Y > vScrollBarCenterY - vScrollBarHalfHeight && eventReceiver->getMousePos().Y < vScrollBarCenterY + vScrollBarHalfHeight) {
-							if (isScrolling == SCROLL::NONE) {
-								scrollOffset = newVScrollPos - scrollPos.Y;
-								isScrolling = SCROLL::VERTICAL;
-							}
-						} else {
-							scrollPos.Y = (scrollPos.Y+scrollPos.Y+newVScrollPos)/3;
-						}
-					}
-				}
-			}
-
-			if (horizontalScrollEnabled && eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
-				if (eventReceiver->getMousePos().X > lineBarWidth+17 && eventReceiver->getMousePos().X < textBoxRect.LowerRightCorner.X) {
-					if (mouseHit) {
-						if (eventReceiver->getMousePos().X > hScrollBarCenterX - hScrollBarHalfWidth && eventReceiver->getMousePos().X < hScrollBarCenterX + hScrollBarHalfWidth) {
-							if (isScrolling == SCROLL::NONE) {
-								scrollOffset = newHScrollPos - scrollPos.X;
-								isScrolling = SCROLL::HORIZONTAL;
-							}
-						} else {
-							scrollPos.X = (scrollPos.X+scrollPos.X+newHScrollPos)/3;
-						}
-					}
-				}
-			}
-			if (isScrolling == SCROLL::VERTICAL) {
-				scrollPos.Y = newVScrollPos - scrollOffset;
-			} else if (isScrolling == SCROLL::HORIZONTAL) {
-				scrollPos.X = newHScrollPos - scrollOffset;
-			}
-		} else {
-			isScrolling = SCROLL::NONE;
-		}
-
-		if (scrollPos.Y > maxVScrollPos) {
-			scrollPos.Y = maxVScrollPos;
-		}
-		if (scrollPos.Y < 0) {
-			scrollPos.Y = 0;
-		}
-
-
-		if (scrollPos.X > maxHScrollPos) {
-			scrollPos.X = maxHScrollPos;
-		}
-		if (scrollPos.X < 0) {
-			scrollPos.X = 0;
-		}
-	}
-    
-    if (searchBoxOpen>0) {
-        if (searchBoxOpen==1) {
-            driver->draw2DRectangle(irr::video::SColor(255,60,60,60),irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,80));
-        } else {
-            driver->draw2DRectangle(irr::video::SColor(255,60,60,60),irr::core::recti(windowDims.Width-380,32,windowDims.Width-50,110));
-        }
-        irr::core::recti findRect(windowDims.Width-330,36,windowDims.Width-70,52);
-        irr::core::recti replaceRect(windowDims.Width-330,60,windowDims.Width-70,76);
-        if (focus == FOCUS::FIND) {
-            driver->draw2DRectangle(irr::video::SColor(255, 25, 25, 31),findRect);
-            findStr = eventReceiver->getCharQueue(findStr.c_str()).c_str();
-            if (device->getTimer()->getTime()%1000<500) {
-                driver->draw2DLine(irr::core::vector2di(findRect.UpperLeftCorner.X+font->getDimension(findStr.c_str()).Width,findRect.getCenter().Y-7),
-                    irr::core::vector2di(findRect.UpperLeftCorner.X+font->getDimension(findStr.c_str()).Width,findRect.getCenter().Y+7),
-                    irr::video::SColor(255,255,255,255));
-            }
-            if (eventReceiver->getKeyHit(irr::KEY_RETURN)) {
-                if (files[selectedFile]->find(findStr,files[selectedFile]->caretPos)) {
-                    files[selectedFile]->selecting = 2;
-                    files[selectedFile]->selectionStart.Y = files[selectedFile]->caretPos.Y;
-                    files[selectedFile]->selectionStart.X = files[selectedFile]->caretPos.X-findStr.size();
+            if (verticalScrollEnabled && eventReceiver->getMousePos().X > textBoxRect.LowerRightCorner.X) {
+                if (eventReceiver->getMousePos().Y > 52 && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y-20) {
+                    if (mouseHit) {
+                        if (eventReceiver->getMousePos().Y > vScrollBarCenterY - vScrollBarHalfHeight && eventReceiver->getMousePos().Y < vScrollBarCenterY + vScrollBarHalfHeight) {
+                            if (isScrolling == SCROLL::NONE) {
+                                scrollOffset = newVScrollPos - scrollPos.Y;
+                                isScrolling = SCROLL::VERTICAL;
+                            }
+                        } else {
+                            scrollPos.Y = (scrollPos.Y+scrollPos.Y+newVScrollPos)/3;
+                        }
+                    }
                 }
             }
-        } else {
-            driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),findRect);
-        }
-        int findTextPos = findRect.getWidth()-font->getDimension(findStr.c_str()).Width;
-        if (findTextPos>0) { findTextPos = 0; }
-        font->draw(findStr.c_str(),irr::core::recti(findRect.UpperLeftCorner.X+findTextPos,findRect.UpperLeftCorner.Y,findRect.LowerRightCorner.X+findTextPos,findRect.LowerRightCorner.Y),irr::video::SColor(255,200,200,255),false,true,&findRect);
-        if (searchBoxOpen==2) {
-            if (focus == FOCUS::REPLACE) {
-                driver->draw2DRectangle(irr::video::SColor(255, 25, 25, 31),replaceRect);
-            } else {
-                driver->draw2DRectangle(irr::video::SColor(255, 12, 12, 15),replaceRect);
+
+            if (horizontalScrollEnabled && eventReceiver->getMousePos().Y > textBoxRect.LowerRightCorner.Y && eventReceiver->getMousePos().Y < textBoxRect.LowerRightCorner.Y+20) {
+                if (eventReceiver->getMousePos().X > lineBarWidth+17 && eventReceiver->getMousePos().X < textBoxRect.LowerRightCorner.X) {
+                    if (mouseHit) {
+                        if (eventReceiver->getMousePos().X > hScrollBarCenterX - hScrollBarHalfWidth && eventReceiver->getMousePos().X < hScrollBarCenterX + hScrollBarHalfWidth) {
+                            if (isScrolling == SCROLL::NONE) {
+                                scrollOffset = newHScrollPos - scrollPos.X;
+                                isScrolling = SCROLL::HORIZONTAL;
+                            }
+                        } else {
+                            scrollPos.X = (scrollPos.X+scrollPos.X+newHScrollPos)/3;
+                        }
+                    }
+                }
             }
+            if (isScrolling == SCROLL::VERTICAL) {
+                scrollPos.Y = newVScrollPos - scrollOffset;
+            } else if (isScrolling == SCROLL::HORIZONTAL) {
+                scrollPos.X = newHScrollPos - scrollOffset;
+            }
+        } else {
+            isScrolling = SCROLL::NONE;
+        }
+
+        if (scrollPos.Y > maxVScrollPos) {
+            scrollPos.Y = maxVScrollPos;
+        }
+        if (scrollPos.Y < 0) {
+            scrollPos.Y = 0;
+        }
+
+
+        if (scrollPos.X > maxHScrollPos) {
+            scrollPos.X = maxHScrollPos;
+        }
+        if (scrollPos.X < 0) {
+            scrollPos.X = 0;
         }
     }
-
+    
     driver->draw2DRectangle(irr::video::SColor(255,255,0,0),irr::core::recti(-2,-2,-1,-1));
     
     driver->draw2DLine(irr::core::vector2di(0,32),irr::core::vector2di(windowDims.Width,32),irr::video::SColor(255,70,70,70));
@@ -1350,19 +1376,19 @@ bool Main::run() {
         x+=65;
     }
 
-	driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
+    driver->setRenderTarget(0,true,true,irr::video::SColor(255,0,255,0));
     mat.MaterialType = irr::video::EMT_SOLID;
-	driver->setMaterial(mat);
-	flipQuad->render();
-	driver->endScene();
+    driver->setMaterial(mat);
+    flipQuad->render();
+    driver->endScene();
 
     if (requestClose) {
         DestroyWindow(HWnd);
     }
 
-	//std::cout << driver->getFPS() << "\n";
+    //std::cout << driver->getFPS() << "\n";
 
-	return device->run();
+    return device->run();
 }
 
 std::string Line::getTextUTF8() {
@@ -1370,23 +1396,23 @@ std::string Line::getTextUTF8() {
 }
 
 std::wstring Line::getText() {
-	return text;
+    return text;
 }
 
 static bool isfmt( int ch,int nxt ){
-	return ch==L';' || ch==L'\"' || iswalpha(ch) || isdigit(ch) || (ch==L'$' && isxdigit(nxt));
+    return ch==L';' || ch==L'\"' || iswalpha(ch) || isdigit(ch) || (ch==L'$' && isxdigit(nxt));
 }
 
 static bool isid( int c ){
-	return iswalnum(c)||c=='_';
+    return iswalnum(c)||c=='_';
 }
 
 const irr::video::SColor Line::Part::colors[6] = {
-	irr::video::SColor(255,200,200,200),
-	irr::video::SColor(255,255,200,100),
-	irr::video::SColor(255,102,187,238),
-	irr::video::SColor(255,0,204,102),
-	irr::video::SColor(255,200,255,200)
+    irr::video::SColor(255,200,200,200),
+    irr::video::SColor(255,255,200,100),
+    irr::video::SColor(255,102,187,238),
+    irr::video::SColor(255,0,204,102),
+    irr::video::SColor(255,200,255,200)
 };
 
 void Line::setText(std::wstring inText) {
@@ -1408,73 +1434,73 @@ void Line::setTextUTF8(std::string inText) {
 }
 
 void Line::formatText(Main::Keywords& keywords) {
-	parts.clear();
-	std::wstring out;
-	int cf=0;
-	for( int k=0;k<(int)text.size(); ){
-		int from=k;
-		int pf=cf;
-		int c=text[k],is_sz=text.size();
-		if( !isgraph( c ) ){
-			for( ++k;k<is_sz && !isgraph(text[k]);++k ){}
-		}else if( !isfmt( c,k+1<is_sz?text[k+1]:0 ) ){
-			for( ++k;k<is_sz && !isfmt( text[k],k+1<is_sz?text[k+1]:0 );++k ){}
-			cf=0;
-		}else if( c==L';' ){					//comment?
-			k=is_sz;
-			cf=3;
-		}else if( c==L'\"' ){		//string const?
-			for( ++k;k<is_sz && text[k]!='\"';++k ){}
-			if( k<is_sz ) ++k;
-			cf=1;
-		}else if( iswalpha( c ) ){		//ident?
-			for( ++k;k<is_sz && isid(text[k]);++k ){}
-			if( keywords.findKeyword(text.substr( from,k-from )) ) cf=0;
-			else cf=2;
-		}else if( c==L'$' ){
-			for( ++k;k<is_sz && isxdigit(text[k]);++k ){}
-			cf=4;
-		}else if( isdigit( c ) ){	//numeric const?
-			for( ++k;k<is_sz && isdigit(text[k]);++k ){}
-			cf=4;
-		}
-		Part newPart;
-		newPart.color = Part::colors[cf];
+    parts.clear();
+    std::wstring out;
+    int cf=0;
+    for( int k=0;k<(int)text.size(); ){
+        int from=k;
+        int pf=cf;
+        int c=text[k],is_sz=text.size();
+        if( !isgraph( c ) ){
+            for( ++k;k<is_sz && !isgraph(text[k]);++k ){}
+        }else if( !isfmt( c,k+1<is_sz?text[k+1]:0 ) ){
+            for( ++k;k<is_sz && !isfmt( text[k],k+1<is_sz?text[k+1]:0 );++k ){}
+            cf=0;
+        }else if( c==L';' ){                    //comment?
+            k=is_sz;
+            cf=3;
+        }else if( c==L'\"' ){        //string const?
+            for( ++k;k<is_sz && text[k]!='\"';++k ){}
+            if( k<is_sz ) ++k;
+            cf=1;
+        }else if( iswalpha( c ) ){        //ident?
+            for( ++k;k<is_sz && isid(text[k]);++k ){}
+            if( keywords.findKeyword(text.substr( from,k-from )) ) cf=0;
+            else cf=2;
+        }else if( c==L'$' ){
+            for( ++k;k<is_sz && isxdigit(text[k]);++k ){}
+            cf=4;
+        }else if( isdigit( c ) ){    //numeric const?
+            for( ++k;k<is_sz && isdigit(text[k]);++k ){}
+            cf=4;
+        }
+        Part newPart;
+        newPart.color = Part::colors[cf];
         cf = 0;
-		newPart.text = text.substr( from,k-from );
-		parts.push_back(newPart);
-	}
+        newPart.text = text.substr( from,k-from );
+        parts.push_back(newPart);
+    }
 
-	isFormatted = true;
+    isFormatted = true;
 
-	/*if( text[0]=='F' && text.find( L"Function" )==0 ){
-		for( int k=8;k<(int)text.size();++k ){
-			if( iswalpha( text[k] ) ){
-				int start=k;
-				for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
-				//funcList.insert( textnum,text.substr( start,k-start ) );
-				break;
-			}
-		}
-	}else if( text[0]==L'T' && text.find( L"Type" )==0 ){
-		for( int k=4;k<(int)text.size();++k ){
-			if( iswalpha( text[k] ) ){
-				int start=k;
-				for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
-				//typeList.insert( textnum,text.substr( start,k-start ) );
-				break;
-			}
-		}
-	}else if( text[0]==L'.' ){
-		for( int k=1;k<(int)text.size();++k ){
-			if( iswalpha( text[k] ) ){
-				int start=k;
-				for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
-				//labsList.insert( textnum,text.substr( start,k-start ) );
-				break;
-			}
-		}
-	}*/
+    /*if( text[0]=='F' && text.find( L"Function" )==0 ){
+        for( int k=8;k<(int)text.size();++k ){
+            if( iswalpha( text[k] ) ){
+                int start=k;
+                for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
+                //funcList.insert( textnum,text.substr( start,k-start ) );
+                break;
+            }
+        }
+    }else if( text[0]==L'T' && text.find( L"Type" )==0 ){
+        for( int k=4;k<(int)text.size();++k ){
+            if( iswalpha( text[k] ) ){
+                int start=k;
+                for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
+                //typeList.insert( textnum,text.substr( start,k-start ) );
+                break;
+            }
+        }
+    }else if( text[0]==L'.' ){
+        for( int k=1;k<(int)text.size();++k ){
+            if( iswalpha( text[k] ) ){
+                int start=k;
+                for( ++k;k<(int)text.size() && isid(text[k]);++k ){}
+                //labsList.insert( textnum,text.substr( start,k-start ) );
+                break;
+            }
+        }
+    }*/
 }
 
 bool Main::Keywords::findKeyword(std::wstring keyword) {
@@ -1500,13 +1526,13 @@ void File::recalculateLongestLine() {
     if (longestLine>=text.size()) {
         longestLine = 0;
     }
-	int length = text[longestLine]->getText().size();
-	for (int i=0;i<text.size();i++) {
-		if (text[i]->getText().size()>length) {
-			length = text[longestLine]->getText().size();
-			longestLine = i;
-		}
-	}
+    int length = text[longestLine]->getText().size();
+    for (int i=0;i<text.size();i++) {
+        if (text[i]->getText().size()>length) {
+            length = text[longestLine]->getText().size();
+            longestLine = i;
+        }
+    }
 }
 
 void File::pushToUndoMem(File::ActionMem* mem) {
@@ -1652,7 +1678,6 @@ bool File::createBlock(int start,BlockData& bd) {
             checkForBlockSubstrs = lineText.substr(i);
         }
     }
-
 }
 
 void File::removeLine(int i) {
@@ -1728,92 +1753,92 @@ File* Main::loadFile(std::wstring name) {
         }
     }
 
-	File* newFile = new File();
-	newFile->caretPos = irr::core::vector2di(0,0);
-	newFile->scrollPos = irr::core::vector2di(0,0);
-	newFile->changed = false;
-	newFile->name = name;
+    File* newFile = new File();
+    newFile->caretPos = irr::core::vector2di(0,0);
+    newFile->scrollPos = irr::core::vector2di(0,0);
+    newFile->changed = false;
+    newFile->name = name;
     newFile->path = path;
 
-	std::string data = "";
-	char buffer[1025];
+    std::string data = "";
+    char buffer[1025];
 
-	std::ifstream file;
+    std::ifstream file;
     file.open((path+name).c_str(),std::ifstream::in|std::ifstream::binary);
-	
-	while (!file.eof()) {
+    
+    while (!file.eof()) {
         file.read(buffer, 1024);
         int bytesRead = file.gcount();
-		buffer[bytesRead] = 0;
-		data+=buffer;
-	}
+        buffer[bytesRead] = 0;
+        data+=buffer;
+    }
 
     file.close();
 
-	std::string currLine = "";
-	for (int i=0; i<data.size(); i++) {
-		if (data[i]=='\r') {
-			//skip
-		} else if (data[i]=='\n') {
+    std::string currLine = "";
+    for (int i=0; i<data.size(); i++) {
+        if (data[i]=='\r') {
+            //skip
+        } else if (data[i]=='\n') {
             newFile->insertLine(newFile->text.size(),utf8ToWChar(currLine),keywords);
-			//std::cout<<currLine.c_str()<<"\n";
-			currLine = "";
-		} else if (data[i]=='\t') {
+            //std::cout<<currLine.c_str()<<"\n";
+            currLine = "";
+        } else if (data[i]=='\t') {
             int tabSize = 4-(currLine.size()%4);
             for (int i=0;i<tabSize;i++) {
                 currLine+=" ";
             }
-		} else {
-			currLine += data[i];
-		}
-	}
+        } else {
+            currLine += data[i];
+        }
+    }
     if (currLine.size()>0 || newFile->text.size()==0) {
         newFile->insertLine(newFile->text.size(),utf8ToWChar(currLine),keywords);
     }
 
-	newFile->recalculateLongestLine();
+    newFile->recalculateLongestLine();
 
     newFile->changed = false;
-	files.push_back(newFile);
-	return newFile;
+    files.push_back(newFile);
+    return newFile;
 }
 
 static std::string execProc( const std::string& proc ){
-	//TODO: figure out if this is the best way to get the keywords, it's probably not
-	HANDLE rd,wr;
+    //TODO: figure out if this is the best way to get the keywords, it's probably not
+    HANDLE rd,wr;
 
-	SECURITY_ATTRIBUTES sa={sizeof(sa),0,true};
+    SECURITY_ATTRIBUTES sa={sizeof(sa),0,true};
 
-	if( CreatePipe( &rd,&wr,&sa,0 ) ){
-		STARTUPINFOA si={sizeof(si)};
-		si.dwFlags=STARTF_USESTDHANDLES;
-		si.hStdOutput=si.hStdError=wr;
-		PROCESS_INFORMATION pi={0};
-		if( CreateProcessA( 0,(char*)proc.c_str(),0,0,true,DETACHED_PROCESS,0,0,&si,&pi ) ){
-			CloseHandle( pi.hProcess );
-			CloseHandle( pi.hThread );
-			CloseHandle( wr );
+    if( CreatePipe( &rd,&wr,&sa,0 ) ){
+        STARTUPINFOA si={sizeof(si)};
+        si.dwFlags=STARTF_USESTDHANDLES;
+        si.hStdOutput=si.hStdError=wr;
+        PROCESS_INFORMATION pi={0};
+        if( CreateProcessA( 0,(char*)proc.c_str(),0,0,true,DETACHED_PROCESS,0,0,&si,&pi ) ){
+            CloseHandle( pi.hProcess );
+            CloseHandle( pi.hThread );
+            CloseHandle( wr );
 
-			std::string t;
-			char *buf=new char[1024];
-			for(;;){
-				unsigned long sz;
-				int n=ReadFile( rd,buf,1024,&sz,0 );
-				if( !n && GetLastError()==ERROR_BROKEN_PIPE ) break;
-				if( !n ){ t="";break; }
-				if( !sz ) break;
-				t+=std::string( buf,sz );
-			}
-			delete[] buf;
-			CloseHandle(rd);
-			return t;
-		}
-		CloseHandle( rd );
-		CloseHandle( wr );
-	}
-	std::cout<< (proc+" failed").c_str() << "\n";
-	ExitProcess(0);
-	return "";
+            std::string t;
+            char *buf=new char[1024];
+            for(;;){
+                unsigned long sz;
+                int n=ReadFile( rd,buf,1024,&sz,0 );
+                if( !n && GetLastError()==ERROR_BROKEN_PIPE ) break;
+                if( !n ){ t="";break; }
+                if( !sz ) break;
+                t+=std::string( buf,sz );
+            }
+            delete[] buf;
+            CloseHandle(rd);
+            return t;
+        }
+        CloseHandle( rd );
+        CloseHandle( wr );
+    }
+    std::cout<< (proc+" failed").c_str() << "\n";
+    ExitProcess(0);
+    return "";
 }
 
 static std::string wCharToUtf8(std::wstring wCharStr) {

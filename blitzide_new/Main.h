@@ -136,6 +136,9 @@ class Main {
         int searchBoxOpen = 0;
         std::wstring findStr;
         std::wstring replaceStr;
+        int secondaryCaretPos = 0;
+        int secondarySelectionStart = 0;
+        int secondarySelecting = 0;
 
 		std::vector<File*> files;
 
